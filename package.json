@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "beefy": "^2.1.1",
+    "fc": "^1.4.0"
+  },
+  "dependencies": {
+    "gl-shader-core": "^2.2.0"
+  }
+}
