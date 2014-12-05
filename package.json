@@ -1,9 +1,23 @@
 {
+  "browserify": {
+    "transform": [
+      "brfs"
+    ]
+  },
   "devDependencies": {
     "beefy": "^2.1.1",
-    "fc": "^1.4.0"
+    "fc": "^1.4.0",
+    "gl-clear": "^1.0.0",
+    "gl-mat4": "^1.0.1",
+    "gl-vao": "^1.2.0",
+    "orbit-camera": "^1.0.0"
   },
   "dependencies": {
-    "gl-shader-core": "^2.2.0"
+    "brfs": "^1.2.0",
+    "gl-buffer": "^2.1.1",
+    "gl-shader-core": "^2.2.0",
+    "gl-texture2d": "^2.0.8",
+    "ndarray-show": "^1.1.0",
+    "varargs": "^1.0.0"
   }
 }
