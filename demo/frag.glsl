@@ -6,8 +6,8 @@ uniform sampler2D ops;
 
 varying vec2 v_uv;
 
-#define OPS_SIZE 8.0
-#define OPS_RATIO 1.0/8.0
+#define OPS_SIZE /* OPS_SIZE */
+#define OPS_RATIO 1.0//* OPS_SIZE */
 
 
 void circle(vec2 pos, float r, inout float dist) {
@@ -22,11 +22,7 @@ float sample(int x, int y) {
 void main() {
   float dist = 0.0;
 
-  // circle(vec2(1.0, 0.0), 0.1, v_uv, dist);
-  // circle(vec2(0.0, 1.0), 1.0, v_uv, dist);
-
-  circle(vec2(sample(0, 0), sample(1, 0)), sample(2, 0), dist);
-
+/* ops */
 
   if (dist < 0.0) {
     gl_FragColor = vec4(1.0);

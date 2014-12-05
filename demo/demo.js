@@ -1,5 +1,4 @@
 var mat4 = require('gl-mat4');
-var createShader = require('gl-shader-core');
 var createBuffer = require('gl-buffer');
 var createTexture = require('gl-texture2d');
 var createVAO = require('gl-vao');
@@ -31,21 +30,6 @@ if (!gl) {
   throw new Error('could not initialize webgl');
 }
 
-var shader = createShader(
-  gl,
-  vert,
-  frag,
-  [
-    { name: 'projection', type: 'mat4' },
-    { name: 'view', type: 'mat4' },
-    { name: 'model', type: 'mat4' },
-    { name: 'ops', type: 'sampler2D' }
-  ],
-  [{ name: 'position', type: 'vec4' }]
-);
-
-console.log(shader)
-
 var vao = createVAO(gl, [{
 
   buffer: createBuffer(gl, [
@@ -60,30 +44,31 @@ var vao = createVAO(gl, [{
   size: 3
 }]);
 
-var scene = new Scene(gl)
-console.log()
-scene.add(scene.createCircle(.1, .1, 1));
+var scene = window.scene = new Scene(gl, vert, frag)
+// scene.add(scene.createCircle(.1, .1, .1));
+// scene.add(scene.createCircle(-.1, -.1, .1));
+window.shapes = scene.shapes;
 
 
 gl.start();
 function render() {
 
   clear(gl);
-  shader.bind();
+  scene.shader.bind();
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   mat4.identity(m4scratch);
-  shader.uniforms.model = m4scratch;
-  shader.uniforms.projection = mat4.perspective(
+  scene.shader.uniforms.model = m4scratch;
+  scene.shader.uniforms.projection = mat4.perspective(
     m4scratch,
     Math.PI/4.0,
     gl.canvas.width/gl.canvas.height,
     0.1,
     1000.0
   );
-  shader.uniforms.view = camera.view(m4scratch);
+  scene.shader.uniforms.view = camera.view(m4scratch);
 
   scene.render();
-  shader.uniforms.ops = scene.opsTexture.bind();
+  scene.shader.uniforms.ops = scene.opsTexture.bind();
 
   vao.bind();
   vao.draw(gl.TRIANGLES, 6);
