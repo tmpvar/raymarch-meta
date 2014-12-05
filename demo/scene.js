@@ -33,7 +33,7 @@ function Scene(gl, vert, frag) {
 }
 
 Scene.prototype.createShader = function() {
-
+  this.dirty = true;
   if (this.shader) {
     this.shader.dispose();
   }
@@ -105,8 +105,6 @@ Scene.prototype.createCircle = function(x, y, radius, color) {
   var _x = this.alloc();
   var _y = this.alloc();
   var _r = this.alloc();
-
-  this.dirty = true;
 
   // this will eat up 3 spaces in the ops buffer
   var circle = {
