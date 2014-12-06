@@ -6,6 +6,8 @@ var fs = require('fs');
 var varargs = require('varargs');
 var Scene = require('./scene')
 var ndarray = require('ndarray');
+var getEye = require('eye-vector');
+var eye = [0, 0];
 
 var camera = require('orbit-camera')(
   [0, 0, 5],
@@ -19,7 +21,7 @@ var frag = fs.readFileSync(__dirname + '/frag.glsl', 'utf8');
 var m4scratch = mat4.create();
 
 var clear = require('gl-clear')({
-  color : [ 17/255, 127/255, 34/255]
+  color : [ 17/255, 17/255, 34/255]
 });
 
 var fc = require('fc');
@@ -47,12 +49,14 @@ var vao = createVAO(gl, [{
 var scene = window.scene = new Scene(gl, vert, frag)
 // scene.add(scene.createCircle(.1, .1, .1));
 // scene.add(scene.createCircle(-.1, -.1, .1));
-window.shapes = scene.shapes;
+window.camera = camera;
 
 
 gl.start();
 function render() {
-
+  gl.blendFunc(gl.SRC_COLOR, gl.ONE_MINUS_SRC_ALPHA);
+  gl.blendEquation( gl.FUNC_ADD );
+  gl.enable(gl.BLEND);
   clear(gl);
   scene.shader.bind();
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -69,6 +73,7 @@ function render() {
 
   scene.render();
   scene.shader.uniforms.ops = scene.opsTexture.bind();
+  scene.shader.uniforms.camera_eye = getEye(m4scratch, eye);
 
   vao.bind();
   vao.draw(gl.TRIANGLES, 6);

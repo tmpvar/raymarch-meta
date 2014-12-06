@@ -4,6 +4,9 @@
       "brfs"
     ]
   },
+  "scripts" : {
+    "demo" : "beefy demo/demo.js --live --open"
+  },
   "devDependencies": {
     "beefy": "^2.1.1",
     "fc": "^1.4.0",
@@ -14,6 +17,7 @@
   },
   "dependencies": {
     "brfs": "^1.2.0",
+    "eye-vector": "0.0.0",
     "gl-buffer": "^2.1.1",
     "gl-shader-core": "^2.2.0",
     "gl-texture2d": "^2.0.8",

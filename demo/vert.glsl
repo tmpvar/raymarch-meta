@@ -5,8 +5,10 @@ uniform mat4 model;
 
 varying vec2 v_uv;
 
+
 void main() {
    v_uv = position.xy;
+
 
    gl_Position = projection * view * model * position;
    gl_PointSize = 1.0;

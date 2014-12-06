@@ -16,7 +16,7 @@ function Scene(gl, vert, frag) {
   // this.shader = this.createShader(gl);
 
   this.raymarch = {
-    CYCLES: 64
+    CYCLES: 128
   };
 
 
@@ -68,7 +68,8 @@ Scene.prototype.createShader = function() {
       { name: 'projection', type: 'mat4' },
       { name: 'view', type: 'mat4' },
       { name: 'model', type: 'mat4' },
-      { name: 'ops', type: 'sampler2D' }
+      { name: 'ops', type: 'sampler2D' },
+      { name: 'camera_eye', type: 'vec3' },
     ],
     [{ name: 'position', type: 'vec4' }]
   );
