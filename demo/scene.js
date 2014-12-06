@@ -15,6 +15,11 @@ function Scene(gl, vert, frag) {
   this.gl = gl;
   // this.shader = this.createShader(gl);
 
+  this.raymarch = {
+    CYCLES: 64
+  };
+
+
   this.variableMapSize = 4;
 
   this.ops = ndarray(
@@ -49,6 +54,11 @@ Scene.prototype.createShader = function() {
   var frag = this.fragSource.replace('/* ops */', shapeStr);
   frag = frag.replace(/\/\* OPS_SIZE \*\//g, this.variableMapSize.toFixed(1));
 
+  var raymarchDefines = this.raymarch;
+  Object.keys(raymarchDefines).forEach(function(key) {
+    var exp = new RegExp('\\/\\* RAYMARCH_' + key + ' \\*\\/', 'g');
+    frag = frag.replace(exp, raymarchDefines[key]);
+  });
 
   this.shader = createShader(
     this.gl,

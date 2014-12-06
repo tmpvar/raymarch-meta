@@ -9,6 +9,7 @@ varying vec2 v_uv;
 #define OPS_SIZE /* OPS_SIZE */
 #define OPS_RATIO 1.0//* OPS_SIZE */
 
+#define RAYMARCH_CYCLES /* RAYMARCH_CYCLES */
 
 void circle(vec2 pos, float r, inout float dist) {
   vec2 p = v_uv + pos;
