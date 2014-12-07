@@ -97,17 +97,17 @@ var sphere = scene.createSphere(0.1,0.1,0.2,0.3,0.1);
 var sphere2 = scene.createSphere(0.1,0.5,.5,0.5,0.1);
 var sphere3 = scene.createSphere(0.5,0.5,0.0,0.5,0.1);
 
-var boxy = scene.createBox(-0.6, -1.0, 0.2,             0.6, 0.2, 0.4,      0.1);
+var boxy = scene.createBox(-0.2, -0.1, 0.2,             0.6, 0.2, 0.4,      0.1);
 
-var union = scene.createUnion([sphere3, boxy]);
-var cut = scene.createCut([union, sphere2]);
+var union = scene.createUnion([sphere3, sphere2]);
+var cut = scene.createCut([union, boxy]);
 scene.add(sphere);
 scene.add(sphere2);
 scene.add(sphere3);
 scene.add(boxy);
 scene.add(union);
 scene.add(cut);
-scene.add(scene.createDisplay(union));
+scene.add(scene.createDisplay(cut));
 
 window.camera = camera;
 
