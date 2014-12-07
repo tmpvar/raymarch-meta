@@ -16,7 +16,7 @@ function Scene(gl, vert, frag) {
   // this.shader = this.createShader(gl);
 
   this.raymarch = {
-    CYCLES: 128
+    CYCLES: 256
   };
 
   this.variableMapSize = 16;
@@ -113,37 +113,7 @@ Scene.prototype.alloc = function() {
 
 
 Scene.prototype.dirty = false;
-Scene.prototype.createCircle = function(x, y, radius, color) {
-  var _x = this.alloc();
-  var _y = this.alloc();
-  var _r = this.alloc();
-
-  // this will eat up 3 spaces in the ops buffer
-  var circle = {
-    radius: _r,
-    0: _x,
-    1: _y,
-  };
-
-  Object.defineProperty(circle, 'code', {
-    value: printf(
-      '  circle(vec2(sample(%i, %i), sample(%i, %i)), sample(%i, %i), dist);\n',
-      _x.position[0].toFixed(1),
-      _x.position[1].toFixed(1),
-      _y.position[0].toFixed(1),
-      _y.position[1].toFixed(1),
-      _r.position[0].toFixed(1),
-      _r.position[1].toFixed(1)
-    )
-  });
-
-  _x(x);
-  _y(y);
-  _r(radius);
-
-  return circle;
-}
-
+Scene.prototype.shapeId = 0;
 Scene.prototype.createSphere = function(x, y, z, radius, color) {
   var _x = this.alloc();
   var _y = this.alloc();
@@ -158,9 +128,14 @@ Scene.prototype.createSphere = function(x, y, z, radius, color) {
     2: _z
   };
 
+  Object.defineProperty(sphere, 'name', {
+    value: 'sphere_' + (this.shapeId++)
+  });
+
   Object.defineProperty(sphere, 'code', {
     value: printf(
-      '  h = min(h, solid_sphere(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i)));',
+      '    float %s = solid_sphere(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i));\n',
+      sphere.name,
       _x.position[0].toFixed(1),
       _x.position[1].toFixed(1),
       _y.position[0].toFixed(1),
@@ -188,7 +163,7 @@ Scene.prototype.createBox = function(x, y, z, width, height, depth, color) {
   var _h = this.alloc();
   var _d = this.alloc();
 
-  // this will eat up 4 spaces in the ops buffer
+  // this will eat up 6 spaces in the ops buffer
   var box = {
     0: _x,
     1: _y,
@@ -198,34 +173,93 @@ Scene.prototype.createBox = function(x, y, z, width, height, depth, color) {
     5: _d
   };
 
-  Object.defineProperty(sphere, 'code', {
+  Object.defineProperty(box, 'name', {
+    value: 'box_' + (this.shapeId++)
+  });
+
+  Object.defineProperty(box, 'code', {
     value: printf(
-      '  h = min(h, signed_box_distance(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)));',
+      '    float %s = signed_box_distance(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)) );\n',
+      box.name,
       _x.position[0].toFixed(1),
       _x.position[1].toFixed(1),
       _y.position[0].toFixed(1),
       _y.position[1].toFixed(1),
       _z.position[0].toFixed(1),
       _z.position[1].toFixed(1),
-
       _w.position[0].toFixed(1),
       _w.position[1].toFixed(1),
       _h.position[0].toFixed(1),
       _h.position[1].toFixed(1),
       _d.position[0].toFixed(1),
       _d.position[1].toFixed(1)
-
     )
   });
 
   _x(x);
   _y(y);
   _z(z);
-  _w(w);
-  _h(h);
-  _d(d);
+  _w(width);
+  _h(height);
+  _d(depth);
 
   return box;
+}
+
+Scene.prototype.createUnion = function(shapes) {
+  if (!Array.isArray(shapes)) {
+    shapes = [shapes];
+  }
+
+  var union = {};
+
+  Object.defineProperty(union, 'name', {
+    value: 'union_' + (this.shapeId++)
+  });
+
+  Object.defineProperty(union, 'code', {
+    value : '    float ' + union.name + ' = 1.0;\n' + shapes.map(function(shape) {
+      if (!shape.name) { return false; }
+      return '    ' + union.name + ' =  min(' + union.name + ', ' + shape.name + ');';
+    }).filter(Boolean).join('\n') + '\n'
+  });
+
+  return union;
+}
+
+Scene.prototype.createCut = function(shapes) {
+  if (!Array.isArray(shapes)) {
+    shapes = [shapes];
+  }
+
+  var cut = {};
+
+  Object.defineProperty(cut, 'name', {
+    value: 'cut_' + (this.shapeId++)
+  });
+
+  Object.defineProperty(cut, 'code', {
+    value : '    float ' + cut.name + ' = 0.0;\n' + shapes.map(function(shape) {
+      if (!shape.name) { return false}
+      return '    ' + cut.name + ' =  max(' + cut.name + ', ' + shape.name + ');';
+    }).filter(Boolean).join('\n') + '\n'
+  });
+
+  return cut;
+}
+
+Scene.prototype.createDisplay = function(shapes) {
+  if (!Array.isArray(shapes)) {
+    shapes = [shapes];
+  }
+  var display = {};
+  Object.defineProperty(display, 'code', {
+    value : shapes.map(function(shape) {
+      if (!shape.name) { return false}
+      return '    h = min(h, ' + shape.name + ');';
+    }).filter(Boolean).join('\n') + '\n'
+  });
+  return display;
 }
 
 Scene.prototype.add = function addShape(thing) {

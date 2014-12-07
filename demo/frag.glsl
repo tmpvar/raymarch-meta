@@ -49,13 +49,13 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
     steps = i;
 
     position = origin+direction*dist;
-    h = signed_box_distance(position, vec3(.1, .3, .25));
-    h = min(h, solid_sphere(position, 0.25));
+    // h = signed_box_distance(position, vec3(.1, .3, .25));
+    // h = min(h, solid_sphere(position, 0.25));
 
     // if (h < 0.001) {
     //   return dist;
     // }
-    /* RAYMARCH_OPS */
+/* RAYMARCH_OPS */
 
     dist += h;
   }
