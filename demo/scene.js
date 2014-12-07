@@ -166,8 +166,14 @@ Scene.prototype.createUnion = function(shapes) {
     value: 'union_' + (this.shapeId++)
   });
 
+  shapes = shapes.filter(function(shape) {
+    return !!shape.name;
+  });
+
+  var first = shapes.shift();
+
   Object.defineProperty(union, 'code', {
-    value : '    float ' + union.name + ' = 1.0;\n' + shapes.map(function(shape) {
+    value : '    float ' + union.name + ' = ' + first.name + ';\n' + shapes.map(function(shape) {
       if (!shape.name) { return false; }
       return '    ' + union.name + ' =  min(' + union.name + ', ' + shape.name + ');';
     }).filter(Boolean).join('\n') + '\n'
@@ -183,14 +189,20 @@ Scene.prototype.createCut = function(shapes) {
 
   var cut = {};
 
+  shapes = shapes.filter(function(shape) {
+    return !!shape.name;
+  });
+
+  var first = shapes.shift();
+
   Object.defineProperty(cut, 'name', {
     value: 'cut_' + (this.shapeId++)
   });
 
   Object.defineProperty(cut, 'code', {
-    value : '    float ' + cut.name + ' = 0.0;\n' + shapes.map(function(shape) {
+    value : '    float ' + cut.name + ' = ' + first.name + ';\n' + shapes.map(function(shape) {
       if (!shape.name) { return false}
-      return '    ' + cut.name + ' =  max(' + cut.name + ', ' + shape.name + ');';
+      return '    ' + cut.name + ' =  max(-' + cut.name + ', ' + shape.name + ');';
     }).filter(Boolean).join('\n') + '\n'
   });
 
