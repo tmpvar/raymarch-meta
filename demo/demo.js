@@ -93,7 +93,17 @@ var vao = createVAO(gl, [
 var scene = window.scene = new Scene(gl, vert, frag)
 // scene.add(scene.createCircle(.1, .1, .1));
 // scene.add(scene.createCircle(-.1, -.1, .1));
-  scene.add(scene.createSphere(0.1,0.1,0.2,0.3,0.1));
+var sphere = scene.createSphere(0.1,0.1,0.2,0.3,0.1);
+var sphere2 = scene.createSphere(0.1,0.5,.5,0.5,0.1);
+var sphere3 = scene.createSphere(0.5,0.5,0.0,0.5,0.1);
+var union = scene.createUnion([sphere, sphere2]);
+var cut = scene.createCut([union, sphere3]);
+scene.add(sphere);
+scene.add(sphere2);
+scene.add(sphere3);
+scene.add(union);
+scene.add(cut);
+scene.add(scene.createDisplay(cut));
 
 window.camera = camera;
 
