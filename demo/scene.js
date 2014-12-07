@@ -160,7 +160,7 @@ Scene.prototype.createSphere = function(x, y, z, radius, color) {
 
   Object.defineProperty(sphere, 'code', {
     value: printf(
-      '  h = min(h, solid_sphere(vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i)));',
+      '  h = min(h, solid_sphere(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i)));',
       _x.position[0].toFixed(1),
       _x.position[1].toFixed(1),
       _y.position[0].toFixed(1),
