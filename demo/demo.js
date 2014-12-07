@@ -103,10 +103,10 @@ function render() {
 
   // TODO: to enable these we need to not clip if the camera
   //       is inside the bounding box
-  // gl.depthMask(false)
-  // gl.enable(gl.CULL_FACE)
-  // gl.cullFace(gl.BACK)
-  // gl.frontFace(gl.CCW)
+  gl.depthMask(false)
+  gl.enable(gl.CULL_FACE)
+  gl.cullFace(gl.BACK)
+  gl.frontFace(gl.CCW)
   gl.enable(gl.BLEND)
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
