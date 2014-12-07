@@ -180,6 +180,54 @@ Scene.prototype.createSphere = function(x, y, z, radius, color) {
   return sphere;
 }
 
+Scene.prototype.createBox = function(x, y, z, width, height, depth, color) {
+  var _x = this.alloc();
+  var _y = this.alloc();
+  var _z = this.alloc();
+  var _w = this.alloc();
+  var _h = this.alloc();
+  var _d = this.alloc();
+
+  // this will eat up 4 spaces in the ops buffer
+  var box = {
+    0: _x,
+    1: _y,
+    2: _z,
+    3: _w,
+    4: _h,
+    5: _d
+  };
+
+  Object.defineProperty(sphere, 'code', {
+    value: printf(
+      '  h = min(h, signed_box_distance(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)));',
+      _x.position[0].toFixed(1),
+      _x.position[1].toFixed(1),
+      _y.position[0].toFixed(1),
+      _y.position[1].toFixed(1),
+      _z.position[0].toFixed(1),
+      _z.position[1].toFixed(1),
+
+      _w.position[0].toFixed(1),
+      _w.position[1].toFixed(1),
+      _h.position[0].toFixed(1),
+      _h.position[1].toFixed(1),
+      _d.position[0].toFixed(1),
+      _d.position[1].toFixed(1)
+
+    )
+  });
+
+  _x(x);
+  _y(y);
+  _z(z);
+  _w(w);
+  _h(h);
+  _d(d);
+
+  return box;
+}
+
 Scene.prototype.add = function addShape(thing) {
   this.shapes.push(thing)
 
