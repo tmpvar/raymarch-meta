@@ -4,8 +4,8 @@
       "brfs"
     ]
   },
-  "scripts" : {
-    "demo" : "beefy demo/demo.js --live --open"
+  "scripts": {
+    "demo": "beefy demo/demo.js --live --open"
   },
   "devDependencies": {
     "beefy": "^2.1.1",
@@ -19,6 +19,7 @@
     "brfs": "^1.2.0",
     "eye-vector": "0.0.0",
     "gl-buffer": "^2.1.1",
+    "gl-mat3": "^1.0.0",
     "gl-shader-core": "^2.2.0",
     "gl-texture2d": "^2.0.8",
     "ndarray-show": "^1.1.0",

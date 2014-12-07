@@ -1,5 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/Users/tmpvar/work/js/raymarch-meta/demo/demo.js":[function(require,module,exports){
 var mat4 = require('gl-mat4');
+var mat3 = require('gl-mat3');
 var createBuffer = require('gl-buffer');
 var createTexture = require('gl-texture2d');
 var createVAO = require('gl-vao');
@@ -11,15 +12,17 @@ var getEye = require('eye-vector');
 var eye = [0, 0];
 
 var camera = require('orbit-camera')(
-  [0, 0, 5],
+  [0, 0, -2],
   [0, 0, 0],
   [0, 1, 0]
 );
 
-var vert = "attribute vec4 position;\nuniform mat4 projection;\nuniform mat4 view;\nuniform mat4 model;\n\nvarying vec2 v_uv;\n\n\nvoid main() {\n   v_uv = position.xy;\n\n\n   gl_Position = projection * view * model * position;\n   gl_PointSize = 1.0;\n}\n";
-var frag = "#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform sampler2D ops;\nuniform vec3 camera_eye;\nuniform mat4 projection;\nuniform mat4 view;\nuniform mat4 model;\n\n\nvarying vec2 v_uv;\n\n#define OPS_SIZE /* OPS_SIZE */\n#define OPS_RATIO 1.0//* OPS_SIZE */\n\n#define RAYMARCH_CYCLES /* RAYMARCH_CYCLES */\n\nvoid circle(vec2 pos, float r, inout float dist) {\n  vec2 p = v_uv + pos;\n  dist = min(dist, length(p)-r);\n}\n\nfloat sample(int x, int y) {\n  return texture2D(ops, vec2(x, y) * OPS_RATIO).x;\n}\n\nfloat signed_box_distance(vec3 p, vec3 b) {\n  vec3 d = abs(p) - b;\n  return min(max(d.x,max(d.y,d.z)),0.0) +\n         length(max(d,0.0));\n}\n\n// float unsigned_box_distance( vec3 p, vec3 b, float r ) {\n//   return length(max(abs(p)-b,0.0))-r;\n// }\n\nfloat raymarch(in vec3 origin, in vec3 direction, out int steps) {\n  float t = 0.0;\n  float h = 1.0;\n\n  for(int i=0; i<RAYMARCH_CYCLES; i++) {\n    // if (h<=0.0) {\n    //   continue;\n    // }\n    steps = i;\n\n    vec3 position = origin+direction*t;\n    h = signed_box_distance(position, vec3(0.2, 0.2, 0.5));\n    t += h;\n  }\n\n  return t;\n}\n\nvoid main() {\n  vec2 uv = v_uv;\n  float dist = 0.0;\n\n  vec3 eye = vec3(uv, 5.0) - camera_eye;\n  vec3 dir = -eye + vec3(uv, 1.0);\n  int steps = 0;\n  dist = raymarch(\n    eye,\n    normalize(dir),\n    steps\n  );\n\n/* ops */\n\n  if (dist > 0.5) {\n    gl_FragColor = vec4(0.0, 0.0, 0.5, 0.1);\n  } else {\n\n    gl_FragColor = vec4(0.0, steps/RAYMARCH_CYCLES, 0.0, 1.0 -dist);\n  }\n  // normalize((normalize(vec4(dist)) + 1.0) / 2.0);\n  // if (dist < 0.0) {\n  //   gl_FragColor = vec4(dist);\n  // } else {\n  //   gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n  // }\n\n  // float t = smoothstep(0.25, 0.0, dist);\n  // gl_FragColor = mix(vec4(1.0, 0.0, 0.0, 1.0), vec4(1.0), t);\n\n   // gl_FragColor = min(\n   //  vec4(length(v_uv), 0.0, 0.0, 1.0),\n   //  vec4(normalize(v_uv + 1.0), 0.0, 1.0));\n}\n";
+var vert = "attribute vec3 position;\nuniform mat4 worldToClip;\n\nvarying vec3 v_uv;\n\n\nvoid main() {\n   v_uv = position;\n   // gl_Position = vec4(position, 1.0);//worldToClip * vec4(position, 1.0);//projection * view * model * position;\n   gl_Position = worldToClip * vec4(position, 1.0);//projection * view * model * position;\n}\n";
+var frag = "#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform sampler2D ops;\nuniform mat4 clipToWorld;\nuniform vec2 resolution;\nuniform float time;\n\n\n\nvarying vec3 v_uv;\n\n#define PI 3.14159\n#define OPS_SIZE /* OPS_SIZE */\n#define OPS_RATIO 1.0//* OPS_SIZE */\n\n#define RAYMARCH_CYCLES /* RAYMARCH_CYCLES */\n\n// void circle(vec2 pos, float r, inout float dist) {\n//   vec2 p = v_uv + pos;\n//   dist = min(dist, length(p)-r);\n// }\n\nfloat sample(int x, int y) {\n  return texture2D(ops, vec2(x, y) * OPS_RATIO).x;\n}\n\nfloat signed_box_distance(vec3 p, vec3 b) {\n  vec3 d = abs(p) - b;\n  return min(max(d.x,max(d.y,d.z)),0.1) +\n         length(max(d,0.1));\n}\n\nfloat solid_sphere(vec3 p, float r) {\n  return length(p) - r;\n}\n\n// float unsigned_box_distance( vec3 p, vec3 b, float r ) {\n//   return length(max(abs(p)-b,0.0))-r;\n// }\n\nfloat raymarch(in vec3 origin, in vec3 direction, out int steps, out bool hit) {\n  float t = 0.0;\n  float h = 1.0;\n\n  for(int i=0; i<RAYMARCH_CYCLES; i++) {\n    if (h<=0.0) {\n      continue;\n    }\n    steps = i;\n\n    vec3 position = origin+direction*t;\n    // h = signed_box_distance(position, vec3(.1));//vec3(0.2, 0.2, 0.5));\n    //h = solid_sphere(position, .4);\n    h = solid_sphere(position, 0.25);\n    if (h < 0.001) {\n      hit = true;\n    }\n    t += h;\n  }\n\n  return t;\n}\n\nvoid main() {\n  // vec2 uv = (v_uv * 2.0) - 1.0;\n  vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;\n  vec3 dir = normalize(v_uv - eye);\n\n  float dist = 0.0;\n\n  // vec2 position = vec2(\n  //   (gl_FragCoord.x - resolution.x / 2.0) / resolution.y,\n  //   (gl_FragCoord.y - resolution.y / 2.0) / resolution.y\n  // );\n\n  // vec3 eye = camera_eye;//vec3(0.0, 0.0, camera_eye.z);\n  // vec3 dir = vec3(position, 0.0) - eye;\n  int steps = 0;\n  bool hit = false;\n  dist = raymarch(eye, dir, steps, hit);\n\n/* ops */\n\n  gl_FragColor = vec4(dist);\n\n  // if (dist > 0.0) {\n  //   gl_FragColor = vec4(0.0, 0.0, 0.5, 0.1);\n  // } else {\n  //   gl_FragColor = vec4(1.0, steps, 1.0, 1.0 -dist);\n  // }\n\n}\n";
 
 var m4scratch = mat4.create();
+var m3itscratch = mat3.create();
+var m3itscratch2 = mat3.create();
 
 var clear = require('gl-clear')({
   color : [ 17/255, 17/255, 34/255]
@@ -54,6 +57,7 @@ window.camera = camera;
 
 
 gl.start();
+var start = Date.now();
 function render() {
   gl.blendFunc(gl.SRC_COLOR, gl.ONE_MINUS_SRC_ALPHA);
   gl.blendEquation( gl.FUNC_ADD );
@@ -62,23 +66,39 @@ function render() {
   scene.shader.bind();
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   mat4.identity(m4scratch);
-  scene.shader.uniforms.model = m4scratch;
-  scene.shader.uniforms.projection = mat4.perspective(
-    m4scratch,
+  var model = m4scratch;
+  var projection = mat4.perspective(
+    mat4.create(),
     Math.PI/4.0,
     gl.canvas.width/gl.canvas.height,
     0.1,
     1000.0
   );
-  scene.shader.uniforms.view = camera.view(m4scratch);
 
-  scene.render();
+  var view = camera.view(mat4.create());
+
+  var worldToClip = mat4.create();
+  //Calculate camera matrices
+  mat4.multiply(worldToClip, view, model);
+  mat4.multiply(worldToClip, projection, worldToClip);
+
+  //Set up shader
+  scene.shader.uniforms.worldToClip = worldToClip;
+  scene.shader.uniforms.clipToWorld = mat4.invert(mat4.create(), worldToClip);
+  scene.shader.uniforms.resolution = [gl.canvas.width, gl.canvas.height];
   scene.shader.uniforms.ops = scene.opsTexture.bind();
   scene.shader.uniforms.camera_eye = getEye(m4scratch, eye);
+  scene.shader.uniforms.time = Date.now() - start;
+
+  mat3.fromMat4(m3itscratch, m4scratch);
+  scene.shader.uniforms.transposed_view = m3itscratch;
+
+  scene.render();
 
   vao.bind();
   vao.draw(gl.TRIANGLES, 6);
   vao.unbind();
+  gl.stop();
 }
 
 
@@ -88,6 +108,7 @@ var mouse = {
 };
 
 function handleMouse(e) {
+  gl.start();
   switch (e.type) {
     case 'mousedown':
       mouse.down=true;
@@ -120,7 +141,7 @@ function handleMouse(e) {
     break;
 
     case 'mousewheel':
-      camera.zoom(e.wheelDeltaY * -.01);
+      camera.zoom(e.wheelDeltaY * -.001);
       e.preventDefault();
     break;
 
@@ -152,7 +173,7 @@ function handleMouse(e) {
 });
 
 
-},{"./scene":"/Users/tmpvar/work/js/raymarch-meta/demo/scene.js","eye-vector":"/Users/tmpvar/work/js/raymarch-meta/node_modules/eye-vector/index.js","fc":"/Users/tmpvar/work/js/raymarch-meta/node_modules/fc/fc.js","gl-buffer":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-buffer/buffer.js","gl-clear":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-clear/index.js","gl-mat4":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat4/index.js","gl-texture2d":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-texture2d/texture.js","gl-vao":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-vao/vao.js","ndarray":"/Users/tmpvar/work/js/raymarch-meta/node_modules/ndarray/ndarray.js","orbit-camera":"/Users/tmpvar/work/js/raymarch-meta/node_modules/orbit-camera/orbit.js","varargs":"/Users/tmpvar/work/js/raymarch-meta/node_modules/varargs/varargs.js"}],"/Users/tmpvar/work/js/raymarch-meta/demo/scene.js":[function(require,module,exports){
+},{"./scene":"/Users/tmpvar/work/js/raymarch-meta/demo/scene.js","eye-vector":"/Users/tmpvar/work/js/raymarch-meta/node_modules/eye-vector/index.js","fc":"/Users/tmpvar/work/js/raymarch-meta/node_modules/fc/fc.js","gl-buffer":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-buffer/buffer.js","gl-clear":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-clear/index.js","gl-mat3":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/index.js","gl-mat4":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat4/index.js","gl-texture2d":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-texture2d/texture.js","gl-vao":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-vao/vao.js","ndarray":"/Users/tmpvar/work/js/raymarch-meta/node_modules/ndarray/ndarray.js","orbit-camera":"/Users/tmpvar/work/js/raymarch-meta/node_modules/orbit-camera/orbit.js","varargs":"/Users/tmpvar/work/js/raymarch-meta/node_modules/varargs/varargs.js"}],"/Users/tmpvar/work/js/raymarch-meta/demo/scene.js":[function(require,module,exports){
 var createShader = require('gl-shader-core');
 
 var ndarray = require('ndarray')
@@ -171,7 +192,7 @@ function Scene(gl, vert, frag) {
   // this.shader = this.createShader(gl);
 
   this.raymarch = {
-    CYCLES: 128
+    CYCLES: 256
   };
 
 
@@ -220,13 +241,15 @@ Scene.prototype.createShader = function() {
     this.vertSource,
     frag,
     [
-      { name: 'projection', type: 'mat4' },
-      { name: 'view', type: 'mat4' },
-      { name: 'model', type: 'mat4' },
+      { name: 'worldToClip', type: 'mat4' },
+      { name: 'clipToWorld', type: 'mat4' },
       { name: 'ops', type: 'sampler2D' },
       { name: 'camera_eye', type: 'vec3' },
+      { name: 'resolution', type: 'vec2' },
+      { name: 'time', type: 'float' },
+
     ],
-    [{ name: 'position', type: 'vec4' }]
+    [{ name: 'position', type: 'vec3' }]
   );
 
   return this.shader;
@@ -5916,7 +5939,577 @@ function clear(opts) {
   }
 }
 
-},{"./defaults":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-clear/defaults.js"}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat4/adjoint.js":[function(require,module,exports){
+},{"./defaults":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-clear/defaults.js"}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/adjoint.js":[function(require,module,exports){
+module.exports = adjoint
+
+/**
+ * Calculates the adjugate of a mat3
+ *
+ * @alias mat3.adjoint
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the source matrix
+ * @returns {mat3} out
+ */
+function adjoint(out, a) {
+  var a00 = a[0], a01 = a[1], a02 = a[2]
+  var a10 = a[3], a11 = a[4], a12 = a[5]
+  var a20 = a[6], a21 = a[7], a22 = a[8]
+
+  out[0] = (a11 * a22 - a12 * a21)
+  out[1] = (a02 * a21 - a01 * a22)
+  out[2] = (a01 * a12 - a02 * a11)
+  out[3] = (a12 * a20 - a10 * a22)
+  out[4] = (a00 * a22 - a02 * a20)
+  out[5] = (a02 * a10 - a00 * a12)
+  out[6] = (a10 * a21 - a11 * a20)
+  out[7] = (a01 * a20 - a00 * a21)
+  out[8] = (a00 * a11 - a01 * a10)
+
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/clone.js":[function(require,module,exports){
+module.exports = clone
+
+/**
+ * Creates a new mat3 initialized with values from an existing matrix
+ *
+ * @alias mat3.clone
+ * @param {mat3} a matrix to clone
+ * @returns {mat3} a new 3x3 matrix
+ */
+function clone(a) {
+  var out = new Float32Array(9)
+  out[0] = a[0]
+  out[1] = a[1]
+  out[2] = a[2]
+  out[3] = a[3]
+  out[4] = a[4]
+  out[5] = a[5]
+  out[6] = a[6]
+  out[7] = a[7]
+  out[8] = a[8]
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/copy.js":[function(require,module,exports){
+module.exports = copy
+
+/**
+ * Copy the values from one mat3 to another
+ *
+ * @alias mat3.copy
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the source matrix
+ * @returns {mat3} out
+ */
+function copy(out, a) {
+  out[0] = a[0]
+  out[1] = a[1]
+  out[2] = a[2]
+  out[3] = a[3]
+  out[4] = a[4]
+  out[5] = a[5]
+  out[6] = a[6]
+  out[7] = a[7]
+  out[8] = a[8]
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/create.js":[function(require,module,exports){
+module.exports = create
+
+/**
+ * Creates a new identity mat3
+ *
+ * @alias mat3.create
+ * @returns {mat3} a new 3x3 matrix
+ */
+function create() {
+  var out = new Float32Array(9)
+  out[0] = 1
+  out[1] = 0
+  out[2] = 0
+  out[3] = 0
+  out[4] = 1
+  out[5] = 0
+  out[6] = 0
+  out[7] = 0
+  out[8] = 1
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/determinant.js":[function(require,module,exports){
+module.exports = determinant
+
+/**
+ * Calculates the determinant of a mat3
+ *
+ * @alias mat3.determinant
+ * @param {mat3} a the source matrix
+ * @returns {Number} determinant of a
+ */
+function determinant(a) {
+  var a00 = a[0], a01 = a[1], a02 = a[2]
+  var a10 = a[3], a11 = a[4], a12 = a[5]
+  var a20 = a[6], a21 = a[7], a22 = a[8]
+
+  return a00 * (a22 * a11 - a12 * a21)
+       + a01 * (a12 * a20 - a22 * a10)
+       + a02 * (a21 * a10 - a11 * a20)
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/frob.js":[function(require,module,exports){
+module.exports = frob
+
+/**
+ * Returns Frobenius norm of a mat3
+ *
+ * @alias mat3.frob
+ * @param {mat3} a the matrix to calculate Frobenius norm of
+ * @returns {Number} Frobenius norm
+ */
+function frob(a) {
+  return Math.sqrt(
+      a[0]*a[0]
+    + a[1]*a[1]
+    + a[2]*a[2]
+    + a[3]*a[3]
+    + a[4]*a[4]
+    + a[5]*a[5]
+    + a[6]*a[6]
+    + a[7]*a[7]
+    + a[8]*a[8]
+  )
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/from-mat2.js":[function(require,module,exports){
+module.exports = fromMat2d
+
+/**
+ * Copies the values from a mat2d into a mat3
+ *
+ * @alias mat3.fromMat2d
+ * @param {mat3} out the receiving matrix
+ * @param {mat2d} a the matrix to copy
+ * @returns {mat3} out
+ **/
+function fromMat2d(out, a) {
+  out[0] = a[0]
+  out[1] = a[1]
+  out[2] = 0
+
+  out[3] = a[2]
+  out[4] = a[3]
+  out[5] = 0
+
+  out[6] = a[4]
+  out[7] = a[5]
+  out[8] = 1
+
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/from-mat4.js":[function(require,module,exports){
+module.exports = fromMat4
+
+/**
+ * Copies the upper-left 3x3 values into the given mat3.
+ *
+ * @alias mat3.fromMat4
+ * @param {mat3} out the receiving 3x3 matrix
+ * @param {mat4} a   the source 4x4 matrix
+ * @returns {mat3} out
+ */
+function fromMat4(out, a) {
+  out[0] = a[0]
+  out[1] = a[1]
+  out[2] = a[2]
+  out[3] = a[4]
+  out[4] = a[5]
+  out[5] = a[6]
+  out[6] = a[8]
+  out[7] = a[9]
+  out[8] = a[10]
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/from-quat.js":[function(require,module,exports){
+module.exports = fromQuat
+
+/**
+* Calculates a 3x3 matrix from the given quaternion
+*
+* @alias mat3.fromQuat
+* @param {mat3} out mat3 receiving operation result
+* @param {quat} q Quaternion to create matrix from
+*
+* @returns {mat3} out
+*/
+function fromQuat(out, q) {
+  var x = q[0]
+  var y = q[1]
+  var z = q[2]
+  var w = q[3]
+
+  var x2 = x + x
+  var y2 = y + y
+  var z2 = z + z
+
+  var xx = x * x2
+  var yx = y * x2
+  var yy = y * y2
+  var zx = z * x2
+  var zy = z * y2
+  var zz = z * z2
+  var wx = w * x2
+  var wy = w * y2
+  var wz = w * z2
+
+  out[0] = 1 - yy - zz
+  out[3] = yx - wz
+  out[6] = zx + wy
+
+  out[1] = yx + wz
+  out[4] = 1 - xx - zz
+  out[7] = zy - wx
+
+  out[2] = zx - wy
+  out[5] = zy + wx
+  out[8] = 1 - xx - yy
+
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/identity.js":[function(require,module,exports){
+module.exports = identity
+
+/**
+ * Set a mat3 to the identity matrix
+ *
+ * @alias mat3.identity
+ * @param {mat3} out the receiving matrix
+ * @returns {mat3} out
+ */
+function identity(out) {
+  out[0] = 1
+  out[1] = 0
+  out[2] = 0
+  out[3] = 0
+  out[4] = 1
+  out[5] = 0
+  out[6] = 0
+  out[7] = 0
+  out[8] = 1
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/index.js":[function(require,module,exports){
+module.exports = {
+  adjoint: require('./adjoint')
+  , clone: require('./clone')
+  , copy: require('./copy')
+  , create: require('./create')
+  , determinant: require('./determinant')
+  , frob: require('./frob')
+  , fromMat2: require('./from-mat2')
+  , fromMat4: require('./from-mat4')
+  , fromQuat: require('./from-quat')
+  , identity: require('./identity')
+  , invert: require('./invert')
+  , multiply: require('./multiply')
+  , normalFromMat4: require('./normal-from-mat4')
+  , rotate: require('./rotate')
+  , scale: require('./scale')
+  , str: require('./str')
+  , translate: require('./translate')
+  , transpose: require('./transpose')
+}
+
+},{"./adjoint":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/adjoint.js","./clone":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/clone.js","./copy":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/copy.js","./create":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/create.js","./determinant":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/determinant.js","./frob":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/frob.js","./from-mat2":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/from-mat2.js","./from-mat4":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/from-mat4.js","./from-quat":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/from-quat.js","./identity":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/identity.js","./invert":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/invert.js","./multiply":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/multiply.js","./normal-from-mat4":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/normal-from-mat4.js","./rotate":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/rotate.js","./scale":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/scale.js","./str":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/str.js","./translate":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/translate.js","./transpose":"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/transpose.js"}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/invert.js":[function(require,module,exports){
+module.exports = invert
+
+/**
+ * Inverts a mat3
+ *
+ * @alias mat3.invert
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the source matrix
+ * @returns {mat3} out
+ */
+function invert(out, a) {
+  var a00 = a[0], a01 = a[1], a02 = a[2]
+  var a10 = a[3], a11 = a[4], a12 = a[5]
+  var a20 = a[6], a21 = a[7], a22 = a[8]
+
+  var b01 = a22 * a11 - a12 * a21
+  var b11 = -a22 * a10 + a12 * a20
+  var b21 = a21 * a10 - a11 * a20
+
+  // Calculate the determinant
+  var det = a00 * b01 + a01 * b11 + a02 * b21
+
+  if (!det) return null
+  det = 1.0 / det
+
+  out[0] = b01 * det
+  out[1] = (-a22 * a01 + a02 * a21) * det
+  out[2] = (a12 * a01 - a02 * a11) * det
+  out[3] = b11 * det
+  out[4] = (a22 * a00 - a02 * a20) * det
+  out[5] = (-a12 * a00 + a02 * a10) * det
+  out[6] = b21 * det
+  out[7] = (-a21 * a00 + a01 * a20) * det
+  out[8] = (a11 * a00 - a01 * a10) * det
+
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/multiply.js":[function(require,module,exports){
+module.exports = multiply
+
+/**
+ * Multiplies two mat3's
+ *
+ * @alias mat3.multiply
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the first operand
+ * @param {mat3} b the second operand
+ * @returns {mat3} out
+ */
+function multiply(out, a, b) {
+  var a00 = a[0], a01 = a[1], a02 = a[2]
+  var a10 = a[3], a11 = a[4], a12 = a[5]
+  var a20 = a[6], a21 = a[7], a22 = a[8]
+
+  var b00 = b[0], b01 = b[1], b02 = b[2]
+  var b10 = b[3], b11 = b[4], b12 = b[5]
+  var b20 = b[6], b21 = b[7], b22 = b[8]
+
+  out[0] = b00 * a00 + b01 * a10 + b02 * a20
+  out[1] = b00 * a01 + b01 * a11 + b02 * a21
+  out[2] = b00 * a02 + b01 * a12 + b02 * a22
+
+  out[3] = b10 * a00 + b11 * a10 + b12 * a20
+  out[4] = b10 * a01 + b11 * a11 + b12 * a21
+  out[5] = b10 * a02 + b11 * a12 + b12 * a22
+
+  out[6] = b20 * a00 + b21 * a10 + b22 * a20
+  out[7] = b20 * a01 + b21 * a11 + b22 * a21
+  out[8] = b20 * a02 + b21 * a12 + b22 * a22
+
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/normal-from-mat4.js":[function(require,module,exports){
+module.exports = normalFromMat4
+
+/**
+* Calculates a 3x3 normal matrix (transpose inverse) from the 4x4 matrix
+*
+* @alias mat3.normalFromMat4
+* @param {mat3} out mat3 receiving operation result
+* @param {mat4} a Mat4 to derive the normal matrix from
+*
+* @returns {mat3} out
+*/
+function normalFromMat4(out, a) {
+  var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3]
+  var a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7]
+  var a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11]
+  var a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15]
+
+  var b00 = a00 * a11 - a01 * a10
+  var b01 = a00 * a12 - a02 * a10
+  var b02 = a00 * a13 - a03 * a10
+  var b03 = a01 * a12 - a02 * a11
+  var b04 = a01 * a13 - a03 * a11
+  var b05 = a02 * a13 - a03 * a12
+  var b06 = a20 * a31 - a21 * a30
+  var b07 = a20 * a32 - a22 * a30
+  var b08 = a20 * a33 - a23 * a30
+  var b09 = a21 * a32 - a22 * a31
+  var b10 = a21 * a33 - a23 * a31
+  var b11 = a22 * a33 - a23 * a32
+
+  // Calculate the determinant
+  var det = b00 * b11
+          - b01 * b10
+          + b02 * b09
+          + b03 * b08
+          - b04 * b07
+          + b05 * b06
+
+  if (!det) return null
+  det = 1.0 / det
+
+  out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det
+  out[1] = (a12 * b08 - a10 * b11 - a13 * b07) * det
+  out[2] = (a10 * b10 - a11 * b08 + a13 * b06) * det
+
+  out[3] = (a02 * b10 - a01 * b11 - a03 * b09) * det
+  out[4] = (a00 * b11 - a02 * b08 + a03 * b07) * det
+  out[5] = (a01 * b08 - a00 * b10 - a03 * b06) * det
+
+  out[6] = (a31 * b05 - a32 * b04 + a33 * b03) * det
+  out[7] = (a32 * b02 - a30 * b05 - a33 * b01) * det
+  out[8] = (a30 * b04 - a31 * b02 + a33 * b00) * det
+
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/rotate.js":[function(require,module,exports){
+module.exports = rotate
+
+/**
+ * Rotates a mat3 by the given angle
+ *
+ * @alias mat3.rotate
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat3} out
+ */
+function rotate(out, a, rad) {
+  var a00 = a[0], a01 = a[1], a02 = a[2]
+  var a10 = a[3], a11 = a[4], a12 = a[5]
+  var a20 = a[6], a21 = a[7], a22 = a[8]
+
+  var s = Math.sin(rad)
+  var c = Math.cos(rad)
+
+  out[0] = c * a00 + s * a10
+  out[1] = c * a01 + s * a11
+  out[2] = c * a02 + s * a12
+
+  out[3] = c * a10 - s * a00
+  out[4] = c * a11 - s * a01
+  out[5] = c * a12 - s * a02
+
+  out[6] = a20
+  out[7] = a21
+  out[8] = a22
+
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/scale.js":[function(require,module,exports){
+module.exports = scale
+
+/**
+ * Scales the mat3 by the dimensions in the given vec2
+ *
+ * @alias mat3.scale
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the matrix to rotate
+ * @param {vec2} v the vec2 to scale the matrix by
+ * @returns {mat3} out
+ **/
+function scale(out, a, v) {
+  var x = v[0]
+  var y = v[1]
+
+  out[0] = x * a[0]
+  out[1] = x * a[1]
+  out[2] = x * a[2]
+
+  out[3] = y * a[3]
+  out[4] = y * a[4]
+  out[5] = y * a[5]
+
+  out[6] = a[6]
+  out[7] = a[7]
+  out[8] = a[8]
+
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/str.js":[function(require,module,exports){
+module.exports = str
+
+/**
+ * Returns a string representation of a mat3
+ *
+ * @alias mat3.str
+ * @param {mat3} mat matrix to represent as a string
+ * @returns {String} string representation of the matrix
+ */
+function str(a) {
+  return 'mat3(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' +
+                   a[3] + ', ' + a[4] + ', ' + a[5] + ', ' +
+                   a[6] + ', ' + a[7] + ', ' + a[8] + ')'
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/translate.js":[function(require,module,exports){
+module.exports = translate
+
+/**
+ * Translate a mat3 by the given vector
+ *
+ * @alias mat3.translate
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the matrix to translate
+ * @param {vec2} v vector to translate by
+ * @returns {mat3} out
+ */
+function translate(out, a, v) {
+  var a00 = a[0], a01 = a[1], a02 = a[2]
+  var a10 = a[3], a11 = a[4], a12 = a[5]
+  var a20 = a[6], a21 = a[7], a22 = a[8]
+  var x = v[0], y = v[1]
+
+  out[0] = a00
+  out[1] = a01
+  out[2] = a02
+
+  out[3] = a10
+  out[4] = a11
+  out[5] = a12
+
+  out[6] = x * a00 + y * a10 + a20
+  out[7] = x * a01 + y * a11 + a21
+  out[8] = x * a02 + y * a12 + a22
+
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat3/transpose.js":[function(require,module,exports){
+module.exports = transpose
+
+/**
+ * Transpose the values of a mat3
+ *
+ * @alias mat3.transpose
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the source matrix
+ * @returns {mat3} out
+ */
+function transpose(out, a) {
+  // If we are transposing ourselves we can skip a few steps but have to cache some values
+  if (out === a) {
+    var a01 = a[1], a02 = a[2], a12 = a[5]
+    out[1] = a[3]
+    out[2] = a[6]
+    out[3] = a01
+    out[5] = a[7]
+    out[6] = a02
+    out[7] = a12
+  } else {
+    out[0] = a[0]
+    out[1] = a[3]
+    out[2] = a[6]
+    out[3] = a[1]
+    out[4] = a[4]
+    out[5] = a[7]
+    out[6] = a[2]
+    out[7] = a[5]
+    out[8] = a[8]
+  }
+
+  return out
+}
+
+},{}],"/Users/tmpvar/work/js/raymarch-meta/node_modules/gl-mat4/adjoint.js":[function(require,module,exports){
 module.exports = adjoint;
 
 /**

@@ -1,4 +1,5 @@
 var mat4 = require('gl-mat4');
+var mat3 = require('gl-mat3');
 var createBuffer = require('gl-buffer');
 var createTexture = require('gl-texture2d');
 var createVAO = require('gl-vao');
@@ -10,7 +11,7 @@ var getEye = require('eye-vector');
 var eye = [0, 0];
 
 var camera = require('orbit-camera')(
-  [0, 0, 5],
+  [0, 0, -2],
   [0, 0, 0],
   [0, 1, 0]
 );
@@ -19,6 +20,8 @@ var vert = fs.readFileSync(__dirname + '/vert.glsl', 'utf8');
 var frag = fs.readFileSync(__dirname + '/frag.glsl', 'utf8');
 
 var m4scratch = mat4.create();
+var m3itscratch = mat3.create();
+var m3itscratch2 = mat3.create();
 
 var clear = require('gl-clear')({
   color : [ 17/255, 17/255, 34/255]
@@ -53,6 +56,7 @@ window.camera = camera;
 
 
 gl.start();
+var start = Date.now();
 function render() {
   gl.blendFunc(gl.SRC_COLOR, gl.ONE_MINUS_SRC_ALPHA);
   gl.blendEquation( gl.FUNC_ADD );
@@ -61,23 +65,39 @@ function render() {
   scene.shader.bind();
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   mat4.identity(m4scratch);
-  scene.shader.uniforms.model = m4scratch;
-  scene.shader.uniforms.projection = mat4.perspective(
-    m4scratch,
+  var model = m4scratch;
+  var projection = mat4.perspective(
+    mat4.create(),
     Math.PI/4.0,
     gl.canvas.width/gl.canvas.height,
     0.1,
     1000.0
   );
-  scene.shader.uniforms.view = camera.view(m4scratch);
 
-  scene.render();
+  var view = camera.view(mat4.create());
+
+  var worldToClip = mat4.create();
+  //Calculate camera matrices
+  mat4.multiply(worldToClip, view, model);
+  mat4.multiply(worldToClip, projection, worldToClip);
+
+  //Set up shader
+  scene.shader.uniforms.worldToClip = worldToClip;
+  scene.shader.uniforms.clipToWorld = mat4.invert(mat4.create(), worldToClip);
+  scene.shader.uniforms.resolution = [gl.canvas.width, gl.canvas.height];
   scene.shader.uniforms.ops = scene.opsTexture.bind();
   scene.shader.uniforms.camera_eye = getEye(m4scratch, eye);
+  scene.shader.uniforms.time = Date.now() - start;
+
+  mat3.fromMat4(m3itscratch, m4scratch);
+  scene.shader.uniforms.transposed_view = m3itscratch;
+
+  scene.render();
 
   vao.bind();
   vao.draw(gl.TRIANGLES, 6);
   vao.unbind();
+  gl.stop();
 }
 
 
@@ -87,6 +107,7 @@ var mouse = {
 };
 
 function handleMouse(e) {
+  gl.start();
   switch (e.type) {
     case 'mousedown':
       mouse.down=true;
@@ -119,7 +140,7 @@ function handleMouse(e) {
     break;
 
     case 'mousewheel':
-      camera.zoom(e.wheelDeltaY * -.01);
+      camera.zoom(e.wheelDeltaY * -.001);
       e.preventDefault();
     break;
 
