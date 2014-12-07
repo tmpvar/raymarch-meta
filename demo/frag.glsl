@@ -40,25 +40,25 @@ float solid_sphere(vec3 p, float r) {
 //   return length(max(abs(p)-b,0.0))-r;
 // }
 
-float raymarch(in vec3 origin, in vec3 direction, out int steps, out bool hit) {
+float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit) {
   float dist = 0.0;
   float h = 1.0;
-
+  hit = 0.0;
   for(int i=0; i<RAYMARCH_CYCLES; i++) {
-    if (h<=0.0) {
-      continue;
-    }
+    // if (h<=0.0) {
+    //   continue;
+    // }
     steps = i;
 
     vec3 position = origin+direction*dist;
-    h = signed_box_distance(position, vec3(.1, .5, .25));
+    h = signed_box_distance(position, vec3(.1, .3, .25));
     h = min(h, solid_sphere(position, 0.25));
 
     /* RAYMARCH_OPS */
 
-    if (h < 0.001) {
-      hit = true;
-    }
+    // if (h < 0.0) {
+    //   hit = 1.0;
+    // }
     dist += h;
   }
 
@@ -73,17 +73,13 @@ void main() {
   float dist = 0.0;
 
   int steps = 0;
-  bool hit = false;
+  float hit;
   dist = raymarch(eye, dir, steps, hit);
-  dist = min(dist, raymarch(normalize(v_uv - vec3(0.01, 0.0, 0.0) - eye), dir, steps, hit));
-
-//float(steps)/float(RAYMARCH_CYCLES)
-  gl_FragColor = vec4(1.0-dist, 1.0-dist, 1.0-dist, 1.0);
-
-  // if (dist > 1.0) {
-  //   gl_FragColor = vec4(0.0, 0.0, 0.5, 0.1);
-  // } else {
-  //   gl_FragColor = vec4(dist, steps, 1.0, dist);
-  // }
-
+  // dist = min(dist, raymarch(normalize(v_uv - vec3(0.01, 0.0, 0.0) - eye), dir, steps, hit));
+  if (1.0/dist > .1) {
+    gl_FragColor = normalize(vec4(1.0/dist));
+  } else {
+    discard;
+  }
+  // gl_FragColor = vec4(1.0/dist, 1.0-float(steps)/float(RAYMARCH_CYCLES), 1.0/dist, 1.0/dist);
 }
