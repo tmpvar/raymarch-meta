@@ -19,7 +19,7 @@ function Scene(gl, vert, frag) {
     CYCLES: 128
   };
 
-  this.variableMapSize = 4;
+  this.variableMapSize = 16;
 
   this.ops = ndarray(
     new Float32Array(this.variableMapSize*this.variableMapSize),
@@ -50,7 +50,7 @@ Scene.prototype.createShader = function() {
     shapeStr += shapes[i].code;
   }
 
-  var frag = this.fragSource.replace('/* ops */', shapeStr);
+  var frag = this.fragSource.replace('/* RAYMARCH_OPS */', shapeStr);
   frag = frag.replace(/\/\* OPS_SIZE \*\//g, this.variableMapSize.toFixed(1));
 
   var raymarchDefines = this.raymarch;
@@ -144,11 +144,46 @@ Scene.prototype.createCircle = function(x, y, radius, color) {
   return circle;
 }
 
+Scene.prototype.createSphere = function(x, y, z, radius, color) {
+  var _x = this.alloc();
+  var _y = this.alloc();
+  var _z = this.alloc();
+  var _r = this.alloc();
+
+  // this will eat up 4 spaces in the ops buffer
+  var sphere = {
+    radius: _r,
+    0: _x,
+    1: _y,
+    2: _z
+  };
+
+  Object.defineProperty(sphere, 'code', {
+    value: printf(
+      '  h = min(h, solid_sphere(vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i)));',
+      _x.position[0].toFixed(1),
+      _x.position[1].toFixed(1),
+      _y.position[0].toFixed(1),
+      _y.position[1].toFixed(1),
+      _z.position[0].toFixed(1),
+      _z.position[1].toFixed(1),
+      _r.position[0].toFixed(1),
+      _r.position[1].toFixed(1)
+    )
+  });
+
+  _x(x);
+  _y(y);
+  _z(z);
+  _r(radius);
+
+  return sphere;
+}
+
 Scene.prototype.add = function addShape(thing) {
   this.shapes.push(thing)
 
   this.createShader();
-
 }
 
 Scene.prototype.render = function renderScene() {
