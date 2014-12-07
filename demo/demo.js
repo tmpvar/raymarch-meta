@@ -19,9 +19,12 @@ var camera = require('orbit-camera')(
 var vert = fs.readFileSync(__dirname + '/vert.glsl', 'utf8');
 var frag = fs.readFileSync(__dirname + '/frag.glsl', 'utf8');
 
-var m4scratch = mat4.create();
-var m3itscratch = mat3.create();
-var m3itscratch2 = mat3.create();
+var model = mat4.create();;
+var projection = mat4.create();
+var view = mat4.create();
+var worldToClip = mat4.create();
+var clipToWorld = mat4.create();
+
 
 var clear = require('gl-clear')({
   color : [ 17/255, 17/255, 34/255]
@@ -35,67 +38,108 @@ if (!gl) {
   throw new Error('could not initialize webgl');
 }
 
-var vao = createVAO(gl, [{
+//Create buffers for cube
+var cubeVerts = []
+var cubeFacets = []
+for(var i=0; i<8; ++i) {
+  for(var j=0; j<3; ++j) {
+    if(i & (1<<j)) {
+      cubeVerts.push( 1)
+    } else {
+      cubeVerts.push(-1)
+    }
+  }
+}
+for(var d=0; d<3; ++d) {
+  var u = 1<<((d + 1) % 3)
+  var v = 1<<((d + 2) % 3)
+  for(var s=0; s<2; ++s) {
+    var m = s << d
+    cubeFacets.push(m, m+v, m+u, m+u, m+v, m+u+v)
+    var t = u
+    u = v
+    v = t
+  }
+}
 
-  buffer: createBuffer(gl, [
-    -1,  1, 0,
-     1,  1, 0,
-     1, -1, 0,
+//Create cube VAO
+var faceBuf = createBuffer(gl, new Uint16Array(cubeFacets), gl.ELEMENT_ARRAY_BUFFER)
+var vertBuf = createBuffer(gl, new Float32Array(cubeVerts))
+var vao = createVAO(gl, [
+  { "buffer": vertBuf,
+    "type": gl.FLOAT,
+    "size": 3,
+    "stride": 0,
+    "offset": 0,
+    "normalized": false
+  }
+], faceBuf)
 
-    -1,  1, 0,
-     1, -1, 0,
-    -1, -1, 0
-  ]),
-  size: 3
-}]);
+
+// var vao = createVAO(gl, [{
+
+//   buffer: createBuffer(gl, [
+//     -1,  1, 0,
+//      1,  1, 0,
+//      1, -1, 0,
+
+//     -1,  1, 0,
+//      1, -1, 0,
+//     -1, -1, 0
+//   ]),
+//   size: 3
+// }]);
 
 var scene = window.scene = new Scene(gl, vert, frag)
 // scene.add(scene.createCircle(.1, .1, .1));
 // scene.add(scene.createCircle(-.1, -.1, .1));
 window.camera = camera;
 
+var resolution = [0, 0];
 
 gl.start();
 var start = Date.now();
 function render() {
-  gl.blendFunc(gl.SRC_COLOR, gl.ONE_MINUS_SRC_ALPHA);
-  gl.blendEquation( gl.FUNC_ADD );
-  gl.enable(gl.BLEND);
+  // gl.blendFunc(gl.SRC_COLOR, gl.ONE_MINUS_SRC_ALPHA);
+  // gl.blendEquation( gl.FUNC_ADD );
+  // gl.enable(gl.BLEND);
   clear(gl);
   scene.shader.bind();
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  mat4.identity(m4scratch);
-  var model = m4scratch;
-  var projection = mat4.perspective(
-    mat4.create(),
+
+  mat4.identity(model);
+
+  mat4.perspective(
+    projection,
     Math.PI/4.0,
     gl.canvas.width/gl.canvas.height,
     0.1,
     1000.0
   );
 
-  var view = camera.view(mat4.create());
-
-  var worldToClip = mat4.create();
   //Calculate camera matrices
+  camera.view(view);
   mat4.multiply(worldToClip, view, model);
   mat4.multiply(worldToClip, projection, worldToClip);
 
+  mat4.invert(clipToWorld, worldToClip)
+
   //Set up shader
   scene.shader.uniforms.worldToClip = worldToClip;
-  scene.shader.uniforms.clipToWorld = mat4.invert(mat4.create(), worldToClip);
-  scene.shader.uniforms.resolution = [gl.canvas.width, gl.canvas.height];
-  scene.shader.uniforms.ops = scene.opsTexture.bind();
-  scene.shader.uniforms.camera_eye = getEye(m4scratch, eye);
-  scene.shader.uniforms.time = Date.now() - start;
+  scene.shader.uniforms.clipToWorld = clipToWorld;
 
-  mat3.fromMat4(m3itscratch, m4scratch);
-  scene.shader.uniforms.transposed_view = m3itscratch;
+  resolution[0] = gl.canvas.width;
+  resolution[1] = gl.canvas.height;
+  scene.shader.uniforms.resolution = resolution;
+  scene.shader.uniforms.ops = scene.opsTexture.bind();
+  // scene.shader.uniforms.camera_eye = getEye(view, eye);
+  scene.shader.uniforms.time = Date.now() - start;
 
   scene.render();
 
   vao.bind();
-  vao.draw(gl.TRIANGLES, 6);
+  // vao.draw(gl.TRIANGLES, 6);
+  gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0)
   vao.unbind();
   gl.stop();
 }

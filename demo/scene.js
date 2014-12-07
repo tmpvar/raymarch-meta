@@ -16,7 +16,7 @@ function Scene(gl, vert, frag) {
   // this.shader = this.createShader(gl);
 
   this.raymarch = {
-    CYCLES: 256
+    CYCLES: 128
   };
 
 

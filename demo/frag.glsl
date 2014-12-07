@@ -28,8 +28,8 @@ float sample(int x, int y) {
 
 float signed_box_distance(vec3 p, vec3 b) {
   vec3 d = abs(p) - b;
-  return min(max(d.x,max(d.y,d.z)),0.1) +
-         length(max(d,0.1));
+  return min(max(d.x,max(d.y,d.z)),0.0) +
+         length(max(d,0.0));
 }
 
 float solid_sphere(vec3 p, float r) {
@@ -41,7 +41,7 @@ float solid_sphere(vec3 p, float r) {
 // }
 
 float raymarch(in vec3 origin, in vec3 direction, out int steps, out bool hit) {
-  float t = 0.0;
+  float dist = 0.0;
   float h = 1.0;
 
   for(int i=0; i<RAYMARCH_CYCLES; i++) {
@@ -50,17 +50,19 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out bool hit) {
     }
     steps = i;
 
-    vec3 position = origin+direction*t;
-    // h = signed_box_distance(position, vec3(.1));//vec3(0.2, 0.2, 0.5));
-    //h = solid_sphere(position, .4);
-    h = solid_sphere(position, 0.25);
+    vec3 position = origin+direction*dist;
+    h = signed_box_distance(position, vec3(.1, .5, .25));
+    h = min(h, solid_sphere(position, 0.25));
+
+    /* RAYMARCH_OPS */
+
     if (h < 0.001) {
       hit = true;
     }
-    t += h;
+    dist += h;
   }
 
-  return t;
+  return dist;
 }
 
 void main() {
@@ -70,25 +72,18 @@ void main() {
 
   float dist = 0.0;
 
-  // vec2 position = vec2(
-  //   (gl_FragCoord.x - resolution.x / 2.0) / resolution.y,
-  //   (gl_FragCoord.y - resolution.y / 2.0) / resolution.y
-  // );
-
-  // vec3 eye = camera_eye;//vec3(0.0, 0.0, camera_eye.z);
-  // vec3 dir = vec3(position, 0.0) - eye;
   int steps = 0;
   bool hit = false;
   dist = raymarch(eye, dir, steps, hit);
+  dist = min(dist, raymarch(normalize(v_uv - vec3(0.01, 0.0, 0.0) - eye), dir, steps, hit));
 
-/* ops */
+//float(steps)/float(RAYMARCH_CYCLES)
+  gl_FragColor = vec4(1.0-dist, 1.0-dist, 1.0-dist, 1.0);
 
-  gl_FragColor = vec4(dist);
-
-  // if (dist > 0.0) {
+  // if (dist > 1.0) {
   //   gl_FragColor = vec4(0.0, 0.0, 0.5, 0.1);
   // } else {
-  //   gl_FragColor = vec4(1.0, steps, 1.0, 1.0 -dist);
+  //   gl_FragColor = vec4(dist, steps, 1.0, dist);
   // }
 
 }

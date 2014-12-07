@@ -18,11 +18,14 @@ var camera = require('orbit-camera')(
 );
 
 var vert = "attribute vec3 position;\nuniform mat4 worldToClip;\n\nvarying vec3 v_uv;\n\n\nvoid main() {\n   v_uv = position;\n   // gl_Position = vec4(position, 1.0);//worldToClip * vec4(position, 1.0);//projection * view * model * position;\n   gl_Position = worldToClip * vec4(position, 1.0);//projection * view * model * position;\n}\n";
-var frag = "#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform sampler2D ops;\nuniform mat4 clipToWorld;\nuniform vec2 resolution;\nuniform float time;\n\n\n\nvarying vec3 v_uv;\n\n#define PI 3.14159\n#define OPS_SIZE /* OPS_SIZE */\n#define OPS_RATIO 1.0//* OPS_SIZE */\n\n#define RAYMARCH_CYCLES /* RAYMARCH_CYCLES */\n\n// void circle(vec2 pos, float r, inout float dist) {\n//   vec2 p = v_uv + pos;\n//   dist = min(dist, length(p)-r);\n// }\n\nfloat sample(int x, int y) {\n  return texture2D(ops, vec2(x, y) * OPS_RATIO).x;\n}\n\nfloat signed_box_distance(vec3 p, vec3 b) {\n  vec3 d = abs(p) - b;\n  return min(max(d.x,max(d.y,d.z)),0.1) +\n         length(max(d,0.1));\n}\n\nfloat solid_sphere(vec3 p, float r) {\n  return length(p) - r;\n}\n\n// float unsigned_box_distance( vec3 p, vec3 b, float r ) {\n//   return length(max(abs(p)-b,0.0))-r;\n// }\n\nfloat raymarch(in vec3 origin, in vec3 direction, out int steps, out bool hit) {\n  float t = 0.0;\n  float h = 1.0;\n\n  for(int i=0; i<RAYMARCH_CYCLES; i++) {\n    if (h<=0.0) {\n      continue;\n    }\n    steps = i;\n\n    vec3 position = origin+direction*t;\n    // h = signed_box_distance(position, vec3(.1));//vec3(0.2, 0.2, 0.5));\n    //h = solid_sphere(position, .4);\n    h = solid_sphere(position, 0.25);\n    if (h < 0.001) {\n      hit = true;\n    }\n    t += h;\n  }\n\n  return t;\n}\n\nvoid main() {\n  // vec2 uv = (v_uv * 2.0) - 1.0;\n  vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;\n  vec3 dir = normalize(v_uv - eye);\n\n  float dist = 0.0;\n\n  // vec2 position = vec2(\n  //   (gl_FragCoord.x - resolution.x / 2.0) / resolution.y,\n  //   (gl_FragCoord.y - resolution.y / 2.0) / resolution.y\n  // );\n\n  // vec3 eye = camera_eye;//vec3(0.0, 0.0, camera_eye.z);\n  // vec3 dir = vec3(position, 0.0) - eye;\n  int steps = 0;\n  bool hit = false;\n  dist = raymarch(eye, dir, steps, hit);\n\n/* ops */\n\n  gl_FragColor = vec4(dist);\n\n  // if (dist > 0.0) {\n  //   gl_FragColor = vec4(0.0, 0.0, 0.5, 0.1);\n  // } else {\n  //   gl_FragColor = vec4(1.0, steps, 1.0, 1.0 -dist);\n  // }\n\n}\n";
+var frag = "#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform sampler2D ops;\nuniform mat4 clipToWorld;\nuniform vec2 resolution;\nuniform float time;\n\n\n\nvarying vec3 v_uv;\n\n#define PI 3.14159\n#define OPS_SIZE /* OPS_SIZE */\n#define OPS_RATIO 1.0//* OPS_SIZE */\n\n#define RAYMARCH_CYCLES /* RAYMARCH_CYCLES */\n\n// void circle(vec2 pos, float r, inout float dist) {\n//   vec2 p = v_uv + pos;\n//   dist = min(dist, length(p)-r);\n// }\n\nfloat sample(int x, int y) {\n  return texture2D(ops, vec2(x, y) * OPS_RATIO).x;\n}\n\nfloat signed_box_distance(vec3 p, vec3 b) {\n  vec3 d = abs(p) - b;\n  return min(max(d.x,max(d.y,d.z)),0.0) +\n         length(max(d,0.0));\n}\n\nfloat solid_sphere(vec3 p, float r) {\n  return length(p) - r;\n}\n\n// float unsigned_box_distance( vec3 p, vec3 b, float r ) {\n//   return length(max(abs(p)-b,0.0))-r;\n// }\n\nfloat raymarch(in vec3 origin, in vec3 direction, out int steps, out bool hit) {\n  float dist = 0.0;\n  float h = 1.0;\n\n  for(int i=0; i<RAYMARCH_CYCLES; i++) {\n    if (h<=0.0) {\n      continue;\n    }\n    steps = i;\n\n    vec3 position = origin+direction*dist;\n    h = signed_box_distance(position, vec3(.1, .5, .25));\n    h = min(h, solid_sphere(position, 0.25));\n\n    /* RAYMARCH_OPS */\n\n    if (h < 0.001) {\n      hit = true;\n    }\n    dist += h;\n  }\n\n  return dist;\n}\n\nvoid main() {\n  // vec2 uv = (v_uv * 2.0) - 1.0;\n  vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;\n  vec3 dir = normalize(v_uv - eye);\n\n  float dist = 0.0;\n\n  int steps = 0;\n  bool hit = false;\n  dist = raymarch(eye, dir, steps, hit);\n  dist = min(dist, raymarch(normalize(v_uv - vec3(0.01, 0.0, 0.0) - eye), dir, steps, hit));\n\n//float(steps)/float(RAYMARCH_CYCLES)\n  gl_FragColor = vec4(1.0-dist, 1.0-dist, 1.0-dist, 1.0);\n\n  // if (dist > 1.0) {\n  //   gl_FragColor = vec4(0.0, 0.0, 0.5, 0.1);\n  // } else {\n  //   gl_FragColor = vec4(dist, steps, 1.0, dist);\n  // }\n\n}\n";
 
-var m4scratch = mat4.create();
-var m3itscratch = mat3.create();
-var m3itscratch2 = mat3.create();
+var model = mat4.create();;
+var projection = mat4.create();
+var view = mat4.create();
+var worldToClip = mat4.create();
+var clipToWorld = mat4.create();
+
 
 var clear = require('gl-clear')({
   color : [ 17/255, 17/255, 34/255]
@@ -36,67 +39,108 @@ if (!gl) {
   throw new Error('could not initialize webgl');
 }
 
-var vao = createVAO(gl, [{
+//Create buffers for cube
+var cubeVerts = []
+var cubeFacets = []
+for(var i=0; i<8; ++i) {
+  for(var j=0; j<3; ++j) {
+    if(i & (1<<j)) {
+      cubeVerts.push( 1)
+    } else {
+      cubeVerts.push(-1)
+    }
+  }
+}
+for(var d=0; d<3; ++d) {
+  var u = 1<<((d + 1) % 3)
+  var v = 1<<((d + 2) % 3)
+  for(var s=0; s<2; ++s) {
+    var m = s << d
+    cubeFacets.push(m, m+v, m+u, m+u, m+v, m+u+v)
+    var t = u
+    u = v
+    v = t
+  }
+}
 
-  buffer: createBuffer(gl, [
-    -1,  1, 0,
-     1,  1, 0,
-     1, -1, 0,
+//Create cube VAO
+var faceBuf = createBuffer(gl, new Uint16Array(cubeFacets), gl.ELEMENT_ARRAY_BUFFER)
+var vertBuf = createBuffer(gl, new Float32Array(cubeVerts))
+var vao = createVAO(gl, [
+  { "buffer": vertBuf,
+    "type": gl.FLOAT,
+    "size": 3,
+    "stride": 0,
+    "offset": 0,
+    "normalized": false
+  }
+], faceBuf)
 
-    -1,  1, 0,
-     1, -1, 0,
-    -1, -1, 0
-  ]),
-  size: 3
-}]);
+
+// var vao = createVAO(gl, [{
+
+//   buffer: createBuffer(gl, [
+//     -1,  1, 0,
+//      1,  1, 0,
+//      1, -1, 0,
+
+//     -1,  1, 0,
+//      1, -1, 0,
+//     -1, -1, 0
+//   ]),
+//   size: 3
+// }]);
 
 var scene = window.scene = new Scene(gl, vert, frag)
 // scene.add(scene.createCircle(.1, .1, .1));
 // scene.add(scene.createCircle(-.1, -.1, .1));
 window.camera = camera;
 
+var resolution = [0, 0];
 
 gl.start();
 var start = Date.now();
 function render() {
-  gl.blendFunc(gl.SRC_COLOR, gl.ONE_MINUS_SRC_ALPHA);
-  gl.blendEquation( gl.FUNC_ADD );
-  gl.enable(gl.BLEND);
+  // gl.blendFunc(gl.SRC_COLOR, gl.ONE_MINUS_SRC_ALPHA);
+  // gl.blendEquation( gl.FUNC_ADD );
+  // gl.enable(gl.BLEND);
   clear(gl);
   scene.shader.bind();
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  mat4.identity(m4scratch);
-  var model = m4scratch;
-  var projection = mat4.perspective(
-    mat4.create(),
+
+  mat4.identity(model);
+
+  mat4.perspective(
+    projection,
     Math.PI/4.0,
     gl.canvas.width/gl.canvas.height,
     0.1,
     1000.0
   );
 
-  var view = camera.view(mat4.create());
-
-  var worldToClip = mat4.create();
   //Calculate camera matrices
+  camera.view(view);
   mat4.multiply(worldToClip, view, model);
   mat4.multiply(worldToClip, projection, worldToClip);
 
+  mat4.invert(clipToWorld, worldToClip)
+
   //Set up shader
   scene.shader.uniforms.worldToClip = worldToClip;
-  scene.shader.uniforms.clipToWorld = mat4.invert(mat4.create(), worldToClip);
-  scene.shader.uniforms.resolution = [gl.canvas.width, gl.canvas.height];
-  scene.shader.uniforms.ops = scene.opsTexture.bind();
-  scene.shader.uniforms.camera_eye = getEye(m4scratch, eye);
-  scene.shader.uniforms.time = Date.now() - start;
+  scene.shader.uniforms.clipToWorld = clipToWorld;
 
-  mat3.fromMat4(m3itscratch, m4scratch);
-  scene.shader.uniforms.transposed_view = m3itscratch;
+  resolution[0] = gl.canvas.width;
+  resolution[1] = gl.canvas.height;
+  scene.shader.uniforms.resolution = resolution;
+  scene.shader.uniforms.ops = scene.opsTexture.bind();
+  // scene.shader.uniforms.camera_eye = getEye(view, eye);
+  scene.shader.uniforms.time = Date.now() - start;
 
   scene.render();
 
   vao.bind();
-  vao.draw(gl.TRIANGLES, 6);
+  // vao.draw(gl.TRIANGLES, 6);
+  gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0)
   vao.unbind();
   gl.stop();
 }
@@ -192,7 +236,7 @@ function Scene(gl, vert, frag) {
   // this.shader = this.createShader(gl);
 
   this.raymarch = {
-    CYCLES: 256
+    CYCLES: 128
   };
 
 
