@@ -93,6 +93,8 @@ var vao = createVAO(gl, [
 var scene = window.scene = new Scene(gl, vert, frag)
 // scene.add(scene.createCircle(.1, .1, .1));
 // scene.add(scene.createCircle(-.1, -.1, .1));
+  scene.add(scene.createSphere(0.1,0.1,0.2,0.3,0.1));
+
 window.camera = camera;
 
 var resolution = [0, 0];
