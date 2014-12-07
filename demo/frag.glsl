@@ -8,9 +8,9 @@ uniform vec2 resolution;
 uniform float time;
 
 
-
 varying vec3 v_uv;
 
+#define EPS       0.001
 #define PI 3.14159
 #define OPS_SIZE /* OPS_SIZE */
 #define OPS_RATIO 1.0//* OPS_SIZE */
@@ -40,46 +40,103 @@ float solid_sphere(vec3 p, float r) {
 //   return length(max(abs(p)-b,0.0))-r;
 // }
 
-float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit) {
+float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, out vec3 position) {
   float dist = 0.0;
   float h = 1.0;
   hit = 0.0;
+  float minStep = 0.00001;
   for(int i=0; i<RAYMARCH_CYCLES; i++) {
-    // if (h<=0.0) {
-    //   continue;
-    // }
     steps = i;
 
-    vec3 position = origin+direction*dist;
+    position = origin+direction*dist;
     h = signed_box_distance(position, vec3(.1, .3, .25));
     h = min(h, solid_sphere(position, 0.25));
 
+    // if (h < 0.001) {
+    //   return dist;
+    // }
     /* RAYMARCH_OPS */
 
-    // if (h < 0.0) {
-    //   hit = 1.0;
-    // }
     dist += h;
   }
 
   return dist;
 }
 
+vec3 gradientNormal(vec3 p) {
+  vec3 dir = vec3(0.0, 0.0, 0.0);
+  int steps;
+  float hit;
+  vec3 pos;
+  return normalize(
+    vec3(
+      raymarch(p + vec3(EPS, 0, 0), dir, steps, hit, pos) -
+      raymarch(p - vec3(EPS, 0, 0), dir, steps, hit, pos),
+
+      raymarch(p + vec3(0, EPS, 0), dir, steps, hit, pos) -
+      raymarch(p - vec3(0, EPS, 0), dir, steps, hit, pos),
+
+      raymarch(p + vec3(0, 0, EPS), dir, steps, hit, pos) -
+      raymarch(p - vec3(0, 0, EPS), dir, steps, hit, pos)
+    )
+  );
+}
+
+vec3 computeLight(in vec3 light_pos, in vec3 light_dir, in vec3 surface_position, in vec3 surface_normal, in float surface_distance) {
+  int steps;
+  float hit;
+  vec3 lighthit;
+  float light = raymarch(
+    light_pos,
+    light_dir,
+    steps,
+    hit,
+    lighthit
+  );
+
+  return vec3(1.0, 0.8, 0.6) * max(
+    0.0,
+    dot(normalize(light_pos - surface_position), surface_normal)// / (surface_distance)
+  );
+}
+
 void main() {
-  // vec2 uv = (v_uv * 2.0) - 1.0;
   vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
   vec3 dir = normalize(v_uv - eye);
 
-  float dist = 0.0;
+  float surface_distance = 0.0;
 
   int steps = 0;
   float hit;
-  dist = raymarch(eye, dir, steps, hit);
-  // dist = min(dist, raymarch(normalize(v_uv - vec3(0.01, 0.0, 0.0) - eye), dir, steps, hit));
-  if (1.0/dist > .1) {
-    gl_FragColor = normalize(vec4(1.0/dist));
+  vec3 surface_position;
+  surface_distance = raymarch(eye, dir, steps, hit, surface_position);
+
+  vec3 orange = vec3(1.0, 0.36, 0);
+  vec3 surface_normal = gradientNormal(surface_position);
+
+  vec3 diffuse = computeLight(
+    vec3(0.0, 2.0, 1.0),    // light position
+    vec3(0.0, -1.0, 0.0),   // light direction
+    surface_position,
+    surface_normal,
+    surface_distance
+  );
+
+  vec3 diffuse2 = computeLight(
+    eye,    // light position
+    dir,   // light direction
+    surface_position,
+    surface_normal,
+    surface_distance
+  );
+
+
+  if (1.0/surface_distance > .1) {
+    gl_FragColor = vec4(orange * max(diffuse, diffuse2 * 0.5), 1.0);
+
   } else {
-    discard;
+    // discard;
+    // keep the cube, but make it barely noticable
+    gl_FragColor = vec4(0.0, 0.0, 2.0, 0.01);
   }
-  // gl_FragColor = vec4(1.0/dist, 1.0-float(steps)/float(RAYMARCH_CYCLES), 1.0/dist, 1.0/dist);
 }

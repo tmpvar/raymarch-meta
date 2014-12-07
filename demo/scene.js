@@ -16,9 +16,8 @@ function Scene(gl, vert, frag) {
   // this.shader = this.createShader(gl);
 
   this.raymarch = {
-    CYCLES: 32
+    CYCLES: 128
   };
-
 
   this.variableMapSize = 4;
 

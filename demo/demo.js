@@ -44,9 +44,9 @@ var cubeFacets = []
 for(var i=0; i<8; ++i) {
   for(var j=0; j<3; ++j) {
     if(i & (1<<j)) {
-      cubeVerts.push( 0.35)
+      cubeVerts.push( 1)
     } else {
-      cubeVerts.push(-0.35)
+      cubeVerts.push(-1)
     }
   }
 }
@@ -100,10 +100,6 @@ var resolution = [0, 0];
 gl.start();
 var start = Date.now();
 function render() {
-  // gl.blendFunc(gl.SRC_COLOR, gl.ONE_MINUS_SRC_ALPHA);
-  // gl.blendEquation( gl.FUNC_ADD );
-  // gl.enable(gl.BLEND);
-
 
   // TODO: to enable these we need to not clip if the camera
   //       is inside the bounding box
@@ -137,12 +133,7 @@ function render() {
   mat4.invert(clipToWorld, worldToClip)
 
   var w = clipToWorld[11];
-  console.log(
-    clipToWorld[8]/w,
-    clipToWorld[9]/w,
-    clipToWorld[10]/w,
-    w
-  );
+
   //Set up shader
   scene.shader.uniforms.worldToClip = worldToClip;
   scene.shader.uniforms.clipToWorld = clipToWorld;
@@ -153,7 +144,7 @@ function render() {
   scene.shader.uniforms.ops = scene.opsTexture.bind();
   // scene.shader.uniforms.camera_eye = getEye(view, eye);
   scene.shader.uniforms.time = Date.now() - start;
-console.log(getEye(view, eye));
+
   scene.render();
 
   vao.bind();
