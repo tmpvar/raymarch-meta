@@ -127,13 +127,15 @@ function render() {
 
   gl.enable(gl.BLEND)
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+  gl.depthMask(false)
+  gl.cullFace(gl.BACK)
+  gl.frontFace(gl.CCW)
 
   // TODO: compare the camera eye with the bounding box
   if (camera.distance > 2.0) {
-    gl.depthMask(false)
     gl.enable(gl.CULL_FACE)
-    gl.cullFace(gl.BACK)
-    gl.frontFace(gl.CCW)
+  } else {
+    gl.disable(gl.CULL_FACE);
   }
 
   //Set up shader
