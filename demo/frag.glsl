@@ -43,21 +43,19 @@ float solid_sphere(vec3 p, float r) {
 float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, out vec3 position) {
   float dist = 0.0;
   float h = 1.0;
-  hit = 0.0;
+  hit = 10.0;
   float minStep = 0.00001;
   for(int i=0; i<RAYMARCH_CYCLES; i++) {
-    steps = i;
 
+    steps = i;
     position = origin+direction*dist;
     // h = signed_box_distance(position, vec3(.1, .3, .25));
     // h = min(h, solid_sphere(position, 0.25));
 
-    // if (h < 0.001) {
-    //   return dist;
-    // }
 /* RAYMARCH_OPS */
 
     dist += h;
+    hit = min(hit, h);
   }
 
   return dist;
@@ -130,13 +128,12 @@ void main() {
     surface_distance
   );
 
-
-  if (1.0/surface_distance > .1) {
-    gl_FragColor = vec4(orange * max(diffuse, diffuse2 * 0.5), 1.0);
-
-  } else {
-    // discard;
-    // keep the cube, but make it barely noticable
-    gl_FragColor = vec4(0.0, 0.0, 2.0, 0.01);
-  }
+  gl_FragColor = mix(
+    vec4(0.0),
+    vec4(
+      orange * max(diffuse2, diffuse * 0.5),
+      1.0
+    ),
+    1.0-floor(clamp(hit * 1000.0, 0.0, 1.0))
+  );
 }
