@@ -125,10 +125,6 @@ function render() {
 
   var w = clipToWorld[11];
 
-  //Set up shader
-  scene.shader.uniforms.worldToClip = worldToClip;
-    scene.shader.uniforms.clipToWorld = clipToWorld;
-
   gl.enable(gl.BLEND)
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
@@ -139,6 +135,10 @@ function render() {
     gl.cullFace(gl.BACK)
     gl.frontFace(gl.CCW)
   }
+
+  //Set up shader
+  scene.shader.uniforms.worldToClip = worldToClip;
+  scene.shader.uniforms.clipToWorld = clipToWorld;
 
   resolution[0] = gl.canvas.width;
   resolution[1] = gl.canvas.height;
