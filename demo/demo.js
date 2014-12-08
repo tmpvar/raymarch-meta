@@ -75,24 +75,7 @@ var vao = createVAO(gl, [
   }
 ], faceBuf)
 
-
-// var vao = createVAO(gl, [{
-
-//   buffer: createBuffer(gl, [
-//     -1,  1, 0,
-//      1,  1, 0,
-//      1, -1, 0,
-
-//     -1,  1, 0,
-//      1, -1, 0,
-//     -1, -1, 0
-//   ]),
-//   size: 3
-// }]);
-
 var scene = window.scene = new Scene(gl, vert, frag)
-// scene.add(scene.createCircle(.1, .1, .1));
-// scene.add(scene.createCircle(-.1, -.1, .1));
 var sphere = scene.createSphere(0.1,0.1,0.2,0.3,0.1);
 var sphere2 = scene.createSphere(0.1,0.5,.5,0.5,0.1);
 var sphere3 = scene.createSphere(0.5,0.5,0.0,0.5,0.1);
@@ -117,14 +100,6 @@ gl.start();
 var start = Date.now();
 function render() {
 
-  // TODO: to enable these we need to not clip if the camera
-  //       is inside the bounding box
-  gl.depthMask(false)
-  gl.enable(gl.CULL_FACE)
-  gl.cullFace(gl.BACK)
-  gl.frontFace(gl.CCW)
-  gl.enable(gl.BLEND)
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
 
   clear(gl);
@@ -152,19 +127,28 @@ function render() {
 
   //Set up shader
   scene.shader.uniforms.worldToClip = worldToClip;
-  scene.shader.uniforms.clipToWorld = clipToWorld;
+    scene.shader.uniforms.clipToWorld = clipToWorld;
+
+  gl.enable(gl.BLEND)
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
+  // TODO: compare the camera eye with the bounding box
+  if (camera.distance > 2.0) {
+    gl.depthMask(false)
+    gl.enable(gl.CULL_FACE)
+    gl.cullFace(gl.BACK)
+    gl.frontFace(gl.CCW)
+  }
 
   resolution[0] = gl.canvas.width;
   resolution[1] = gl.canvas.height;
   scene.shader.uniforms.resolution = resolution;
   scene.shader.uniforms.ops = scene.opsTexture.bind();
-  // scene.shader.uniforms.camera_eye = getEye(view, eye);
   scene.shader.uniforms.time = Date.now() - start;
 
   scene.render();
 
   vao.bind();
-  // vao.draw(gl.TRIANGLES, 6);
   gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0)
   vao.unbind();
   gl.stop();
