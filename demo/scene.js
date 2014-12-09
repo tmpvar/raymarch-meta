@@ -132,6 +132,20 @@ Scene.prototype.createSphere = function(x, y, z, radius, color) {
     value: 'sphere_' + (this.shapeId++)
   });
 
+  Object.defineProperty(sphere, 'bounds', {
+    value: function() {
+      var x = _x();
+      var y = _y();
+      var z = _z();
+      var r = _r();
+
+      return [
+        [x - r, y - r, z -r],
+        [x + r, y + r, z + r]
+      ];
+    }
+  });
+
   Object.defineProperty(sphere, 'code', {
     value: printf(
       '    float %s = solid_sphere(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i));\n',
@@ -175,6 +189,22 @@ Scene.prototype.createBox = function(x, y, z, width, height, depth, color) {
 
   Object.defineProperty(box, 'name', {
     value: 'box_' + (this.shapeId++)
+  });
+
+  Object.defineProperty(box, 'bounds', {
+    value: function() {
+      var x = _x();
+      var y = _y();
+      var z = _z();
+      var w = _w();
+      var h = _h();
+      var d = _d();
+
+      return [
+        [x, y, z],
+        [x + w, y + h, z + d]
+      ];
+    }
   });
 
   Object.defineProperty(box, 'code', {
@@ -225,6 +255,23 @@ Scene.prototype.createCappedCylinder = function(x, y, z, radius, height, color) 
     value: 'cappedcyl_' + (this.shapeId++)
   });
 
+
+  Object.defineProperty(cappedcyl, 'bounds', {
+    value: function() {
+      var r = _r();
+      var x = _x();
+      var y = _y();
+      var z = _z();
+      var h = _h()/2;
+      var r2 = r*2;
+
+      return [
+        [x - r, y - h, z - r],
+        [x + r, y + h, z + r]
+      ];
+    }
+  });
+
   Object.defineProperty(cappedcyl, 'code', {
     value: printf(
       '    float %s = solid_capped_cylinder(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), vec2(sample(%i, %i), sample(%i, %i)) );\n',
@@ -270,6 +317,26 @@ Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color)
     value: 'torus_' + (this.shapeId++)
   });
 
+  Object.defineProperty(torus, 'bounds', {
+    value: function() {
+
+      // compute the extent
+      var rminor = _r();
+      var rmajor = _R();
+      // horizontal radius (overall)
+      var hr = _R() + _r();
+
+      var x = _x();
+      var y = _y();
+      var z = _z();
+
+      return [
+        [x - hr, y - r, z - hr],
+        [x + hr, y + r, z + hr]
+      ];
+    }
+  });
+
   Object.defineProperty(torus, 'code', {
     value: printf(
       '    float %s = solid_torus(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), vec2(sample(%i, %i), sample(%i, %i)) );\n',
@@ -296,7 +363,7 @@ Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color)
   return torus;
 }
 
-
+// TODO: compute new bounding box, of incoming bounding boxes
 Scene.prototype.createUnion = function(shapes) {
   if (!Array.isArray(shapes)) {
     shapes = [shapes];
@@ -324,6 +391,7 @@ Scene.prototype.createUnion = function(shapes) {
   return union;
 }
 
+// TODO: compute new bounding box based on what is being removed
 Scene.prototype.createCut = function(shapes) {
   if (!Array.isArray(shapes)) {
     shapes = [shapes];
