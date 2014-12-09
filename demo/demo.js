@@ -10,7 +10,6 @@ var ndarray = require('ndarray');
 var getEye = require('eye-vector');
 var aabb = require('./aabb');
 var vec3 = require('gl-vec3');
-var createSphereMesh = require('sphere-mesh');
 
 var eye = [0, 0, 0];
 
