@@ -331,15 +331,15 @@ Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color)
       var rminor = _r();
       var rmajor = _R();
       // horizontal radius (overall)
-      var hr = _R() + _r();
+      var hr = rmajor+ rminor;
 
       var x = _x();
       var y = _y();
       var z = _z();
 
       return [
-        [x - hr, y - r, z - hr],
-        [x + hr, y + r, z + hr]
+        [x - hr, y - rminor, z - hr],
+        [x + hr, y + rminor, z + hr]
       ];
     }
   });
