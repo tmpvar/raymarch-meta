@@ -80,13 +80,13 @@ var sphere = scene.createSphere(0.1,0.1,0.2,0.3,0.1);
 var sphere2 = scene.createSphere(0.1,0.5,.5,0.5,0.1);
 var sphere3 = scene.createSphere(0.5,0.5,0.0,0.2,0.9,0.1);
 
-var cyl = scene.createCappedCylinder(0.5,0.5,0.0, 0.5,0.9, 0.1);
+var cyl = scene.createCappedCylinder(0.0,0.0,0.0, 0.1,0.3, 0.1);
 
 var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
 
-var boxy = scene.createBox(0.5, 0.4, 0.4,             0.6, 0.2, 0.4,      0.1);
+var boxy = scene.createBox(0.0, 0.0, 0.0,             0.05, 0.2, 0.2,      0.1);
 
-//var union = scene.createUnion([sphere, sphere2]);
+var union = scene.createUnion([cyl, boxy]);
 var cut = scene.createCut([tor, cyl]);
 scene.add(sphere);
 scene.add(sphere2);
@@ -96,9 +96,9 @@ scene.add(cyl);
 scene.add(tor);
 
 scene.add(boxy);
-//scene.add(union);
+scene.add(union);
 scene.add(cut);
-scene.add(scene.createDisplay(cut));
+scene.add(scene.createDisplay(union));
 
 window.camera = camera;
 

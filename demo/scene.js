@@ -29,6 +29,7 @@ function Scene(gl, vert, frag) {
   this.pointer = [0,0];
   this.opsTexture = createTexture(gl, this.ops);
   this.shapes = [];
+  this.prefetchCommands = [];
 
   this.vertSource = vert;
   this.fragSource = frag;
@@ -44,11 +45,18 @@ Scene.prototype.createShader = function() {
 
   var shapes = this.shapes;
   var l = shapes.length;
-  var shapeStr = ''
+  var shapeStr = '';
+  var prefetchStr = '';
   for (var i=0; i<l; i++) {
-    console.log(shapes[i].code);
+    console.log('shapes[' + i + '].code: ' + shapes[i].code);
     shapeStr += shapes[i].code;
+
+    console.log('shapes[' + i + '].prefetchCode: ' + shapes[i].prefetchCode);
+    prefetchStr += shapes[i].prefetchCode;
   }
+
+  var prefetch = this.fragSource.replace('/* RAYMARCH_SETUP */', prefetchStr);
+  prefetch = prefetch.replace(/\/\* OPS_SIZE \*\//g, this.variableMapSize.toFixed(1));
 
   var frag = this.fragSource.replace('/* RAYMARCH_OPS */', shapeStr);
   frag = frag.replace(/\/\* OPS_SIZE \*\//g, this.variableMapSize.toFixed(1));
@@ -128,22 +136,44 @@ Scene.prototype.createSphere = function(x, y, z, radius, color) {
     2: _z
   };
 
+  Object.defineProperty(sphere, 'prefetchCode', {
+    value: printf(
+      '    float Xpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _x.position[0].toFixed(1),
+      _x.position[1].toFixed(1))
+
+    + printf(
+      '    float Ypf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _y.position[0].toFixed(1),
+      _y.position[1].toFixed(1))
+
+    + printf(
+      '    float Zpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _z.position[0].toFixed(1),
+      _z.position[1].toFixed(1))
+
+    + printf(
+      '    float Rpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _r.position[0].toFixed(1),
+      _r.position[1].toFixed(1))
+  });
+
   Object.defineProperty(sphere, 'name', {
     value: 'sphere_' + (this.shapeId++)
   });
 
   Object.defineProperty(sphere, 'code', {
     value: printf(
-      '    float %s = solid_sphere(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i));\n',
+      '    float %s = solid_sphere(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), Rpf_%i);\n',
       sphere.name,
-      _x.position[0].toFixed(1),
-      _x.position[1].toFixed(1),
-      _y.position[0].toFixed(1),
-      _y.position[1].toFixed(1),
-      _z.position[0].toFixed(1),
-      _z.position[1].toFixed(1),
-      _r.position[0].toFixed(1),
-      _r.position[1].toFixed(1)
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1
     )
   });
 
