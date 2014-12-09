@@ -39,7 +39,7 @@ function Scene(gl, vert, frag) {
   this.fragSource = frag;
   this.shader = this.createShader();
 
-  this.bounds = [[0, 0, 0], [0, 0, 0]];
+  this._bounds = [[0, 0, 0], [0, 0, 0]];
   this.dirtyBounds = false;
 
 }
@@ -384,7 +384,7 @@ Scene.prototype.createUnion = function(shapes) {
 
   Object.defineProperty(union, 'bounds', {
     get: function getUnionBounds() {
-      return aabb.merge(shapes);
+      return aabb.merge(shapes.map(function(shape) { return shape.bounds }));
     }
   });
 
@@ -440,7 +440,7 @@ Scene.prototype.createCut = function(shapes) {
 
 Scene.prototype.getAABB = function() {
   if (this.dirtyBounds) {
-    var bounds = this.bounds;
+    var bounds = this._bounds;
     var shapes = this.shapes;
 
     bounds[0][0] = Infinity;
@@ -468,7 +468,7 @@ Scene.prototype.getAABB = function() {
 
     this.dirtyBounds = false;
   }
-  return this.bounds;
+  return this._bounds;
 }
 
 Scene.prototype.createDisplay = function(shapes) {
