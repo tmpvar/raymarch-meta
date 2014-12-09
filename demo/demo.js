@@ -10,7 +10,10 @@ var ndarray = require('ndarray');
 var getEye = require('eye-vector');
 var aabb = require('./aabb');
 var vec3 = require('gl-vec3');
-
+var mouse = {
+  down: false,
+  pos: [0, 0]
+};
 var eye = [0, 0, 0];
 
 var camera = require('orbit-camera')(
@@ -81,28 +84,38 @@ var vao = createVAO(gl, [
 
 var scene = window.scene = new Scene(gl, vert, frag)
 var sphere = scene.createSphere(0.0,0.0,0.0,.5,0.1);
-// var sphere2 = scene.createSphere(0.1,0.5,.5,0.5,0.1);
-// var sphere3 = scene.createSphere(0.5,0.5,0.0,0.2,0.9,0.1);
+var sphere2 = scene.createSphere(0, 2.5, 0,0.5,0.1);
+var sphere3 = scene.createSphere(.40,3,0.0,0.3,0.9,0.1);
+var sphere4 = scene.createSphere(-.40,3,0.0,0.3,0.9,0.1);
 
 var cyl = scene.createCappedCylinder(0.0,5.5,0.0, 0.5,0.10, 0.1);
-var cyl2 = scene.createBox(0.0,5,0.0, .3, 10,.3);
-
-// var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
+var box = scene.createBox(0.0,2.5,0.0, .3, 5,.3);
+var box2 = scene.createBox(0.0, 2.5, -.2, 1, 1, .35)
+//var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
 
 // var boxy = scene.createBox(0.5, 0.4, 0.4,             0.6, 0.2, 0.4,      0.1);
 
 // //var union = scene.createUnion([sphere, sphere2]);
 scene.add(cyl);
-scene.add(cyl2);
+scene.add(box);
 
-var cut1 = scene.createCut([cyl2, cyl])
-var cut2 = scene.createCut([cyl2, sphere])
+var cut1 = scene.createCut([box, cyl])
+var cut2 = scene.createCut([box, sphere])
 
 scene.add(sphere);
-// scene.add(sphere2);
-// scene.add(sphere3);
 
-// scene.add(tor);
+
+scene.add(sphere2);
+scene.add(sphere3);
+scene.add(sphere4);
+var mouseBase = scene.createUnion([sphere2, sphere3, sphere4]);
+
+
+scene.add(mouseBase);
+scene.add(box2)
+var mouseCut = scene.createCut([box2, mouseBase]);
+scene.add(mouseCut);
+//scene.add(tor);
 
 // scene.add(boxy);
 // //scene.add(union);
@@ -110,7 +123,7 @@ scene.add(cut1);
 scene.add(cut2);
 // scene.add(scene.createDisplay(cut));
 
-scene.add(scene.createDisplay([cut1, cut2]));
+scene.add(scene.createDisplay([cut1, cut2, mouseCut]));
 
 window.camera = camera;
 
@@ -129,11 +142,10 @@ function render() {
   mat4.identity(model);
 
   var bounds = scene.getAABB();
-  var scale = [
-    bounds[1][0] - bounds[0][0],
-    bounds[1][1] - bounds[0][1],
-    bounds[1][2] - bounds[0][2]
-  ];
+
+  camera.center[0] = bounds[0][0] + (bounds[1][0] - bounds[0][0])/2;
+  camera.center[1] = bounds[0][1] + (bounds[1][1] - bounds[0][1])/2;
+  camera.center[2] = bounds[0][2] + (bounds[1][2] - bounds[0][2])/2;
 
   mat4.perspective(
     projection,
@@ -205,12 +217,6 @@ function render() {
   vao.unbind();
   gl.stop();
 }
-
-
-var mouse = {
-  down: false,
-  pos: [0, 0]
-};
 
 function handleMouse(e) {
 
