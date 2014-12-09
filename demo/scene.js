@@ -251,6 +251,51 @@ Scene.prototype.createCappedCylinder = function(x, y, z, radius, height, color) 
   return cappedcyl;
 }
 
+Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color) {
+  var _x = this.alloc();
+  var _y = this.alloc();
+  var _z = this.alloc();
+  var _R = this.alloc();
+  var _r = this.alloc();
+
+  var torus = {
+    0: _x,
+    1: _y,
+    2: _z,
+    3: _R,
+    4: _r
+  };
+
+  Object.defineProperty(torus, 'name', {
+    value: 'torus_' + (this.shapeId++)
+  });
+
+  Object.defineProperty(torus, 'code', {
+    value: printf(
+      '    float %s = solid_torus(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), vec2(sample(%i, %i), sample(%i, %i)) );\n',
+      torus.name,
+      _x.position[0].toFixed(1),
+      _x.position[1].toFixed(1),
+      _y.position[0].toFixed(1),
+      _y.position[1].toFixed(1),
+      _z.position[0].toFixed(1),
+      _z.position[1].toFixed(1),
+      _R.position[0].toFixed(1),
+      _R.position[1].toFixed(1),
+      _r.position[0].toFixed(1),
+      _r.position[1].toFixed(1)
+    )
+  });
+
+  _x(x);
+  _y(y);
+  _z(z);
+  _R(radiusMajor);
+  _r(radiusMinor);
+
+  return torus;
+}
+
 
 Scene.prototype.createUnion = function(shapes) {
   if (!Array.isArray(shapes)) {
