@@ -4,6 +4,11 @@ var ndarray = require('ndarray')
 var createTexture = require('gl-texture2d');
 var show = require('ndarray-show');
 var printf = require('printf');
+var aabb = require('./aabb');
+
+
+var min = Math.min;
+var max = Math.max;
 
 module.exports = Scene;
 
@@ -29,11 +34,14 @@ function Scene(gl, vert, frag) {
   this.pointer = [0,0];
   this.opsTexture = createTexture(gl, this.ops);
   this.shapes = [];
-
+  this.scale = [1,1,1];
   this.vertSource = vert;
   this.fragSource = frag;
-
   this.shader = this.createShader();
+
+  this.bounds = [[0, 0, 0], [0, 0, 0]];
+  this.dirtyBounds = false;
+
 }
 
 Scene.prototype.createShader = function() {
@@ -46,7 +54,6 @@ Scene.prototype.createShader = function() {
   var l = shapes.length;
   var shapeStr = ''
   for (var i=0; i<l; i++) {
-    console.log(shapes[i].code);
     shapeStr += shapes[i].code;
   }
 
@@ -133,7 +140,7 @@ Scene.prototype.createSphere = function(x, y, z, radius, color) {
   });
 
   Object.defineProperty(sphere, 'bounds', {
-    value: function() {
+    get: function() {
       var x = _x();
       var y = _y();
       var z = _z();
@@ -192,7 +199,7 @@ Scene.prototype.createBox = function(x, y, z, width, height, depth, color) {
   });
 
   Object.defineProperty(box, 'bounds', {
-    value: function() {
+    get: function() {
       var x = _x();
       var y = _y();
       var z = _z();
@@ -257,13 +264,13 @@ Scene.prototype.createCappedCylinder = function(x, y, z, radius, height, color) 
 
 
   Object.defineProperty(cappedcyl, 'bounds', {
-    value: function() {
+    get: function() {
       var r = _r();
       var x = _x();
       var y = _y();
       var z = _z();
-      var h = _h()/2;
-      var r2 = r*2;
+      var h = _h();
+
 
       return [
         [x - r, y - h, z - r],
@@ -318,7 +325,7 @@ Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color)
   });
 
   Object.defineProperty(torus, 'bounds', {
-    value: function() {
+    get: function() {
 
       // compute the extent
       var rminor = _r();
@@ -375,6 +382,12 @@ Scene.prototype.createUnion = function(shapes) {
     value: 'union_' + (this.shapeId++)
   });
 
+  Object.defineProperty(union, 'bounds', {
+    get: function getUnionBounds() {
+      return aabb.merge(shapes);
+    }
+  });
+
   shapes = shapes.filter(function(shape) {
     return !!shape.name;
   });
@@ -391,11 +404,17 @@ Scene.prototype.createUnion = function(shapes) {
   return union;
 }
 
-// TODO: compute new bounding box based on what is being removed
 Scene.prototype.createCut = function(shapes) {
   if (!Array.isArray(shapes)) {
     shapes = [shapes];
   }
+
+  // NOTE: as of right today 12/9/2014, I don't think there
+  //       is a reason to include bounds here.  This may result
+  //       in a less than optimal bounding box overall, but
+  //       it will likely be more robust.
+  //
+  //       will revisit if struck by a bolt of inspiration
 
   var cut = {};
 
@@ -419,21 +438,59 @@ Scene.prototype.createCut = function(shapes) {
   return cut;
 }
 
+Scene.prototype.getAABB = function() {
+  if (this.dirtyBounds) {
+    var bounds = this.bounds;
+    var shapes = this.shapes;
+
+    bounds[0][0] = Infinity;
+    bounds[0][1] = Infinity;
+    bounds[0][2] = Infinity;
+
+    bounds[1][1] = -Infinity;
+    bounds[1][0] = -Infinity;
+    bounds[1][2] = -Infinity;
+
+    for (var i=0; i<shapes.length; i++) {
+      var sbounds = shapes[i].bounds;
+      if (!sbounds) {
+        continue;
+      }
+
+      bounds[0][0] = min(sbounds[0][0], bounds[0][0]);
+      bounds[0][1] = min(sbounds[0][1], bounds[0][1]);
+      bounds[0][2] = min(sbounds[0][2], bounds[0][2]);
+
+      bounds[1][0] = max(sbounds[1][0], bounds[1][0]);
+      bounds[1][1] = max(sbounds[1][1], bounds[1][1]);
+      bounds[1][2] = max(sbounds[1][2], bounds[1][2]);
+    }
+
+    this.dirtyBounds = false;
+  }
+  return this.bounds;
+}
+
 Scene.prototype.createDisplay = function(shapes) {
   if (!Array.isArray(shapes)) {
     shapes = [shapes];
   }
   var display = {};
+
   Object.defineProperty(display, 'code', {
     value : shapes.map(function(shape) {
-      if (!shape.name) { return false}
+      if (!shape.name) { return false; }
       return '    h = min(h, ' + shape.name + ');';
     }).filter(Boolean).join('\n') + '\n'
   });
+
   return display;
 }
 
 Scene.prototype.add = function addShape(thing) {
+  this.dirtyBounds = true;
+  this.getAABB();
+
   this.shapes.push(thing)
 
   this.createShader();

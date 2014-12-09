@@ -8,7 +8,11 @@ var varargs = require('varargs');
 var Scene = require('./scene')
 var ndarray = require('ndarray');
 var getEye = require('eye-vector');
-var eye = [0, 0];
+var aabb = require('./aabb');
+var vec3 = require('gl-vec3');
+var createSphereMesh = require('sphere-mesh');
+
+var eye = [0, 0, 0];
 
 var camera = require('orbit-camera')(
   [0, 0, -2],
@@ -24,6 +28,7 @@ var projection = mat4.create();
 var view = mat4.create();
 var worldToClip = mat4.create();
 var clipToWorld = mat4.create();
+var v3scratch = [0, 0, 0];
 
 
 var clear = require('gl-clear')({
@@ -64,7 +69,7 @@ for(var d=0; d<3; ++d) {
 
 //Create cube VAO
 var faceBuf = createBuffer(gl, new Uint16Array(cubeFacets), gl.ELEMENT_ARRAY_BUFFER)
-var vertBuf = createBuffer(gl, new Float32Array(cubeVerts))
+var vertBuf = createBuffer(gl, new Float32Array(cubeVerts));
 var vao = createVAO(gl, [
   { "buffer": vertBuf,
     "type": gl.FLOAT,
@@ -76,29 +81,37 @@ var vao = createVAO(gl, [
 ], faceBuf)
 
 var scene = window.scene = new Scene(gl, vert, frag)
-var sphere = scene.createSphere(0.1,0.1,0.2,0.3,0.1);
-var sphere2 = scene.createSphere(0.1,0.5,.5,0.5,0.1);
-var sphere3 = scene.createSphere(0.5,0.5,0.0,0.2,0.9,0.1);
+var sphere = scene.createSphere(0.0,0.0,0.0,.5,0.1);
+// var sphere2 = scene.createSphere(0.1,0.5,.5,0.5,0.1);
+// var sphere3 = scene.createSphere(0.5,0.5,0.0,0.2,0.9,0.1);
 
-var cyl = scene.createCappedCylinder(0.5,0.5,0.0, 0.5,0.9, 0.1);
+var cyl = scene.createCappedCylinder(0.0,5.5,0.0, 0.5,0.10, 0.1);
+var cyl2 = scene.createBox(0.0,5,0.0, .3, 10,.3);
 
-var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
+// var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
 
-var boxy = scene.createBox(0.5, 0.4, 0.4,             0.6, 0.2, 0.4,      0.1);
+// var boxy = scene.createBox(0.5, 0.4, 0.4,             0.6, 0.2, 0.4,      0.1);
 
-//var union = scene.createUnion([sphere, sphere2]);
-var cut = scene.createCut([tor, cyl]);
-scene.add(sphere);
-scene.add(sphere2);
-scene.add(sphere3);
-
+// //var union = scene.createUnion([sphere, sphere2]);
 scene.add(cyl);
-scene.add(tor);
+scene.add(cyl2);
 
-scene.add(boxy);
-//scene.add(union);
-scene.add(cut);
-scene.add(scene.createDisplay(cut));
+var cut1 = scene.createCut([cyl2, cyl])
+var cut2 = scene.createCut([cyl2, sphere])
+
+scene.add(sphere);
+// scene.add(sphere2);
+// scene.add(sphere3);
+
+// scene.add(tor);
+
+// scene.add(boxy);
+// //scene.add(union);
+scene.add(cut1);
+scene.add(cut2);
+// scene.add(scene.createDisplay(cut));
+
+scene.add(scene.createDisplay([cut1, cut2]));
 
 window.camera = camera;
 
@@ -116,6 +129,13 @@ function render() {
 
   mat4.identity(model);
 
+  var bounds = scene.getAABB();
+  var scale = [
+    bounds[1][0] - bounds[0][0],
+    bounds[1][1] - bounds[0][1],
+    bounds[1][2] - bounds[0][2]
+  ];
+
   mat4.perspective(
     projection,
     Math.PI/4.0,
@@ -129,8 +149,29 @@ function render() {
   mat4.multiply(worldToClip, view, model);
   mat4.multiply(worldToClip, projection, worldToClip);
 
-  mat4.invert(clipToWorld, worldToClip)
+  mat4.invert(clipToWorld, worldToClip);
+  mat4.multiply(clipToWorld, clipToWorld, projection);
 
+  // TODO: this is a very mechanical way of doing things and I'm sure
+  //       there is a better way!
+  var w = 0;
+  for(var i=0; i<8; ++i) {
+    for(var j=0; j<3; ++j) {
+      var v;
+      if(i & (1<<j)) {
+        v = 1;
+      } else {
+        v = -1;
+      }
+      var pos = v === -1 ? 0 : 1;
+
+      cubeVerts[w] = bounds[pos][j];
+      w++;
+    }
+  }
+  vertBuf.update(cubeVerts);
+
+  // TODO: pre-divide to avoid doing it in frag.glsl:main
   var w = clipToWorld[11];
 
   gl.enable(gl.BLEND)
@@ -139,8 +180,8 @@ function render() {
   gl.cullFace(gl.BACK)
   gl.frontFace(gl.CCW)
 
-  // TODO: compare the camera eye with the bounding box
-  if (camera.distance > 2.0) {
+  // TODO: this slows things down quite a bit
+  if (vec3.distance(bounds[0], bounds[1])/4 <= camera.distance) {
     gl.enable(gl.CULL_FACE)
   } else {
     gl.disable(gl.CULL_FACE);
@@ -159,6 +200,7 @@ function render() {
   scene.render();
 
   vao.bind();
+
   gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0)
   vao.unbind();
   gl.stop();
@@ -171,10 +213,12 @@ var mouse = {
 };
 
 function handleMouse(e) {
+
   gl.start();
+
   switch (e.type) {
     case 'mousedown':
-      mouse.down=true;
+      mouse.down = true;
     break;
 
     case 'mouseup':
