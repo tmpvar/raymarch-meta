@@ -129,6 +129,33 @@ window.camera = camera;
 
 var resolution = [0, 0];
 
+
+var bounds = scene.getAABB();
+
+camera.center[0] = bounds[0][0] + (bounds[1][0] - bounds[0][0])/2;
+camera.center[1] = bounds[0][1] + (bounds[1][1] - bounds[0][1])/2;
+camera.center[2] = bounds[0][2] + (bounds[1][2] - bounds[0][2])/2;
+
+// TODO: this is a very mechanical way of doing things and I'm sure
+//       there is a better way!
+var w = 0;
+for(var i=0; i<8; ++i) {
+  for(var j=0; j<3; ++j) {
+    var v;
+    if(i & (1<<j)) {
+      v = 1;
+    } else {
+      v = -1;
+    }
+    var pos = v === -1 ? 0 : 1;
+
+    cubeVerts[w] = bounds[pos][j];
+    w++;
+  }
+}
+vertBuf.update(cubeVerts);
+
+
 gl.start();
 var start = Date.now();
 function render() {
@@ -141,11 +168,6 @@ function render() {
 
   mat4.identity(model);
 
-  var bounds = scene.getAABB();
-
-  camera.center[0] = bounds[0][0] + (bounds[1][0] - bounds[0][0])/2;
-  camera.center[1] = bounds[0][1] + (bounds[1][1] - bounds[0][1])/2;
-  camera.center[2] = bounds[0][2] + (bounds[1][2] - bounds[0][2])/2;
 
   mat4.perspective(
     projection,
@@ -162,25 +184,6 @@ function render() {
 
   mat4.invert(clipToWorld, worldToClip);
   mat4.multiply(clipToWorld, clipToWorld, projection);
-
-  // TODO: this is a very mechanical way of doing things and I'm sure
-  //       there is a better way!
-  var w = 0;
-  for(var i=0; i<8; ++i) {
-    for(var j=0; j<3; ++j) {
-      var v;
-      if(i & (1<<j)) {
-        v = 1;
-      } else {
-        v = -1;
-      }
-      var pos = v === -1 ? 0 : 1;
-
-      cubeVerts[w] = bounds[pos][j];
-      w++;
-    }
-  }
-  vertBuf.update(cubeVerts);
 
   // TODO: pre-divide to avoid doing it in frag.glsl:main
   var w = clipToWorld[11];
