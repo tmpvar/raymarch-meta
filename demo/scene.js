@@ -206,6 +206,52 @@ Scene.prototype.createBox = function(x, y, z, width, height, depth, color) {
   return box;
 }
 
+Scene.prototype.createCappedCylinder = function(x, y, z, radius, height, color) {
+  var _x = this.alloc();
+  var _y = this.alloc();
+  var _z = this.alloc();
+  var _r = this.alloc();
+  var _h = this.alloc();
+
+  var cappedcyl = {
+    0: _x,
+    1: _y,
+    2: _z,
+    3: _r,
+    4: _h
+  };
+
+  Object.defineProperty(cappedcyl, 'name', {
+    value: 'cappedcyl_' + (this.shapeId++)
+  });
+
+  Object.defineProperty(cappedcyl, 'code', {
+    value: printf(
+      '    float %s = solid_capped_cylinder(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), vec2(sample(%i, %i), sample(%i, %i)) );\n',
+      cappedcyl.name,
+      _x.position[0].toFixed(1),
+      _x.position[1].toFixed(1),
+      _y.position[0].toFixed(1),
+      _y.position[1].toFixed(1),
+      _z.position[0].toFixed(1),
+      _z.position[1].toFixed(1),
+      _r.position[0].toFixed(1),
+      _r.position[1].toFixed(1),
+      _h.position[0].toFixed(1),
+      _h.position[1].toFixed(1)
+    )
+  });
+
+  _x(x);
+  _y(y);
+  _z(z);
+  _r(radius);
+  _h(height);
+
+  return cappedcyl;
+}
+
+
 Scene.prototype.createUnion = function(shapes) {
   if (!Array.isArray(shapes)) {
     shapes = [shapes];

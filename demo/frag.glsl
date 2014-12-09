@@ -36,6 +36,35 @@ float solid_sphere(vec3 p, float r) {
   return length(p) - r;
 }
 
+float solid_cone(vec3 p, vec2 c) { // c must be normalized
+  float q = length(p.xy);
+  return dot(c, vec2(q, p.z));
+}
+
+float solid_torus(vec3 p, vec2 t) {
+  vec2 q = vec2(length(p.xz) - t.x, p.y);
+  return length(q) - t.y;
+}
+
+float solid_capped_cone(in vec3 p, in vec3 c) {
+  vec2 q = vec2( length(p.xz), p.y );
+  vec2 v = vec2( c.z*c.y/c.x, -c.z );
+
+  vec2 w = v - q;
+
+  vec2 vv = vec2( dot(v,v), v.x*v.x );
+  vec2 qv = vec2( dot(v,w), v.x*w.x );
+
+  vec2 d = max(qv,0.0)*qv/vv;
+
+  return sqrt( dot(w,w) - max(d.x,d.y) )* sign(max(q.y*v.x-q.x*v.y,w.y));
+}
+
+float solid_capped_cylinder(vec3 p, vec2 h) {
+  vec2 d = abs(vec2(length(p.xz),p.y)) - h;
+  return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
+}
+
 // float unsigned_box_distance( vec3 p, vec3 b, float r ) {
 //   return length(max(abs(p)-b,0.0))-r;
 // }
@@ -49,8 +78,12 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
 
     steps = i;
     position = origin+direction*dist;
-    // h = signed_box_distance(position, vec3(.1, .3, .25));
-    // h = min(h, solid_sphere(position, 0.25));
+    
+    //h = min(solid_capped_cylinder(position, vec2(0.23, 0.65)), solid_sphere(position, 0.25) );
+    //h = solid_cone(position, normalize(vec2(0.25, 0.25)) );
+    //h = solid_capped_cone(position, vec3(0.25, 0.25, 0.1) );
+    //h = solid_torus(position, normalize(vec2(1.5, 0.15)) );
+    //h = signed_box_distance(position, vec3(.1, .3, .25));
 
 /* RAYMARCH_OPS */
 
