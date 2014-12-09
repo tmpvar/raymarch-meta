@@ -176,14 +176,15 @@ function render() {
   gl.enable(gl.BLEND)
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
   gl.depthMask(false)
-  gl.cullFace(gl.BACK)
   gl.frontFace(gl.CCW)
+  gl.enable(gl.CULL_FACE);
+  gl.enable(gl.DEPTH_TEST)
 
   // TODO: this slows things down quite a bit
-  if (vec3.distance(bounds[0], bounds[1])/4 <= camera.distance) {
-    gl.enable(gl.CULL_FACE)
+  if (aabb.contains(scene.getAABB(), mouse)) {
+    gl.cullFace(gl.BACK)
   } else {
-    gl.disable(gl.CULL_FACE);
+    gl.cullFace(gl.FRONT)
   }
 
   //Set up shader
