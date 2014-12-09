@@ -254,7 +254,9 @@ function handleMouse(e) {
     break;
 
     case 'mousewheel':
-      camera.zoom(e.wheelDeltaY * -.001);
+      var worldBounds = scene.getAABB();
+      var d = 1.0 / vec3.distance(worldBounds[0], worldBounds[1]);
+      camera.zoom(e.wheelDeltaY * -.001 / d);
       e.preventDefault();
     break;
 
