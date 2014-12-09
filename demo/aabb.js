@@ -1,4 +1,6 @@
 var aabb = module.exports = {};
+var min = Math.min;
+var max = Math.max;
 
 aabb.contains = function aabbContainsVec3(aabb, vec3) {
   return vec3[0] > aabb[0][0] && vec3[0] < aabb[1][0] &&
@@ -7,8 +9,7 @@ aabb.contains = function aabbContainsVec3(aabb, vec3) {
 };
 
 aabb.merge = function aabbMerge(array, out) {
-
-  out = out || array[0].slice();
+  out = out || [[0,0,0], [0,0,0]];
   for (var i = 0; i < array.length; i++) {
     var item = array[i];
       out[0][0] = min(item[0][0], out[0][0]);
@@ -19,4 +20,5 @@ aabb.merge = function aabbMerge(array, out) {
       out[1][1] = max(item[1][1], item[1][1]);
       out[1][2] = max(item[1][2], item[1][2]);
   }
+  return out;
 };
