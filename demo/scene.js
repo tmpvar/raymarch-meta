@@ -48,17 +48,18 @@ Scene.prototype.createShader = function() {
   var shapeStr = '';
   var prefetchStr = '';
   for (var i=0; i<l; i++) {
-    console.log('shapes[' + i + '].code: ' + shapes[i].code);
-    shapeStr += shapes[i].code;
-
     console.log('shapes[' + i + '].prefetchCode: ' + shapes[i].prefetchCode);
     prefetchStr += shapes[i].prefetchCode;
+
+    console.log('shapes[' + i + '].code: ' + shapes[i].code);
+    shapeStr += shapes[i].code;
   }
 
-  var prefetch = this.fragSource.replace('/* RAYMARCH_SETUP */', prefetchStr);
-  prefetch = prefetch.replace(/\/\* OPS_SIZE \*\//g, this.variableMapSize.toFixed(1));
+  console.log("prefetchStr:", prefetchStr);
 
-  var frag = this.fragSource.replace('/* RAYMARCH_OPS */', shapeStr);
+  var frag = this.fragSource.replace('/* RAYMARCH_SETUP */', prefetchStr);
+
+  frag = this.fragSource.replace('/* RAYMARCH_OPS */', shapeStr);
   frag = frag.replace(/\/\* OPS_SIZE \*\//g, this.variableMapSize.toFixed(1));
 
   var raymarchDefines = this.raymarch;
@@ -66,6 +67,8 @@ Scene.prototype.createShader = function() {
     var exp = new RegExp('\\/\\* RAYMARCH_' + key + ' \\*\\/', 'g');
     frag = frag.replace(exp, raymarchDefines[key]);
   });
+
+  //console.log('frag:', frag);
 
   this.shader = createShader(
     this.gl,
