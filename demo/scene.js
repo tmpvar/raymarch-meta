@@ -59,12 +59,9 @@ Scene.prototype.createShader = function() {
 
   for (var i=0; i<l; i++) {
     console.log('shapes[' + i + '].prefetchCode: ' + shapes[i].prefetchCode);
-    if ('undefined' !== typeof shapes[i].prefetchCode) { // XXX: awful hack! we probably want to use a different loop counter and test here
-      prefetchStr += shapes[i].prefetchCode;
-    }
-
     console.log('shapes[' + i + '].code: ' + shapes[i].code);
 
+    prefetchStr += shapes[i].prefetchCode;
     shapeStr += shapes[i].code;
   }
 
@@ -502,6 +499,10 @@ Scene.prototype.createUnion = function(shapes) {
 
   var union = {};
 
+  Object.defineProperty(union, 'prefetchCode', {
+    value: ''
+  });
+
   Object.defineProperty(union, 'name', {
     value: 'union_' + (this.shapeId++)
   });
@@ -547,6 +548,11 @@ Scene.prototype.createCut = function(shapes) {
   });
 
   var first = shapes.shift();
+
+
+  Object.defineProperty(cut, 'prefetchCode', {
+    value: ''
+  });
 
   Object.defineProperty(cut, 'name', {
     value: 'cut_' + (this.shapeId++)
@@ -600,6 +606,11 @@ Scene.prototype.createDisplay = function(shapes) {
     shapes = [shapes];
   }
   var display = {};
+
+
+  Object.defineProperty(display, 'prefetchCode', {
+    value: ''
+  });
 
   Object.defineProperty(display, 'code', {
     value : shapes.map(function(shape) {
