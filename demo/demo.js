@@ -91,7 +91,7 @@ var sphere4 = scene.createSphere(-.40,3,0.0,0.3,0.9,0.1);
 var cyl = scene.createCappedCylinder(0.0,5.5,0.0, 0.5,0.10, 0.1);
 var box = scene.createBox(0.0,2.5,0.0, .3, 5,.3);
 var box2 = scene.createBox(0.0, 2.5, -.2, 1, 1, .35)
-//var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
+var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
 
 // var boxy = scene.createBox(0.5, 0.4, 0.4,             0.6, 0.2, 0.4,      0.1);
 
@@ -115,7 +115,8 @@ scene.add(mouseBase);
 scene.add(box2)
 var mouseCut = scene.createCut([box2, mouseBase]);
 scene.add(mouseCut);
-//scene.add(tor);
+scene.add(tor);
+
 
 // scene.add(boxy);
 // //scene.add(union);
@@ -123,7 +124,7 @@ scene.add(cut1);
 scene.add(cut2);
 // scene.add(scene.createDisplay(cut));
 
-scene.add(scene.createDisplay([cut1, cut2, mouseCut]));
+scene.add(scene.createDisplay([cut1, cut2, mouseCut, tor]));
 
 window.camera = camera;
 

@@ -6,7 +6,6 @@ var show = require('ndarray-show');
 var printf = require('printf');
 var aabb = require('./aabb');
 
-
 var min = Math.min;
 var max = Math.max;
 
@@ -21,7 +20,7 @@ function Scene(gl, vert, frag) {
   // this.shader = this.createShader(gl);
 
   this.raymarch = {
-    CYCLES: 256
+    CYCLES: 128
   };
 
   this.variableMapSize = 16;
@@ -45,7 +44,6 @@ function Scene(gl, vert, frag) {
 
   this._bounds = [[0, 0, 0], [0, 0, 0]];
   this.dirtyBounds = false;
-
 }
 
 Scene.prototype.createShader = function() {
@@ -60,7 +58,6 @@ Scene.prototype.createShader = function() {
   var prefetchStr = '';
 
   for (var i=0; i<l; i++) {
-
     console.log('shapes[' + i + '].prefetchCode: ' + shapes[i].prefetchCode);
     if ('undefined' !== typeof shapes[i].prefetchCode) { // XXX: awful hack! we probably want to use a different loop counter and test here
       prefetchStr += shapes[i].prefetchCode;
@@ -420,6 +417,38 @@ Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color)
     4: _r
   };
 
+  Object.defineProperty(torus, 'prefetchCode', {
+    value: printf(
+      '  float Xpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _x.position[0].toFixed(1),
+      _x.position[1].toFixed(1))
+
+    + printf(
+      '  float Ypf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _y.position[0].toFixed(1),
+      _y.position[1].toFixed(1))
+
+    + printf(
+      '  float Zpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _z.position[0].toFixed(1),
+      _z.position[1].toFixed(1))
+
+    + printf(
+      '  float Rpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _R.position[0].toFixed(1),
+      _R.position[1].toFixed(1))
+
+    + printf(
+      '  float rpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _r.position[0].toFixed(1),
+      _r.position[1].toFixed(1))
+  });
+
   Object.defineProperty(torus, 'name', {
     value: 'torus_' + (this.shapeId++)
   });
@@ -446,18 +475,13 @@ Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color)
 
   Object.defineProperty(torus, 'code', {
     value: printf(
-      '    float %s = solid_torus(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), vec2(sample(%i, %i), sample(%i, %i)) );\n',
+      '    float %s = solid_torus(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), vec2(Rpf_%i, rpf_%i) );\n',
       torus.name,
-      _x.position[0].toFixed(1),
-      _x.position[1].toFixed(1),
-      _y.position[0].toFixed(1),
-      _y.position[1].toFixed(1),
-      _z.position[0].toFixed(1),
-      _z.position[1].toFixed(1),
-      _R.position[0].toFixed(1),
-      _R.position[1].toFixed(1),
-      _r.position[0].toFixed(1),
-      _r.position[1].toFixed(1)
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1
     )
   });
 
