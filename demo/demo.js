@@ -17,7 +17,7 @@ var mouse = {
 var eye = [0, 0, 0];
 
 var camera = require('orbit-camera')(
-  [0, 0, -2],
+  [0, 0, -5],
   [0, 0, 0],
   [0, 1, 0]
 );
@@ -93,6 +93,13 @@ var box = scene.createBox(0.0,2.5,0.0, .3, 5,.3);
 var box2 = scene.createBox(0.0, 2.5, -.2, 1, 1, .35)
 var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
 
+// var tri = scene.createTriangle(
+//  //vec3(0.7, -0.7, 1.0), vec3(0.7, 0.7, 1.0), vec3(0.0, 0.0, 1.0)
+//   [0.7, -0.7, 0.0],
+//   [0.2, 0.0, 0.0],
+//   [0.7, 0.7, 0.0],
+//   [0, 0, 0.0]
+// );
 
 // var tri = scene.createTriangle(
 
@@ -101,7 +108,8 @@ var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
 //   [0, 0]
 // );
 
-var triangulate = require('delaunay-triangulate');
+var triangulate = require('triangulate-contours');
+var orient = require('robust-orientation')
 
 var poly = [
   [-100, -100, 0.0],
@@ -115,32 +123,48 @@ var poly = [
   [600, -300, 0.0],
   [400, -200, 0.0],
   [400, -150, 0.0],
-  [600, -100, 0.0],
-  [500, 200, 0.0],
-  [300, 100, 0.0],
-  [100, 200, 0.0],
-  [-100, 100, 0.0],
-  [-100, 0, 0.0],
+  // [600, -100, 0.0],
+  // [500, 200, 0.0],
+  // [300, 100, 0.0],
+  // [100, 200, 0.0],
+  // [-100, 100, 0.0],
+  // [-100, 0, 0.0],
+  // [0.7, -1.0],
+  // [0.7, 0.0],
+  // [0.2, 0.0],
+  // [0.7, 0.7],
+  // [0, 0]
 ].map(function(p) {
   p[0] /= 600;
   p[1] /= 600;
+
   return p;
 });
 
-var triangles = triangulate(poly)
+var triangles = triangulate([poly])
 
+triangles.positions.forEach(function(p) {
+  p.push(0);
+});
+
+console.error(triangles);
 var lastTri = null;
-triangles.forEach(function(t) {
-
+triangles.cells.forEach(function(cell) {
+  var pos = triangles.positions;
   var localTri = scene.createTriangle(
-    poly[t[0]],
-    poly[t[1]],
-    poly[t[2]]
+    pos[cell[0]],
+    pos[cell[1]],
+    pos[cell[2]]
   );
 
   scene.add(localTri);
 
   if (lastTri) {
+    console.error(orient(
+      pos[cell[0]],
+      pos[cell[1]],
+      pos[cell[2]]
+    ));
     lastTri = scene.createUnion([lastTri, localTri]);
     scene.add(lastTri)
   } else {

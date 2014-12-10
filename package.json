@@ -27,6 +27,8 @@
     "printf": "^0.2.0",
     "varargs": "^1.0.0",
     "gl-vec3": "~1.0.2",
-    "delaunay-triangulate": "~1.1.6"
+    "delaunay-triangulate": "~1.1.6",
+    "robust-orientation": "~1.1.3",
+    "triangulate-contours": "~1.0.1"
   }
 }

@@ -512,9 +512,7 @@ Scene.prototype.createTriangle = function(a, b, c) {
       aabb.update(a, bounds);
       aabb.update(b, bounds);
       aabb.update(c, bounds);
-      console.warn('BOUNDS', bounds[0], bounds[1])
-      console.log(a, b, c)
-      return bounds;
+      return [[-1, -1, -1], [1, 1, 1]];
     }
   });
 
@@ -523,17 +521,24 @@ Scene.prototype.createTriangle = function(a, b, c) {
     value: [a, b, c].map(function(point, i) {
       var _x = scene.alloc();
       var _y = scene.alloc();
+      var _z = scene.alloc();
 
-      triangle.points.push([_x, _y]);
+      _x(point[0]);
+      _y(point[1]);
+      _z(point[2] || 0);
+
+      triangle.points.push([_x, _y, _z]);
 
       return printf(
-      '  vec3 triangle_%i_%i = vec3(sample(%i, %i), sample(%i, %i), 0.0);\n',
+      '  vec3 triangle_%i_%i = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
       triangle.shapeId,
       i,
       _x.position[0].toFixed(1),
       _x.position[1].toFixed(1),
       _y.position[0].toFixed(1),
-      _y.position[1].toFixed(1))
+      _y.position[1].toFixed(1),
+      _z.position[0].toFixed(1),
+      _z.position[1].toFixed(1))
     }).join('\n')
   });
 

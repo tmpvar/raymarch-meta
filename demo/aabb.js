@@ -25,7 +25,7 @@ aabb.merge = function aabbMerge(array, out) {
 
 // where out is an optional array of arrays
 aabb.create = function aabbCreate(out) {
-  out = out || [[0, 0, 0], [0, 0, 0]];
+  out = out || [Array(3), Array(3)];
 
   out[0][0] = Infinity;
   out[0][1] = Infinity;
@@ -46,12 +46,12 @@ aabb.update = function aabbUpdate(vec, out) {
   }
 
   out[0][0] = min(vec[0] || -1, out[0][0]);
-  out[0][1] = min(vec[1] || -1, out[0][1]);
-  out[0][2] = min(vec[2] || -1, out[0][2]);
+  out[0][1] = min(vec[1], out[0][1]);
+  out[0][2] = min(vec[2], out[0][2]);
 
-  out[1][0] = max(vec[0] || 1, out[1][0]);
-  out[1][1] = max(vec[1] || 1, out[1][1]);
-  out[1][2] = max(vec[2] || 1, out[1][2]);
+  out[1][0] = max(vec[0], out[1][0]);
+  out[1][1] = max(vec[1], out[1][1]);
+  out[1][2] = max(vec[2], out[1][2]);
 
   return out;
 }

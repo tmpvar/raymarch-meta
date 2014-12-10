@@ -90,6 +90,10 @@ float solid_triangle( vec3 p, vec3 a, vec3 b, vec3 c )
 //   return length(max(abs(p)-b,0.0))-r;
 // }
 
+
+
+
+
 float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, out vec3 position) {
   float dist = 0.0;
   float h = 1.0;
@@ -97,6 +101,7 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
   float minStep = 0.00001;
 
 /* RAYMARCH_SETUP */
+
 
   for(int i=0; i<RAYMARCH_CYCLES; i++) {
 
@@ -110,6 +115,8 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
     //h = signed_box_distance(position, vec3(.1, .3, .25));
 
 /* RAYMARCH_OPS */
+
+   // h = solid_triangle(position, vec3(0.7, -0.7, 1.0), vec3(0.7, 0.7, 1.0), vec3(0.0, 0.0, 1.0));
 
     dist += h;
     hit = min(hit, h);
