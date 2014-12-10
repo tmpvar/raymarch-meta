@@ -74,6 +74,9 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
   float h = 1.0;
   hit = 10.0;
   float minStep = 0.00001;
+
+/* RAYMARCH_SETUP */
+
   for(int i=0; i<RAYMARCH_CYCLES; i++) {
 
     steps = i;

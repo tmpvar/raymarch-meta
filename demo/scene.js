@@ -34,7 +34,11 @@ function Scene(gl, vert, frag) {
   this.pointer = [0,0];
   this.opsTexture = createTexture(gl, this.ops);
   this.shapes = [];
+
   this.scale = [1,1,1];
+
+  this.prefetchCommands = [];
+
   this.vertSource = vert;
   this.fragSource = frag;
   this.shader = this.createShader();
@@ -52,12 +56,25 @@ Scene.prototype.createShader = function() {
 
   var shapes = this.shapes;
   var l = shapes.length;
-  var shapeStr = ''
+  var shapeStr = '';
+  var prefetchStr = '';
+
   for (var i=0; i<l; i++) {
+
+    console.log('shapes[' + i + '].prefetchCode: ' + shapes[i].prefetchCode);
+    if ('undefined' !== typeof shapes[i].prefetchCode) { // XXX: awful hack! we probably want to use a different loop counter and test here
+      prefetchStr += shapes[i].prefetchCode;
+    }
+
+    console.log('shapes[' + i + '].code: ' + shapes[i].code);
+
     shapeStr += shapes[i].code;
   }
 
-  var frag = this.fragSource.replace('/* RAYMARCH_OPS */', shapeStr);
+  console.log("prefetchStr:", prefetchStr);
+
+  var frag = this.fragSource.replace('/* RAYMARCH_SETUP */', prefetchStr);
+  frag = frag.replace('/* RAYMARCH_OPS */', shapeStr);
   frag = frag.replace(/\/\* OPS_SIZE \*\//g, this.variableMapSize.toFixed(1));
 
   var raymarchDefines = this.raymarch;
@@ -65,6 +82,8 @@ Scene.prototype.createShader = function() {
     var exp = new RegExp('\\/\\* RAYMARCH_' + key + ' \\*\\/', 'g');
     frag = frag.replace(exp, raymarchDefines[key]);
   });
+
+  console.log('frag:', frag);
 
   this.shader = createShader(
     this.gl,
@@ -135,6 +154,32 @@ Scene.prototype.createSphere = function(x, y, z, radius, color) {
     2: _z
   };
 
+  Object.defineProperty(sphere, 'prefetchCode', {
+    value: printf(
+      '  float Xpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _x.position[0].toFixed(1),
+      _x.position[1].toFixed(1))
+
+    + printf(
+      '  float Ypf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _y.position[0].toFixed(1),
+      _y.position[1].toFixed(1))
+
+    + printf(
+      '  float Zpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _z.position[0].toFixed(1),
+      _z.position[1].toFixed(1))
+
+    + printf(
+      '  float Rpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _r.position[0].toFixed(1),
+      _r.position[1].toFixed(1))
+  });
+
   Object.defineProperty(sphere, 'name', {
     value: 'sphere_' + (this.shapeId++)
   });
@@ -155,16 +200,12 @@ Scene.prototype.createSphere = function(x, y, z, radius, color) {
 
   Object.defineProperty(sphere, 'code', {
     value: printf(
-      '    float %s = solid_sphere(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i));\n',
+      '    float %s = solid_sphere(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), Rpf_%i);\n',
       sphere.name,
-      _x.position[0].toFixed(1),
-      _x.position[1].toFixed(1),
-      _y.position[0].toFixed(1),
-      _y.position[1].toFixed(1),
-      _z.position[0].toFixed(1),
-      _z.position[1].toFixed(1),
-      _r.position[0].toFixed(1),
-      _r.position[1].toFixed(1)
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1
     )
   });
 
@@ -194,6 +235,44 @@ Scene.prototype.createBox = function(x, y, z, width, height, depth, color) {
     5: _d
   };
 
+  Object.defineProperty(box, 'prefetchCode', {
+    value: printf(
+      '  float Xpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _x.position[0].toFixed(1),
+      _x.position[1].toFixed(1))
+
+    + printf(
+      '  float Ypf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _y.position[0].toFixed(1),
+      _y.position[1].toFixed(1))
+
+    + printf(
+      '  float Zpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _z.position[0].toFixed(1),
+      _z.position[1].toFixed(1))
+
+    + printf(
+      '  float Wpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _w.position[0].toFixed(1),
+      _w.position[1].toFixed(1))
+
+    + printf(
+      '  float Hpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _h.position[0].toFixed(1),
+      _h.position[1].toFixed(1))
+
+    + printf(
+      '  float Dpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _d.position[0].toFixed(1),
+      _d.position[1].toFixed(1))
+  });
+
   Object.defineProperty(box, 'name', {
     value: 'box_' + (this.shapeId++)
   });
@@ -216,20 +295,14 @@ Scene.prototype.createBox = function(x, y, z, width, height, depth, color) {
 
   Object.defineProperty(box, 'code', {
     value: printf(
-      '    float %s = signed_box_distance(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)) );\n',
+      '    float %s = signed_box_distance(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), vec3(Wpf_%i, Hpf_%i, Dpf_%i) );\n',
       box.name,
-      _x.position[0].toFixed(1),
-      _x.position[1].toFixed(1),
-      _y.position[0].toFixed(1),
-      _y.position[1].toFixed(1),
-      _z.position[0].toFixed(1),
-      _z.position[1].toFixed(1),
-      _w.position[0].toFixed(1),
-      _w.position[1].toFixed(1),
-      _h.position[0].toFixed(1),
-      _h.position[1].toFixed(1),
-      _d.position[0].toFixed(1),
-      _d.position[1].toFixed(1)
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1
     )
   });
 
@@ -258,6 +331,38 @@ Scene.prototype.createCappedCylinder = function(x, y, z, radius, height, color) 
     4: _h
   };
 
+  Object.defineProperty(cappedcyl, 'prefetchCode', {
+    value: printf(
+      '  float Xpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _x.position[0].toFixed(1),
+      _x.position[1].toFixed(1))
+
+    + printf(
+      '  float Ypf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _y.position[0].toFixed(1),
+      _y.position[1].toFixed(1))
+
+    + printf(
+      '  float Zpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _z.position[0].toFixed(1),
+      _z.position[1].toFixed(1))
+
+    + printf(
+      '  float Rpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _r.position[0].toFixed(1),
+      _r.position[1].toFixed(1))
+
+    + printf(
+      '  float Hpf_%i = sample(%i, %i);\n',
+      this.shapeId,
+      _h.position[0].toFixed(1),
+      _h.position[1].toFixed(1))
+  });
+
   Object.defineProperty(cappedcyl, 'name', {
     value: 'cappedcyl_' + (this.shapeId++)
   });
@@ -281,18 +386,13 @@ Scene.prototype.createCappedCylinder = function(x, y, z, radius, height, color) 
 
   Object.defineProperty(cappedcyl, 'code', {
     value: printf(
-      '    float %s = solid_capped_cylinder(position - vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), vec2(sample(%i, %i), sample(%i, %i)) );\n',
+      '    float %s = solid_capped_cylinder(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), vec2(Rpf_%i, Hpf_%i) );\n',
       cappedcyl.name,
-      _x.position[0].toFixed(1),
-      _x.position[1].toFixed(1),
-      _y.position[0].toFixed(1),
-      _y.position[1].toFixed(1),
-      _z.position[0].toFixed(1),
-      _z.position[1].toFixed(1),
-      _r.position[0].toFixed(1),
-      _r.position[1].toFixed(1),
-      _h.position[0].toFixed(1),
-      _h.position[1].toFixed(1)
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1,
+      this.shapeId - 1
     )
   });
 

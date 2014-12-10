@@ -289,4 +289,3 @@ function handleMouse(e) {
 ['mousedown', 'mouseup', 'mousemove', 'mousewheel', 'keydown'].forEach(function(name) {
   document.addEventListener(name, handleMouse);
 });
-
