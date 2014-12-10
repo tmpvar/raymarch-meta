@@ -92,14 +92,66 @@ var cyl = scene.createCappedCylinder(0.0,5.5,0.0, 0.5,0.10, 0.1);
 var box = scene.createBox(0.0,2.5,0.0, .3, 5,.3);
 var box2 = scene.createBox(0.0, 2.5, -.2, 1, 1, .35)
 var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
-var tri = scene.createTriangle(
 
-  [0.7, 0.7],
-  [0.7, -0.7],
-  [0, 0]
-);
 
-scene.add(tri);
+// var tri = scene.createTriangle(
+
+//   [0.7, 0.7],
+//   [0.7, -0.7],
+//   [0, 0]
+// );
+
+var triangulate = require('delaunay-triangulate');
+
+var poly = [
+  [-100, -100, 0.0],
+  [100, -100, 0.0],
+  [200, -200, 0.0],
+  [100, 0, 0.0],
+  [300, 0, 0.0],
+  [350, -100, 0.0],
+  [350, -200, 0.0],
+  [275, -300, 0.0],
+  [600, -300, 0.0],
+  [400, -200, 0.0],
+  [400, -150, 0.0],
+  [600, -100, 0.0],
+  [500, 200, 0.0],
+  [300, 100, 0.0],
+  [100, 200, 0.0],
+  [-100, 100, 0.0],
+  [-100, 0, 0.0],
+].map(function(p) {
+  p[0] /= 600;
+  p[1] /= 600;
+  return p;
+});
+
+var triangles = triangulate(poly)
+
+var lastTri = null;
+triangles.forEach(function(t) {
+
+  var localTri = scene.createTriangle(
+    poly[t[0]],
+    poly[t[1]],
+    poly[t[2]]
+  );
+
+  scene.add(localTri);
+
+  if (lastTri) {
+    lastTri = scene.createUnion([lastTri, localTri]);
+    scene.add(lastTri)
+  } else {
+    lastTri = localTri;
+  }
+})
+var tri = lastTri;
+
+
+
+// scene.add(tri);
 // var boxy = scene.createBox(0.5, 0.4, 0.4,             0.6, 0.2, 0.4,      0.1);
 
 // // //var union = scene.createUnion([sphere, sphere2]);
