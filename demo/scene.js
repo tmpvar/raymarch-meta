@@ -494,6 +494,64 @@ Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color)
   return torus;
 }
 
+Scene.prototype.createTriangle = function(a, b, c) {
+
+  var triangle = {
+    points : [],
+    shapeId: this.shapeId++
+  };
+
+  Object.defineProperty(triangle, 'name', {
+    value: 'triangle_' + triangle.shapeId
+  });
+
+  var bounds = aabb.create();
+
+  Object.defineProperty(triangle, 'bounds', {
+    get: function() {
+      aabb.update(a, bounds);
+      aabb.update(b, bounds);
+      aabb.update(c, bounds);
+      console.warn('BOUNDS', bounds[0], bounds[1])
+      console.log(a, b, c)
+      return bounds;
+    }
+  });
+
+  var scene = this;
+  Object.defineProperty(triangle, 'prefetchCode', {
+    value: [a, b, c].map(function(point, i) {
+      var _x = scene.alloc();
+      var _y = scene.alloc();
+
+      triangle.points.push([_x, _y]);
+
+      return printf(
+      '  vec3 triangle_%i_%i = vec3(sample(%i, %i), sample(%i, %i), 0.0);\n',
+      triangle.shapeId,
+      i,
+      _x.position[0].toFixed(1),
+      _x.position[1].toFixed(1),
+      _y.position[0].toFixed(1),
+      _y.position[1].toFixed(1))
+    }).join('\n')
+  });
+
+  console.log(triangle.prefetchCode)
+
+  Object.defineProperty(triangle, 'code', {
+    value: printf(
+      '    float %s = solid_triangle(position, triangle_%i_0, triangle_%i_1, triangle_%i_2);\n',
+      triangle.name,
+      triangle.shapeId,
+      triangle.shapeId,
+      triangle.shapeId
+    )
+  });
+
+  return triangle;
+};
+
 // TODO: compute new bounding box, of incoming bounding boxes
 Scene.prototype.createUnion = function(shapes) {
   if (!Array.isArray(shapes)) {
@@ -561,6 +619,8 @@ Scene.prototype.createCut = function(shapes) {
 
   return cut;
 }
+
+
 
 Scene.prototype.getAABB = function() {
   if (this.dirtyBounds) {
