@@ -22,3 +22,10 @@ aabb.merge = function aabbMerge(array, out) {
   }
   return out;
 };
+
+aabb.create = function aabbCreate() {
+  return [
+    [Infinity, Infinity, Infinity],
+    [-Infinity, -Infinity, -Infinity]
+  ];
+}

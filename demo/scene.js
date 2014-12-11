@@ -5,6 +5,7 @@ var createTexture = require('gl-texture2d');
 var show = require('ndarray-show');
 var printf = require('printf');
 var aabb = require('./aabb');
+var Sphere = require('./shape/sphere');
 
 var min = Math.min;
 var max = Math.max;
@@ -98,7 +99,7 @@ Scene.prototype.createShader = function() {
   return this.shader;
 }
 
-Scene.prototype.alloc = function() {
+Scene.prototype.alloc = function(value) {
   var x = this.pointer[0];
   var y = this.pointer[1];
 
@@ -119,6 +120,7 @@ Scene.prototype.alloc = function() {
   function getset(v) {
     if (typeof v !== 'undefined') {
       scene.dirty = true;
+      value = v;
       ops.set(x, y, v);
       return v;
     }
@@ -126,7 +128,21 @@ Scene.prototype.alloc = function() {
     return ops.get(x, y);
   }
 
+  if (typeof value !== 'undefined') {
+    getset(value);
+  }
+
   getset.position = [x, y];
+
+  // allow normal operators to work
+  // e.g. scene.alloc(8) + 1 === 9
+  getset.valueOf = function() {
+    return value;
+  };
+
+  getset.toString = function() {
+    return value + '';
+  }
 
   return getset;
 }
@@ -134,7 +150,15 @@ Scene.prototype.alloc = function() {
 
 Scene.prototype.dirty = false;
 Scene.prototype.shapeId = 0;
-Scene.prototype.createSphere = function(x, y, z, radius, color) {
+Scene.prototype.createSphere = function(x, y, z, radius) {
+
+  return new Sphere([
+    this.alloc(x),
+    this.alloc(y),
+    this.alloc(z)
+  ], this.alloc(radius));
+
+
   var _x = this.alloc();
   var _y = this.alloc();
   var _z = this.alloc();
@@ -148,31 +172,7 @@ Scene.prototype.createSphere = function(x, y, z, radius, color) {
     2: _z
   };
 
-  Object.defineProperty(sphere, 'prefetchCode', {
-    value: printf(
-      '  float Xpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _x.position[0].toFixed(1),
-      _x.position[1].toFixed(1))
 
-    + printf(
-      '  float Ypf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _y.position[0].toFixed(1),
-      _y.position[1].toFixed(1))
-
-    + printf(
-      '  float Zpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _z.position[0].toFixed(1),
-      _z.position[1].toFixed(1))
-
-    + printf(
-      '  float Rpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _r.position[0].toFixed(1),
-      _r.position[1].toFixed(1))
-  });
 
   Object.defineProperty(sphere, 'name', {
     value: 'sphere_' + (this.shapeId++)

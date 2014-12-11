@@ -1,4 +1,4 @@
-var aabb = require('../aabb');
+var aabb = require('./aabb');
 
 module.exports = Shape;
 
@@ -19,10 +19,8 @@ Shape.prototype.id = 0;
 // vec is an array e.g. [1, 2, 3]
 // return boolean
 Shape.prototype.containsVec3 = function shapeContainsVec3(vec) {
-  // return true if the vec3
-
-  return this.bounds.contains(vecArray) &&
-         this.evaluate(vecArray) < 0;
+  return aabb.contains(this.bounds, vec) &&
+         this.evaluate(vec) < 0;
 };
 
 // evaluate the shape's equation (signed distance field) at vec
@@ -32,10 +30,6 @@ Shape.prototype.evaluateVec3 = notImplemented;
 // the Shape constructor will initialize an infinite bounding box
 // in instantiation (located at this.bounds)
 Shape.prototype.computeAABB = notImplemented;
-
-// args: vec3 origin, vec3 direction
-// returns vec3 (e.g. [1, 2, 3])
-Shape.prototype.containsRay = notImplemented;
 
 function notImplemented() {
   throw new Error('not implemented');
