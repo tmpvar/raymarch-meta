@@ -4,6 +4,8 @@ module.exports = Shape;
 
 function Shape() {
   this.id = Shape.createShapeId()
+  this.bounds = aabb.create();
+  this.computeAABB();
 }
 
 Shape.id = 0;
@@ -24,9 +26,17 @@ Shape.prototype.containsVec3 = function shapeContainsVec3(vec) {
 };
 
 // evaluate the shape's equation (signed distance field) at vec
-// returns scalar
-Shape.prototype.evaluateVec3 = function evaluateVec3(vec) {
-  return 0;
-};
+// returns scalar (<0 inside, 0 on boundary, >0 outside)
+Shape.prototype.evaluateVec3 = notImplemented;
 
-// TODO: evaluateRay(vec3 origin, vec3 direction)
+// the Shape constructor will initialize an infinite bounding box
+// in instantiation (located at this.bounds)
+Shape.prototype.computeAABB = notImplemented;
+
+// args: vec3 origin, vec3 direction
+// returns vec3 (e.g. [1, 2, 3])
+Shape.prototype.containsRay = notImplemented;
+
+function notImplemented() {
+  throw new Error('not implemented');
+}
