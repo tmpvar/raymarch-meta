@@ -20,7 +20,7 @@ Shape.prototype.id = 0;
 // return boolean
 Shape.prototype.containsVec3 = function shapeContainsVec3(vec) {
   return aabb.contains(this.bounds, vec) &&
-         this.evaluate(vec) < 0;
+         this.evaluateVec3(vec) < 0;
 };
 
 // evaluate the shape's equation (signed distance field) at vec

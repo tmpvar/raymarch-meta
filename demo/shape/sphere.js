@@ -18,7 +18,10 @@ function Sphere(center, radius) {
 inherits(Sphere, Shape);
 
 Sphere.prototype.evaluateVec3 = function sphereEvaluateVec3(vec) {
-  return this.radius - vec3.distance(this.center, vec3)
+  console.warn(this.radius, vec3.distance(this.center, vec));
+
+
+  return vec3.distance(this.center, vec) - this.radius;
 };
 
 Sphere.prototype.computeAABB = function sphereComputeAABB() {
@@ -26,9 +29,9 @@ Sphere.prototype.computeAABB = function sphereComputeAABB() {
   this.bounds[0][1] = this.center[1] - this.radius;
   this.bounds[0][2] = this.center[2] - this.radius;
 
-  this.bounds[0][0] = this.center[0] - this.radius;
-  this.bounds[0][1] = this.center[1] - this.radius;
-  this.bounds[0][2] = this.center[2] - this.radius;
+  this.bounds[1][0] = this.center[0] + this.radius;
+  this.bounds[1][1] = this.center[1] + this.radius;
+  this.bounds[1][2] = this.center[2] + this.radius;
 }
 
 

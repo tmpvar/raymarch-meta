@@ -83,7 +83,8 @@ var vao = createVAO(gl, [
 ], faceBuf)
 
 var scene = window.scene = new Scene(gl, vert, frag)
-var sphere = scene.createSphere(0.0,0.0,0.0,.5,0.1);
+var sphere = scene.createSphere(0.0,0.0,0.0,.5);
+window.sphere = sphere;
 scene.add(sphere);
 // var sphere2 = scene.createSphere(0, 2.5, 0,0.5,0.1);
 // var sphere3 = scene.createSphere(.40,3,0.0,0.3,0.9,0.1);

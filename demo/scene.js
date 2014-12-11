@@ -121,6 +121,7 @@ Scene.prototype.alloc = function(value) {
     if (typeof v !== 'undefined') {
       scene.dirty = true;
       value = v;
+      console.warn('getset:set', v);
       ops.set(x, y, v);
       return v;
     }
@@ -150,66 +151,13 @@ Scene.prototype.alloc = function(value) {
 
 Scene.prototype.dirty = false;
 Scene.prototype.shapeId = 0;
-Scene.prototype.createSphere = function(x, y, z, radius) {
-
+Scene.prototype.createSphere = function createSphere(x, y, z, radius) {
   return new Sphere([
     this.alloc(x),
     this.alloc(y),
     this.alloc(z)
   ], this.alloc(radius));
-
-
-  var _x = this.alloc();
-  var _y = this.alloc();
-  var _z = this.alloc();
-  var _r = this.alloc();
-
-  // this will eat up 4 spaces in the ops buffer
-  var sphere = {
-    radius: _r,
-    0: _x,
-    1: _y,
-    2: _z
-  };
-
-
-
-  Object.defineProperty(sphere, 'name', {
-    value: 'sphere_' + (this.shapeId++)
-  });
-
-  Object.defineProperty(sphere, 'bounds', {
-    get: function() {
-      var x = _x();
-      var y = _y();
-      var z = _z();
-      var r = _r();
-
-      return [
-        [x - r, y - r, z -r],
-        [x + r, y + r, z + r]
-      ];
-    }
-  });
-
-  Object.defineProperty(sphere, 'code', {
-    value: printf(
-      '    float %s = solid_sphere(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), Rpf_%i);\n',
-      sphere.name,
-      this.shapeId - 1,
-      this.shapeId - 1,
-      this.shapeId - 1,
-      this.shapeId - 1
-    )
-  });
-
-  _x(x);
-  _y(y);
-  _z(z);
-  _r(radius);
-
-  return sphere;
-}
+};
 
 Scene.prototype.createBox = function(x, y, z, width, height, depth, color) {
   var _x = this.alloc();
