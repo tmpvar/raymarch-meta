@@ -18,9 +18,6 @@ function Sphere(center, radius) {
 inherits(Sphere, Shape);
 
 Sphere.prototype.evaluateVec3 = function sphereEvaluateVec3(vec) {
-  console.warn(this.radius, vec3.distance(this.center, vec));
-
-
   return vec3.distance(this.center, vec) - this.radius;
 };
 
