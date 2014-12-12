@@ -1,5 +1,10 @@
 var mat4 = require('gl-mat4');
 var mat3 = require('gl-mat3');
+var vec3 = require('gl-vec3');
+
+// expando the vec3 object with an unproject method
+require('./util/vec3-unproject');
+
 var createBuffer = require('gl-buffer');
 var createTexture = require('gl-texture2d');
 var createVAO = require('gl-vao');
@@ -9,10 +14,10 @@ var Scene = require('./scene')
 var ndarray = require('ndarray');
 var getEye = require('eye-vector');
 var aabb = require('./aabb');
-var vec3 = require('gl-vec3');
 var mouse = {
   down: false,
-  pos: [0, 0]
+  pos: [0, 0, 0],
+  world: [0, 0, 0]
 };
 var eye = [0, 0, 0];
 
@@ -170,6 +175,9 @@ function render() {
 
   clear(gl);
   scene.shader.bind();
+  scene.viewport[2] = gl.canvas.width;
+  scene.viewport[3] = gl.canvas.height;
+
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
   mat4.identity(model);
@@ -252,14 +260,35 @@ function handleMouse(e) {
         var w = gl.canvas.width;
         var h = gl.canvas.height;
         var l = mouse.pos;
+        // TODO: pre-allocate these vectors to avoid gc hickups
         camera.rotate(
           [x/w - .5, y/h - .5,],
           [l[0]/w - .5, l[1]/h - .5]
         )
 
       }
-      mouse.pos = [x, y];
 
+      camera.view(view);
+      getEye(view, eye);
+
+      mouse.pos[0] = x;
+      mouse.pos[1] = y;
+
+      var rayOrigin = vec3.unproject(
+        mouse.world,
+        mouse.pos,
+        view,
+        projection,
+        scene.viewport
+      );
+
+      var rayDirection = vec3.subtract(
+        [0, 0, 0],
+        rayOrigin,
+        eye
+      );
+
+      scene.march(rayOrigin, rayDirection);
     break;
 
     case 'mousewheel':
@@ -269,6 +298,7 @@ function handleMouse(e) {
       e.preventDefault();
     break;
 
+    // TODO: eliminate new array creation below
     case 'keydown' :
       var panSpeed = .01;
       switch (e.keyCode) {
