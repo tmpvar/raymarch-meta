@@ -31,7 +31,6 @@ Sphere.prototype.computeAABB = function sphereComputeAABB() {
   this.bounds[1][2] = this.center[2] + this.radius;
 }
 
-
 Object.defineProperty(Sphere.prototype, 'prefetchCode', {
   get: function getSpherePrefetchCode() {
     return printf(
@@ -60,7 +59,6 @@ Object.defineProperty(Sphere.prototype, 'prefetchCode', {
   }
 });
 
-
 Object.defineProperty(Sphere.prototype, 'code', {
   get: function getSphereCode() {
     return printf(
@@ -73,4 +71,3 @@ Object.defineProperty(Sphere.prototype, 'code', {
     )
   }
 });
-

@@ -58,4 +58,3 @@ aabb.intersectRay = function aabbIntersectRay(box, origin, direction) {
 
   return tmax >= tmin || tmax < 0;
 };
-

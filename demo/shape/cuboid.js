@@ -22,13 +22,13 @@ Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
 };
 
 Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
-  this.bounds[0][0] = this.center[0] - this.dimensions[0] / 2;
-  this.bounds[0][1] = this.center[1] - this.dimensions[1] / 2;
-  this.bounds[0][2] = this.center[2] - this.dimensions[2] / 2;
+  this.bounds[0][0] = this.center[0];
+  this.bounds[0][1] = this.center[1];
+  this.bounds[0][2] = this.center[2];
 
-  this.bounds[1][0] = this.center[0] + this.dimensions[0] / 2;
-  this.bounds[1][1] = this.center[1] + this.dimensions[1] / 2;
-  this.bounds[1][2] = this.center[2] + this.dimensions[2] / 2;
+  this.bounds[1][0] = this.center[0] + this.dimensions[0];
+  this.bounds[1][1] = this.center[1] + this.dimensions[1];
+  this.bounds[1][2] = this.center[2] + this.dimensions[2];
 };
 
 Object.defineProperty(Cuboid.prototype, 'prefetchCode', {
@@ -85,62 +85,3 @@ Object.defineProperty(Cuboid.prototype, 'code', {
     );
   }
 });
-
-//
-/*
-
-
-Scene.prototype.createBox = function(x, y, z, width, height, depth, color) {
-  var _x = this.alloc();
-  var _y = this.alloc();
-  var _z = this.alloc();
-  var _w = this.alloc();
-  var _h = this.alloc();
-  var _d = this.alloc();
-
-  // this will eat up 6 spaces in the ops buffer
-  var box = {
-    0: _x,
-    1: _y,
-    2: _z,
-    3: _w,
-    4: _h,
-    5: _d
-  };
-
-
-
-  Object.defineProperty(box, 'name', {
-    value: 'box_' + (this.shapeId++)
-  });
-
-  Object.defineProperty(box, 'bounds', {
-    get: function() {
-      var x = _x();
-      var y = _y();
-      var z = _z();
-      var w = _w();
-      var h = _h();
-      var d = _d();
-
-      return [
-        [x, y, z],
-        [x + w, y + h, z + d]
-      ];
-    }
-  });
-
-
-
-  _x(x);
-  _y(y);
-  _z(z);
-  _w(width);
-  _h(height);
-  _d(depth);
-
-  return box;
-}
-
-*/
-//

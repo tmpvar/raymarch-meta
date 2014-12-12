@@ -7,6 +7,8 @@ var printf = require('printf');
 var aabb = require('./aabb');
 var Sphere = require('./shape/sphere');
 var Cuboid = require('./shape/cuboid');
+var CappedCylinder = require('./shape/capped-cylinder');
+var Torus = require('./shape/torus');
 
 var min = Math.min;
 var max = Math.max;
@@ -189,7 +191,6 @@ Scene.prototype.alloc = function(value) {
   return getset;
 }
 
-
 Scene.prototype.dirty = false;
 Scene.prototype.shapeId = 0;
 Scene.prototype.createSphere = function createSphere(x, y, z, radius) {
@@ -213,186 +214,25 @@ Scene.prototype.createCuboid = function createCuboid(x, y, z, width, height, dep
   ]);
 };
 
-Scene.prototype.createCappedCylinder = function(x, y, z, radius, height, color) {
-  var _x = this.alloc();
-  var _y = this.alloc();
-  var _z = this.alloc();
-  var _r = this.alloc();
-  var _h = this.alloc();
-
-  var cappedcyl = {
-    0: _x,
-    1: _y,
-    2: _z,
-    3: _r,
-    4: _h
-  };
-
-  Object.defineProperty(cappedcyl, 'prefetchCode', {
-    value: printf(
-      '  float Xpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _x.position[0].toFixed(1),
-      _x.position[1].toFixed(1))
-
-    + printf(
-      '  float Ypf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _y.position[0].toFixed(1),
-      _y.position[1].toFixed(1))
-
-    + printf(
-      '  float Zpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _z.position[0].toFixed(1),
-      _z.position[1].toFixed(1))
-
-    + printf(
-      '  float Rpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _r.position[0].toFixed(1),
-      _r.position[1].toFixed(1))
-
-    + printf(
-      '  float Hpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _h.position[0].toFixed(1),
-      _h.position[1].toFixed(1))
-  });
-
-  Object.defineProperty(cappedcyl, 'name', {
-    value: 'cappedcyl_' + (this.shapeId++)
-  });
-
-
-  Object.defineProperty(cappedcyl, 'bounds', {
-    get: function() {
-      var r = _r();
-      var x = _x();
-      var y = _y();
-      var z = _z();
-      var h = _h();
-
-
-      return [
-        [x - r, y - h, z - r],
-        [x + r, y + h, z + r]
-      ];
-    }
-  });
-
-  Object.defineProperty(cappedcyl, 'code', {
-    value: printf(
-      '    float %s = solid_capped_cylinder(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), vec2(Rpf_%i, Hpf_%i) );\n',
-      cappedcyl.name,
-      this.shapeId - 1,
-      this.shapeId - 1,
-      this.shapeId - 1,
-      this.shapeId - 1,
-      this.shapeId - 1
-    )
-  });
-
-  _x(x);
-  _y(y);
-  _z(z);
-  _r(radius);
-  _h(height);
-
-  return cappedcyl;
-}
+Scene.prototype.createCappedCylinder = function(x, y, z, radius, height) {
+  return new CappedCylinder([
+    this.alloc(x),
+    this.alloc(y),
+    this.alloc(z)
+  ],
+  this.alloc(radius),
+  this.alloc(height));
+};
 
 Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color) {
-  var _x = this.alloc();
-  var _y = this.alloc();
-  var _z = this.alloc();
-  var _R = this.alloc();
-  var _r = this.alloc();
-
-  var torus = {
-    0: _x,
-    1: _y,
-    2: _z,
-    3: _R,
-    4: _r
-  };
-
-  Object.defineProperty(torus, 'prefetchCode', {
-    value: printf(
-      '  float Xpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _x.position[0].toFixed(1),
-      _x.position[1].toFixed(1))
-
-    + printf(
-      '  float Ypf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _y.position[0].toFixed(1),
-      _y.position[1].toFixed(1))
-
-    + printf(
-      '  float Zpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _z.position[0].toFixed(1),
-      _z.position[1].toFixed(1))
-
-    + printf(
-      '  float Rpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _R.position[0].toFixed(1),
-      _R.position[1].toFixed(1))
-
-    + printf(
-      '  float rpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _r.position[0].toFixed(1),
-      _r.position[1].toFixed(1))
-  });
-
-  Object.defineProperty(torus, 'name', {
-    value: 'torus_' + (this.shapeId++)
-  });
-
-  Object.defineProperty(torus, 'bounds', {
-    get: function() {
-
-      // compute the extent
-      var rminor = _r();
-      var rmajor = _R();
-      // horizontal radius (overall)
-      var hr = rmajor+ rminor;
-
-      var x = _x();
-      var y = _y();
-      var z = _z();
-
-      return [
-        [x - hr, y - rminor, z - hr],
-        [x + hr, y + rminor, z + hr]
-      ];
-    }
-  });
-
-  Object.defineProperty(torus, 'code', {
-    value: printf(
-      '    float %s = solid_torus(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), vec2(Rpf_%i, rpf_%i) );\n',
-      torus.name,
-      this.shapeId - 1,
-      this.shapeId - 1,
-      this.shapeId - 1,
-      this.shapeId - 1,
-      this.shapeId - 1
-    )
-  });
-
-  _x(x);
-  _y(y);
-  _z(z);
-  _R(radiusMajor);
-  _r(radiusMinor);
-
-  return torus;
-}
+  return new Torus([
+    this.alloc(x),
+    this.alloc(y),
+    this.alloc(z)
+  ],
+  this.alloc(radiusMajor),
+  this.alloc(radiusMinor));
+};
 
 // TODO: compute new bounding box, of incoming bounding boxes
 Scene.prototype.createUnion = function(shapes) {
