@@ -20,14 +20,30 @@ function CappedCylinder(center, radius, height) {
 inherits(CappedCylinder, Shape);
 
 var abs = function (a) {
-  return vec2.create( Math.abs(a[0]), Math.abs(a[1]) );
+  var tmp = vec2.create();
+  tmp[0] = Math.abs(a[0]);
+  tmp[1] = Math.abs(a[1]);
+
+  return tmp;
 };
 
 // check: scene.shapes[0].evaluateVec3([1, 1, 1])
 CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec) {
   var d = vec2.create();
 
-  var asdf = abs(vec2.create( vec2.distance(this.center[0], this.center[2]), this.center[1]));
+  var home = vec2.create();
+  home[0] = 0.0;
+  home[1] = 0.0;
+
+  var pxz = vec2.create();
+  pxz[0] = this.center[0];
+  pxz[1] = this.center[2];
+
+  var meh = vec2.create(); // XXX: better variable names
+  meh[0] = vec2.distance(pxz, home);
+  meh[1] = this.center[1];
+  var asdf = abs(meh);
+
   var hr = vec2.create();
   hr[0] = this.height;
   hr[1] = this.radius;
@@ -35,9 +51,8 @@ CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec)
   vec2.subtract(d, asdf, hr);
 
   var tempy = vec2.create();
-  var home = vec2.create();
 
-  vec2.max(tempy, d, vec2.create());
+  vec2.max(tempy, d, home);
   return Math.min(Math.max(d[0], d[1]), 0.0) + vec2.distance(tempy, home);
 };
 
