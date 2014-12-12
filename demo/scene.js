@@ -1,6 +1,6 @@
 var createShader = require('gl-shader-core');
-
-var ndarray = require('ndarray')
+var vec3 = require('gl-vec3');
+var ndarray = require('ndarray');
 var createTexture = require('gl-texture2d');
 var show = require('ndarray-show');
 var printf = require('printf');
@@ -46,6 +46,46 @@ function Scene(gl, vert, frag) {
 
   this._bounds = [[0, 0, 0], [0, 0, 0]];
   this.dirtyBounds = false;
+  this.viewport = [0, 0, 300, 200];
+}
+
+
+var v3temp = [0, 0, 0];
+Scene.prototype.march = function(rayOrigin, rayDirection) {
+  var rayPosition = vec3.clone(rayOrigin);
+
+  // attempt a march
+  var dist = 0;
+
+  var shapes = this.shapes.filter(function(shape) {
+    return !!shape.evaluateVec3
+  });
+
+  var l = shapes.length;
+  var eps = 1/128;
+  for (var step = 0; step<128; step++) {
+
+    var h = Infinity;
+    for (var i=0; i<l; i++) {
+      h = min(h, shapes[i].evaluateVec3(rayPosition));
+
+      if (h<eps) {
+        break;
+      }
+    }
+
+    if (h < eps) {
+      console.log('hit on shape %i (%f)', i, dist)
+      break;
+    }
+
+    dist += h;
+    v3temp[0] = rayDirection[0] * dist;
+    v3temp[1] = rayDirection[1] * dist;
+    v3temp[2] = rayDirection[2] * dist;
+
+    vec3.add(rayPosition, v3temp, rayOrigin);
+  }
 }
 
 Scene.prototype.createShader = function() {
