@@ -84,8 +84,11 @@ var vao = createVAO(gl, [
 
 var scene = window.scene = new Scene(gl, vert, frag)
 var sphere = scene.createSphere(0.0,0.0,0.0,.5);
+var cuboid = scene.createCuboid(0.0,2.5,0.0, .3, 5,.3);
 window.sphere = sphere;
 scene.add(sphere);
+scene.add(cuboid)
+
 // var sphere2 = scene.createSphere(0, 2.5, 0,0.5,0.1);
 // var sphere3 = scene.createSphere(.40,3,0.0,0.3,0.9,0.1);
 // var sphere4 = scene.createSphere(-.40,3,0.0,0.3,0.9,0.1);
@@ -93,7 +96,7 @@ scene.add(sphere);
 // var cyl = scene.createCappedCylinder(0.0,5.5,0.0, 0.5,0.10, 0.1);
 // var box = scene.createBox(0.0,2.5,0.0, .3, 5,.3);
 // var box2 = scene.createBox(0.0, 2.5, -.2, 1, 1, .35)
-// var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
+// var tor = scene.createTorus(0.3,0.2,0.1, 0.3,0.1, 0.1);
 
 // // var boxy = scene.createBox(0.5, 0.4, 0.4,             0.6, 0.2, 0.4,      0.1);
 
@@ -126,7 +129,7 @@ scene.add(sphere);
 // scene.add(cut2);
 // // scene.add(scene.createDisplay(cut));
 
-scene.add(scene.createDisplay([sphere]));
+scene.add(scene.createDisplay([sphere, cuboid]));
 
 window.camera = camera;
 

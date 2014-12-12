@@ -33,7 +33,7 @@ Sphere.prototype.computeAABB = function sphereComputeAABB() {
 
 
 Object.defineProperty(Sphere.prototype, 'prefetchCode', {
-  get: function getSpherePrefectCode() {
+  get: function getSpherePrefetchCode() {
     return printf(
       '  float Xpf_%s = sample(%i, %i);\n',
       this.id,

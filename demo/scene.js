@@ -6,6 +6,7 @@ var show = require('ndarray-show');
 var printf = require('printf');
 var aabb = require('./aabb');
 var Sphere = require('./shape/sphere');
+var Cuboid = require('./shape/cuboid');
 
 var min = Math.min;
 var max = Math.max;
@@ -159,104 +160,18 @@ Scene.prototype.createSphere = function createSphere(x, y, z, radius) {
   ], this.alloc(radius));
 };
 
-Scene.prototype.createBox = function(x, y, z, width, height, depth, color) {
-  var _x = this.alloc();
-  var _y = this.alloc();
-  var _z = this.alloc();
-  var _w = this.alloc();
-  var _h = this.alloc();
-  var _d = this.alloc();
-
-  // this will eat up 6 spaces in the ops buffer
-  var box = {
-    0: _x,
-    1: _y,
-    2: _z,
-    3: _w,
-    4: _h,
-    5: _d
-  };
-
-  Object.defineProperty(box, 'prefetchCode', {
-    value: printf(
-      '  float Xpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _x.position[0].toFixed(1),
-      _x.position[1].toFixed(1))
-
-    + printf(
-      '  float Ypf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _y.position[0].toFixed(1),
-      _y.position[1].toFixed(1))
-
-    + printf(
-      '  float Zpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _z.position[0].toFixed(1),
-      _z.position[1].toFixed(1))
-
-    + printf(
-      '  float Wpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _w.position[0].toFixed(1),
-      _w.position[1].toFixed(1))
-
-    + printf(
-      '  float Hpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _h.position[0].toFixed(1),
-      _h.position[1].toFixed(1))
-
-    + printf(
-      '  float Dpf_%i = sample(%i, %i);\n',
-      this.shapeId,
-      _d.position[0].toFixed(1),
-      _d.position[1].toFixed(1))
-  });
-
-  Object.defineProperty(box, 'name', {
-    value: 'box_' + (this.shapeId++)
-  });
-
-  Object.defineProperty(box, 'bounds', {
-    get: function() {
-      var x = _x();
-      var y = _y();
-      var z = _z();
-      var w = _w();
-      var h = _h();
-      var d = _d();
-
-      return [
-        [x, y, z],
-        [x + w, y + h, z + d]
-      ];
-    }
-  });
-
-  Object.defineProperty(box, 'code', {
-    value: printf(
-      '    float %s = signed_box_distance(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), vec3(Wpf_%i, Hpf_%i, Dpf_%i) );\n',
-      box.name,
-      this.shapeId - 1,
-      this.shapeId - 1,
-      this.shapeId - 1,
-      this.shapeId - 1,
-      this.shapeId - 1,
-      this.shapeId - 1
-    )
-  });
-
-  _x(x);
-  _y(y);
-  _z(z);
-  _w(width);
-  _h(height);
-  _d(depth);
-
-  return box;
-}
+Scene.prototype.createCuboid = function createCuboid(x, y, z, width, height, depth) {
+  return new Cuboid([
+    this.alloc(x),
+    this.alloc(y),
+    this.alloc(z)
+  ],
+  [
+    this.alloc(width),
+    this.alloc(height),
+    this.alloc(depth),
+  ]);
+};
 
 Scene.prototype.createCappedCylinder = function(x, y, z, radius, height, color) {
   var _x = this.alloc();
