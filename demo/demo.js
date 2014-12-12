@@ -16,8 +16,8 @@ var getEye = require('eye-vector');
 var aabb = require('./util/aabb');
 var mouse = {
   down: false,
-  pos: [0, 0, 0],
-  world: [0, 0, 0]
+  pos: [0, 0],
+  far: [0, 0, 0]
 };
 var eye = [0, 0, 0];
 
@@ -258,11 +258,11 @@ function handleMouse(e) {
 
       mouse.pos[0] = x;
       mouse.pos[1] = y;
-      mouse.pos[2] = 1;
 
       var rayDirection = vec3.unproject(
-        [0, 0, 0],
+        mouse.far,
         mouse.pos,
+        1,
         view,
         projection,
         scene.viewport
