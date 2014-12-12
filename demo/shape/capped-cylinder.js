@@ -1,5 +1,6 @@
 var inherits = require('inherits');
 var vec3 = require('gl-vec3');
+var vec2 = require('gl-vec2');
 var printf = require('printf');
 
 var Shape = require('../shape');
@@ -18,9 +19,40 @@ function CappedCylinder(center, radius, height) {
 
 inherits(CappedCylinder, Shape);
 
-CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec) {
-  return 0; // vec3.distance(this.center, vec) - this.radius; // XXX: implement me!
+var abs = function (a) {
+  return vec2.create( Math.abs(a[0]), Math.abs(a[1]) );
 };
+
+CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec) {
+  var d = vec2.create();
+
+  vec2.subtract(d,
+    abs(
+      vec2.create(
+        vec2.distance(this.center[0], this.center[2]),
+        this.center[1])),
+      this.height);
+
+  var tempy = vec2.create();
+  var home = vec2.create();
+
+  vec2.max(tempy, d,
+    vec2.create()
+  );
+  return Math.min(Math.max(d[0], d[1]), 0.0) + vec2.distance(tempy, home);
+};
+
+/*
+float solid_capped_cylinder(vec3 p, vec2 h) {
+  vec2 d =
+  abs(
+    vec2(
+      length(p.xz),
+      p.y)
+    ) - h;
+  return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
+}
+*/
 
 CappedCylinder.prototype.computeAABB = function cuboidComputeAABB() {
   this.bounds[0][0] = this.center[0] - this.radius;
@@ -52,12 +84,12 @@ Object.defineProperty(CappedCylinder.prototype, 'prefetchCode', {
       this.center[2].position[0],
       this.center[2].position[1])
 
+
     + printf(
       '  float Rpf_%i = sample(%i, %i);\n',
       this.id,
       this.radius.position[0],
       this.radius.position[1])
-
     + printf(
       '  float Hpf_%i = sample(%i, %i);\n',
       this.id,
