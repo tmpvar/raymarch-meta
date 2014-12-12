@@ -13,7 +13,7 @@ var varargs = require('varargs');
 var Scene = require('./scene')
 var ndarray = require('ndarray');
 var getEye = require('eye-vector');
-var aabb = require('./aabb');
+var aabb = require('./util/aabb');
 var mouse = {
   down: false,
   pos: [0, 0, 0],

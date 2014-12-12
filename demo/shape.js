@@ -1,4 +1,4 @@
-var aabb = require('./aabb');
+var aabb = require('./util/aabb');
 
 module.exports = Shape;
 
