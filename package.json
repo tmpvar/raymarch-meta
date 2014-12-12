@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "brfs": "^1.2.0",
-    "eye-vector": "0.0.0",
     "gl-buffer": "^2.1.1",
     "gl-mat3": "^1.0.0",
     "gl-shader-core": "^2.2.0",

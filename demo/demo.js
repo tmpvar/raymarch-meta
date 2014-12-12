@@ -12,7 +12,7 @@ var fs = require('fs');
 var varargs = require('varargs');
 var Scene = require('./scene')
 var ndarray = require('ndarray');
-var getEye = require('eye-vector');
+
 var aabb = require('./util/aabb');
 var mouse = {
   down: false,
@@ -36,6 +36,15 @@ var view = mat4.create();
 var worldToClip = mat4.create();
 var clipToWorld = mat4.create();
 var v3scratch = [0, 0, 0];
+var m4scratch = mat4.create();
+
+function getEye(out, view) {
+  mat4.invert(m4scratch, viewMatrix);
+  out[0] = scratch[12];
+  out[1] = scratch[13];
+  out[2] = scratch[14]
+  return out;
+}
 
 
 var clear = require('gl-clear')({
@@ -250,11 +259,10 @@ function handleMouse(e) {
           [x/w - .5, y/h - .5,],
           [l[0]/w - .5, l[1]/h - .5]
         )
-
       }
 
       camera.view(view);
-      getEye(view, eye);
+      getEye(eye, view);
 
       mouse.pos[0] = x;
       mouse.pos[1] = y;
