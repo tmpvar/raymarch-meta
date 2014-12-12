@@ -27,8 +27,8 @@ var camera = require('orbit-camera')(
   [0, 1, 0]
 );
 
-var vert = fs.readFileSync(__dirname + '/vert.glsl', 'utf8');
-var frag = fs.readFileSync(__dirname + '/frag.glsl', 'utf8');
+var vert = fs.readFileSync(__dirname + '/shaders/vert.glsl', 'utf8');
+var frag = fs.readFileSync(__dirname + '/shaders/frag.glsl', 'utf8');
 
 var model = mat4.create();;
 var projection = mat4.create();
