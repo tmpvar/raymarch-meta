@@ -13,13 +13,13 @@ aabb.merge = function aabbMerge(array, out) {
   out = out || [[0,0,0], [0,0,0]];
   for (var i = 0; i < array.length; i++) {
     var item = array[i];
-      out[0][0] = min(item[0][0], out[0][0]);
-      out[0][1] = min(item[0][1], out[0][1]);
-      out[0][2] = min(item[0][2], out[0][2]);
+    out[0][0] = min(item[0][0], out[0][0]);
+    out[0][1] = min(item[0][1], out[0][1]);
+    out[0][2] = min(item[0][2], out[0][2]);
 
-      out[1][0] = max(item[1][0], item[1][0]);
-      out[1][1] = max(item[1][1], item[1][1]);
-      out[1][2] = max(item[1][2], item[1][2]);
+    out[1][0] = max(item[1][0], item[1][0]);
+    out[1][1] = max(item[1][1], item[1][1]);
+    out[1][2] = max(item[1][2], item[1][2]);
   }
   return out;
 };
@@ -30,7 +30,28 @@ aabb.create = function aabbCreate() {
     [-Infinity, -Infinity, -Infinity]
   ];
 };
-window.aabb = aabb;
+
+aabb.initialize = function aabbInitialize(box) {
+  box[0][0] = Infinity;
+  box[0][1] = Infinity;
+  box[0][2] = Infinity;
+
+  box[1][1] = -Infinity;
+  box[1][0] = -Infinity;
+  box[1][2] = -Infinity;
+  return box;
+}
+
+aabb.update = function aabbUpdate(box, vec) {
+  box[0][0] = min(vec[0], box[0][0]);
+  box[0][1] = min(vec[1], box[0][1]);
+  box[0][2] = min(vec[2], box[0][2]);
+
+  box[1][0] = max(vec[0], box[1][0]);
+  box[1][1] = max(vec[1], box[1][1]);
+  box[1][2] = max(vec[2], box[1][2]);
+  return box;
+};
 
 var vec3scratch = [0, 0, 0];
 

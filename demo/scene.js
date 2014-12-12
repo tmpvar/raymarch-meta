@@ -234,7 +234,6 @@ Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color)
   this.alloc(radiusMinor));
 };
 
-// TODO: compute new bounding box, of incoming bounding boxes
 Scene.prototype.createUnion = function(shapes) {
   if (!Array.isArray(shapes)) {
     shapes = [shapes];
@@ -315,28 +314,15 @@ Scene.prototype.getAABB = function() {
   if (this.dirtyBounds) {
     var bounds = this._bounds;
     var shapes = this.shapes;
-
-    bounds[0][0] = Infinity;
-    bounds[0][1] = Infinity;
-    bounds[0][2] = Infinity;
-
-    bounds[1][1] = -Infinity;
-    bounds[1][0] = -Infinity;
-    bounds[1][2] = -Infinity;
+    aabb.initialize(bounds);
 
     for (var i=0; i<shapes.length; i++) {
       var sbounds = shapes[i].bounds;
       if (!sbounds) {
         continue;
       }
-
-      bounds[0][0] = min(sbounds[0][0], bounds[0][0]);
-      bounds[0][1] = min(sbounds[0][1], bounds[0][1]);
-      bounds[0][2] = min(sbounds[0][2], bounds[0][2]);
-
-      bounds[1][0] = max(sbounds[1][0], bounds[1][0]);
-      bounds[1][1] = max(sbounds[1][1], bounds[1][1]);
-      bounds[1][2] = max(sbounds[1][2], bounds[1][2]);
+      aabb.update(bounds, sbounds[0]);
+      aabb.update(bounds, sbounds[1]);
     }
 
     this.dirtyBounds = false;
