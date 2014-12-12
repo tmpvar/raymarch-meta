@@ -23,22 +23,21 @@ var abs = function (a) {
   return vec2.create( Math.abs(a[0]), Math.abs(a[1]) );
 };
 
+// check: scene.shapes[0].evaluateVec3([1, 1, 1])
 CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec) {
   var d = vec2.create();
 
-  vec2.subtract(d,
-    abs(
-      vec2.create(
-        vec2.distance(this.center[0], this.center[2]),
-        this.center[1])),
-      this.height);
+  var asdf = abs(vec2.create( vec2.distance(this.center[0], this.center[2]), this.center[1]));
+  var hr = vec2.create();
+  hr[0] = this.height;
+  hr[1] = this.radius;
+
+  vec2.subtract(d, asdf, hr);
 
   var tempy = vec2.create();
   var home = vec2.create();
 
-  vec2.max(tempy, d,
-    vec2.create()
-  );
+  vec2.max(tempy, d, vec2.create());
   return Math.min(Math.max(d[0], d[1]), 0.0) + vec2.distance(tempy, home);
 };
 
