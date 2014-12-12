@@ -29,18 +29,17 @@ var abs = function (a) {
 
 // check: scene.shapes[0].evaluateVec3([1, 1, 1])
 CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec) {
+
   var d = vec2.create();
 
-  var home = vec2.create();
-  home[0] = 0.0;
-  home[1] = 0.0;
-
+  var origin = vec2.create();
   var pxz = vec2.create();
-  pxz[0] = this.center[0];
-  pxz[1] = this.center[2];
+
+  pxz[0] = vec[0]; // this.center[0];
+  pxz[1] = vec[2]; // this.center[2];
 
   var meh = vec2.create(); // XXX: better variable names
-  meh[0] = vec2.distance(pxz, home);
+  meh[0] = vec2.distance(pxz, origin);
   meh[1] = this.center[1];
   var asdf = abs(meh);
 
@@ -52,8 +51,8 @@ CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec)
 
   var tempy = vec2.create();
 
-  vec2.max(tempy, d, home);
-  return Math.min(Math.max(d[0], d[1]), 0.0) + vec2.distance(tempy, home);
+  vec2.max(tempy, d, origin);
+  return Math.min(Math.max(d[0], d[1]), 0.0) + vec2.distance(tempy, origin);
 };
 
 /*
