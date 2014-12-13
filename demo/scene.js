@@ -192,11 +192,12 @@ Scene.prototype.alloc = function(value) {
 Scene.prototype.dirty = false;
 Scene.prototype.shapeId = 0;
 Scene.prototype.createSphere = function createSphere(x, y, z, radius) {
-  return new Sphere([
+  return new Sphere(
     this.alloc(x),
     this.alloc(y),
-    this.alloc(z)
-  ], this.alloc(radius));
+    this.alloc(z),
+    this.alloc(radius)
+  );
 };
 
 Scene.prototype.createCuboid = function createCuboid(x, y, z, width, height, depth) {
