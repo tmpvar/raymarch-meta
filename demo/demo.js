@@ -104,7 +104,7 @@ var sphere3 = scene.createSphere(.40,3,0.0,0.3,0.9,0.1);
 var sphere4 = scene.createSphere(-.40,3,0.0,0.3,0.9,0.1);
 
 var cyl = scene.createCappedCylinder(0.0,5.5,0.0, 0.5,0.10, 0.1);
-var box = scene.createCuboid(0.0,2.5,0.0, .3, 5,.3);
+var box = scene.createCuboid(0.0,0.0,0.0, 1, 1, 1);
 var box2 = scene.createCuboid(0.0, 2.5, -.2, 1, 1, .35)
 var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
 
@@ -129,7 +129,7 @@ scene.add(tor);
 scene.add(cut1);
 scene.add(cut2);
 
-scene.add(scene.createDisplay([cut1, cut2, mouseCut, tor]));
+scene.add(scene.createDisplay([box, cut1, cut2, mouseCut, tor]));
 
 window.camera = camera;
 

@@ -1,9 +1,14 @@
 var inherits = require('inherits');
 var vec3 = require('gl-vec3');
+require('../util/vec3-unproject');
 var printf = require('printf');
 
 var Shape = require('../shape');
 
+var min = Math.min;
+var max = Math.max;
+
+var zero = [0,0,0];
 module.exports = Cuboid;
 
 function Cuboid(center, dimensions) {
@@ -19,12 +24,13 @@ inherits(Cuboid, Shape);
 
 Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
   var d = vec3.create();
-  vec3.subtract(d, vec3.abs(vec), this.dimensions);
+  var scaledDimensions = vec3.create();
+  vec3.scale(scaledDimensions, this.dimensions, 0.5);
+  vec3.subtract(d, vec3.abs(vec), scaledDimensions);
 
-  var origin = vec3.create();
   var temp = vec3.create();
-  vec3.max(temp, d, origin);
-  return Math.min(Math.max(d[0], Math.max(d[1], d[2])), 0.0) + vec3.distance(temp, origin);
+  vec3.max(temp, d, zero);
+  return min(max(d[0], max(d[1], d[2])), 0.0) + vec3.distance(temp, zero);
 };
 
 /*
