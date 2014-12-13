@@ -14,8 +14,6 @@ test('evaluateVec3', function(t) {
   t.ok(box.evaluateVec3([1.01, 0, 0]) > 0, 'outside at x=1.01');
   t.ok(box.evaluateVec3([0, 0, 1.01]) > 0, 'outside at z=1.01');
 
-  // XXX: some of these points might be wrong - will check this afternoon (12/13/14)
-
   // on side border
   t.equal(box.evaluateVec3([0.5, 0, 0]), 0, 'on right border x=0.5');
   t.equal(box.evaluateVec3([0.5, 0, 0]), 0, 'on left border x=-0.5');
