@@ -63,8 +63,8 @@ Scene.prototype.march = function(rayOrigin, rayDirection) {
   });
 
   var l = shapes.length;
-  var eps = 1/128;
-  for (var step = 0; step<128; step++) {
+  var eps = 1/this.raymarch.CYCLES;
+  for (var step = 0; step<this.raymarch.CYCLES; step++) {
 
     var h = Infinity;
     for (var i=0; i<l; i++) {
