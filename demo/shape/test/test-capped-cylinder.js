@@ -25,9 +25,6 @@ test('evaluateVec3', function(t) {
   t.ok(cyl.evaluateVec3([0, -1.1, 0]) > 0, 'outside y=-1.1');
 
   // test the top and bottom (on border)
-  // TODO: this is wrong! the cyl should extend from .5..-.5
-  //       blindly dividing CappedCylinder.height by 2 causes
-  //       the width radius to be modified as well
   t.equal(cyl.evaluateVec3([0, 0.5, 0]), 0, 'on top border y=1.0');
   t.equal(cyl.evaluateVec3([0, -0.5, 0]), 0, 'on bottom border y=-1');
 
