@@ -44,20 +44,20 @@ Object.defineProperty(Sphere.prototype, 'prefetchCode', {
     return printf(
       '  float Xpf_%s = sample(%i, %i);\n',
       this.id,
-      this.center[0].position[0],
-      this.center[0].position[1])
+      this.x.position[0],
+      this.x.position[1])
 
     + printf(
       '  float Ypf_%s = sample(%i, %i);\n',
       this.id,
-      this.center[1].position[0],
-      this.center[1].position[1])
+      this.y.position[0],
+      this.y.position[1])
 
     + printf(
       '  float Zpf_%s = sample(%i, %i);\n',
       this.id,
-      this.center[2].position[0],
-      this.center[2].position[1])
+      this.z.position[0],
+      this.z.position[1])
 
     + printf(
       '  float Rpf_%s = sample(%i, %i);\n',
