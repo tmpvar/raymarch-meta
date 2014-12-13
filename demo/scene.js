@@ -51,7 +51,6 @@ function Scene(gl, vert, frag) {
   this.viewport = [0, 0, 300, 200];
 }
 
-
 var v3temp = [0, 0, 0];
 Scene.prototype.march = function(rayOrigin, rayDirection) {
   var rayPosition = vec3.clone(rayOrigin);

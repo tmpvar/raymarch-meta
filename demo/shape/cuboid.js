@@ -18,8 +18,22 @@ function Cuboid(center, dimensions) {
 inherits(Cuboid, Shape);
 
 Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
-  return 0; // vec3.distance(this.center, vec) - this.radius; // XXX: implement me!
+  var d = vec3.create();
+  vec3.subtract(d, this.abs3(vec), this.dimensions);
+
+  var origin = vec3.create();
+  var temp = vec3.create();
+  vec3.max(temp, d, origin);
+  return Math.min(Math.max(d[0], Math.max(d[1], d[2])), 0.0) + vec3.distance(temp, origin);
 };
+
+/*
+float signed_box_distance(vec3 p, vec3 b) {
+  vec3 d = abs(p) - b;
+  return min(max(d.x,max(d.y,d.z)),0.0) +
+         length(max(d,0.0));
+}
+*/
 
 Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
   this.bounds[0][0] = this.center[0];
