@@ -163,7 +163,6 @@ Scene.prototype.alloc = function(value) {
     if (typeof v !== 'undefined') {
       scene.dirty = true;
       value = v;
-      console.warn('getset:set', v);
       ops.set(x, y, v);
       return v;
     }
@@ -214,13 +213,13 @@ Scene.prototype.createCuboid = function createCuboid(x, y, z, width, height, dep
 };
 
 Scene.prototype.createCappedCylinder = function(x, y, z, radius, height) {
-  return new CappedCylinder([
+  return new CappedCylinder(
     this.alloc(x),
     this.alloc(y),
-    this.alloc(z)
-  ],
-  this.alloc(radius),
-  this.alloc(height));
+    this.alloc(z),
+    this.alloc(radius),
+    this.alloc(height)
+  );
 };
 
 Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color) {

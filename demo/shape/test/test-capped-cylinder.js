@@ -2,7 +2,7 @@ var test = require('tape');
 var Cyl = require('../capped-cylinder')
 
 test('evaluateVec3', function(t) {
-  var cyl = new Cyl([0, 0, 0], 1, 1);
+  var cyl = new Cyl(0, 0, 0, 1, 1);
 
   // inside sides
   t.ok(cyl.evaluateVec3([0, 0, 0]) < 0, 'inside at origin');

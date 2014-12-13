@@ -13,12 +13,16 @@ var max = Math.max;
 
 var v2height = [0, 0];
 var v2scratch = [0, 0];
+var v3scratch = [0, 0, 0];
 var zero = [0,0];
 
 module.exports = CappedCylinder;
 
-function CappedCylinder(center, radius, height) {
-  define(this, 'center', center);
+function CappedCylinder(x, y, z, radius, height) {
+
+  define(this, 'x', x);
+  define(this, 'y', y);
+  define(this, 'z', z);
   define(this, 'radius', radius);
   define(this, 'height', height);
 
@@ -28,6 +32,8 @@ function CappedCylinder(center, radius, height) {
 }
 
 inherits(CappedCylinder, Shape);
+
+// TODO: subtract our position and add tests
 
 CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec) {
   // this order matters.
@@ -54,54 +60,59 @@ CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec)
 };
 
 CappedCylinder.prototype.computeAABB = function cuboidComputeAABB() {
-  this.bounds[0][0] = this.center[0] - this.radius;
-  this.bounds[0][1] = this.center[1] - this.height;
-  this.bounds[0][2] = this.center[2] - this.radius;
+  this.bounds[0][0] = this.x - this.radius;
+  this.bounds[0][1] = this.y - this.height;
+  this.bounds[0][2] = this.z - this.radius;
 
-  this.bounds[1][0] = this.center[0] + this.radius;
-  this.bounds[1][1] = this.center[1] + this.height;
-  this.bounds[1][2] = this.center[2] + this.radius;
+  this.bounds[1][0] = this.x + this.radius;
+  this.bounds[1][1] = this.y + this.height;
+  this.bounds[1][2] = this.z + this.radius;
 };
 
-define(CappedCylinder.prototype, 'prefetchCode', function getCappedCylinderPrefetchCode() {
-  return printf(
-    '  float Xpf_%i = sample(%i, %i);\n',
-    this.id,
-    this.center[0].position[0],
-    this.center[0].position[1])
+Object.defineProperty(CappedCylinder.prototype, 'prefetchCode', {
+  get : function getCappedCylinderPrefetchCode() {
+    return printf(
+      '  float Xpf_%i = sample(%i, %i);\n',
+      this.id,
+      this.x.position[0],
+      this.x.position[1])
 
-  + printf(
-    '  float Ypf_%i = sample(%i, %i);\n',
-    this.id,
-    this.center[1].position[0],
-    this.center[1].position[1])
+    + printf(
+      '  float Ypf_%i = sample(%i, %i);\n',
+      this.id,
+      this.y.position[0],
+      this.y.position[1])
 
-  + printf(
-    '  float Zpf_%i = sample(%i, %i);\n',
-    this.id,
-    this.center[2].position[0],
-    this.center[2].position[1])
+    + printf(
+      '  float Zpf_%i = sample(%i, %i);\n',
+      this.id,
+      this.z.position[0],
+      this.z.position[1])
 
-  + printf(
-    '  float Rpf_%i = sample(%i, %i);\n',
-    this.id,
-    this.radius.position[0],
-    this.radius.position[1])
-  + printf(
-    '  float Hpf_%i = sample(%i, %i);\n',
-    this.id,
-    this.height.position[0],
-    this.height.position[1])
+    + printf(
+      '  float Rpf_%i = sample(%i, %i);\n',
+      this.id,
+      this.radius.position[0],
+      this.radius.position[1])
+
+    + printf(
+      '  float Hpf_%i = sample(%i, %i);\n',
+      this.id,
+      this.height.position[0],
+      this.height.position[1])
+  }
 });
 
-define(CappedCylinder.prototype, 'code', function getCappedCylinderCode() {
-  return printf(
-    '    float %s = solid_capped_cylinder(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), vec2(Rpf_%i, Hpf_%i) );\n',
-    this.name,
-    this.id,
-    this.id,
-    this.id,
-    this.id,
-    this.id
-  );
+Object.defineProperty(CappedCylinder.prototype, 'code', {
+  get : function getCappedCylinderCode() {
+    return printf(
+      '    float %s = solid_capped_cylinder(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), vec2(Rpf_%i, Hpf_%i) );\n',
+      this.name,
+      this.id,
+      this.id,
+      this.id,
+      this.id,
+      this.id
+    );
+  }
 });
