@@ -14,7 +14,8 @@ var max = Math.max;
 var v2height = [0, 0];
 var v2scratch = [0, 0];
 var v3scratch = [0, 0, 0];
-var zero = [0,0];
+var v3pos = [0, 0, 0];
+var zero = [0, 0, 0];
 
 module.exports = CappedCylinder;
 
@@ -33,9 +34,13 @@ function CappedCylinder(x, y, z, radius, height) {
 
 inherits(CappedCylinder, Shape);
 
-// TODO: subtract our position and add tests
-
 CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec) {
+  v3pos[0] = this.x;
+  v3pos[1] = this.y;
+  v3pos[2] = this.z;
+
+  vec3.subtract(v3pos, vec, v3pos);
+
   // this order matters.
   v2height[0] = this.radius;
 
@@ -44,8 +49,8 @@ CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec)
   // half we get back to sanity.
   v2height[1] = this.height/2;
 
-  v2scratch[0] = vec2.length([vec[0], vec[2]]);
-  v2scratch[1] = vec[1];
+  v2scratch[0] = vec2.length([v3pos[0], v3pos[2]]);
+  v2scratch[1] = v3pos[1];
 
   vec2.subtract(
     v2scratch,
