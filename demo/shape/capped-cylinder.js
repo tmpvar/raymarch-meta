@@ -10,7 +10,7 @@ module.exports = CappedCylinder;
 function CappedCylinder(center, radius, height) {
   this.center = center;
   this.radius = radius;
-  this.height = height;
+  this.height = height/2;
 
   Shape.call(this);
 
@@ -19,32 +19,34 @@ function CappedCylinder(center, radius, height) {
 
 inherits(CappedCylinder, Shape);
 
+var abs = function (out, a) {
+  out[0] = Math.abs(a[0]);
+  out[1] = Math.abs(a[1]);
+  return out;
+};
+
+var min = Math.min;
+var max = Math.max;
+
+var v2height = [0, 0];
+var v2scratch = [0, 0];
+var zero = [0,0];
+
 // check: scene.shapes[0].evaluateVec3([1, 1, 1])
 CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec) {
+  // this order matters.
+  v2height[0] = this.radius;
+  v2height[1] = this.height;
 
-  var d = vec2.create();
+  v2scratch[0] = vec2.length([vec[0], vec[2]]);
+  v2scratch[1] = vec[1];
 
-  var origin = vec2.create();
-  var pxz = vec2.create();
+  vec2.subtract(v2scratch, abs(v2scratch, v2scratch), v2height);
 
-  pxz[0] = vec[0]; // this.center[0];
-  pxz[1] = vec[2]; // this.center[2];
-
-  var meh = vec2.create(); // XXX: better variable names
-  meh[0] = vec2.distance(pxz, origin);
-  meh[1] = this.center[1];
-  var asdf = vec2.abs(meh);
-
-  var hr = vec2.create();
-  hr[0] = this.height;
-  hr[1] = this.radius;
-
-  vec2.subtract(d, asdf, hr);
-
-  var tempy = vec2.create();
-
-  vec2.max(tempy, d, origin);
-  return Math.min(Math.max(d[0], d[1]), 0.0) + vec2.distance(tempy, origin);
+  return min(
+    max(v2scratch[0] ,v2scratch[1]), 0.0) +
+    vec2.length(vec2.max(v2scratch, v2scratch, zero)
+  );
 };
 
 /*
