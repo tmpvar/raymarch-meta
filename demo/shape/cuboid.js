@@ -19,7 +19,7 @@ inherits(Cuboid, Shape);
 
 Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
   var d = vec3.create();
-  vec3.subtract(d, this.abs3(vec), this.dimensions);
+  vec3.subtract(d, vec3.abs(vec), this.dimensions);
 
   var origin = vec3.create();
   var temp = vec3.create();

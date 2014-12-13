@@ -1,6 +1,6 @@
 var mat4 = require('gl-mat4');
 var vec3 = require('gl-vec3');
-
+var vec2 = require('gl-vec2');
 
 // Pre-allocated to prevent unecessary garbage collection
 var m4scratch = mat4.create();
@@ -20,4 +20,21 @@ vec3.unproject = function (dest, vec, z, view, proj, viewport) {
   vec3.transformMat4(dest, dest, mat4.invert(m4scratch, m4scratch));
 
   return dest;
+};
+
+vec3.abs = function (a) {
+  var tmp = vec3.create();
+  tmp[0] = Math.abs(a[0]);
+  tmp[1] = Math.abs(a[1]);
+  tmp[2] = Math.abs(a[2]);
+
+  return tmp;
+};
+
+vec2.abs = function (a) {
+  var tmp = vec2.create();
+  tmp[0] = Math.abs(a[0]);
+  tmp[1] = Math.abs(a[1]);
+
+  return tmp;
 };

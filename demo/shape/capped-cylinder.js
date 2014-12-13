@@ -33,7 +33,7 @@ CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec)
   var meh = vec2.create(); // XXX: better variable names
   meh[0] = vec2.distance(pxz, origin);
   meh[1] = this.center[1];
-  var asdf = this.abs2(meh);
+  var asdf = vec2.abs(meh);
 
   var hr = vec2.create();
   hr[0] = this.height;
