@@ -10,7 +10,7 @@ module.exports = CappedCylinder;
 function CappedCylinder(center, radius, height) {
   this.center = center;
   this.radius = radius;
-  this.height = height/2;
+  this.height = height;
 
   Shape.call(this);
 
@@ -36,7 +36,11 @@ var zero = [0,0];
 CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec) {
   // this order matters.
   v2height[0] = this.radius;
-  v2height[1] = this.height;
+
+  // the algorithm below works on symmetry, so when we say
+  // 1 unit tall, it thinks 1.0..-1.0.  By dividing it in
+  // half we get back to sanity.
+  v2height[1] = this.height/2;
 
   v2scratch[0] = vec2.length([vec[0], vec[2]]);
   v2scratch[1] = vec[1];
