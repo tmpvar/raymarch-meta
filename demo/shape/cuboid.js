@@ -16,8 +16,8 @@ function Cuboid(x, y, z, w, h, d) {
   define(this, 'y', y);
   define(this, 'z', z);
   define(this, 'w', w);
-  define(this, 'd', h);
-  define(this, 'h', d);
+  define(this, 'h', h);
+  define(this, 'd', d);
   Shape.call(this);
 
   this.name = 'cuboid_' + this.id;
