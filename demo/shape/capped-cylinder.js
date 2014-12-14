@@ -65,12 +65,14 @@ CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec)
 };
 
 CappedCylinder.prototype.computeAABB = function cuboidComputeAABB() {
+  var h2 = this.height/2;
+
   this.bounds[0][0] = this.x - this.radius;
-  this.bounds[0][1] = this.y - this.height;
+  this.bounds[0][1] = this.y - h2;
   this.bounds[0][2] = this.z - this.radius;
 
   this.bounds[1][0] = this.x + this.radius;
-  this.bounds[1][1] = this.y + this.height;
+  this.bounds[1][1] = this.y + h2;
   this.bounds[1][2] = this.z + this.radius;
 };
 

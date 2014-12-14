@@ -60,3 +60,24 @@ test('CappedCylinder - evaluateVec3 (0, 10, 0)', function(t) {
 
   t.end();
 });
+
+test('CappedCylinder - bounds', function(t) {
+
+  t.deepEqual((new Cyl(0, 0, 0, 1, 1)).bounds, [
+    [-1, -.5, -1],
+    [ 1,  .5,  1],
+  ], 'bounds around origin r=1, h=1');
+
+  t.deepEqual((new Cyl(0, 5, 0, 1, 1)).bounds, [
+    [-1,  4.5, -1],
+    [ 1,  5.5,  1],
+  ], 'bounds around (0, 5, 0) r=1, h=1');
+
+  t.deepEqual((new Cyl(0, 5, 0, 1, 10)).bounds, [
+    [-1,  0, -1],
+    [ 1,  10,  1],
+  ], 'bounds around (0, 5, 0) r=1, h=5');
+
+  t.end();
+});
+
