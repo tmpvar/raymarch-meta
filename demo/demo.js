@@ -17,7 +17,8 @@ var aabb = require('./util/aabb');
 var mouse = {
   down: false,
   pos: [0, 0],
-  far: [0, 0, 0]
+  far: [0, 0, 0],
+  pick: [0, 0]
 };
 var eye = [0, 0, 0];
 
@@ -99,37 +100,40 @@ var vao = createVAO(gl, [
 var scene = window.scene = new Scene(gl, vert, frag)
 
 var sphere = scene.createSphere(0.0,0.0,0.0,.5,0.1);
-var sphere2 = scene.createSphere(0, 2.5, 0,0.5,0.1);
-var sphere3 = scene.createSphere(.40,3,0.0,0.3,0.9,0.1);
-var sphere4 = scene.createSphere(-.40,3,0.0,0.3,0.9,0.1);
+var sphere2 = scene.createSphere(0, -2.5, 0,0.5,0.1);
 
-var cyl = scene.createCappedCylinder(0.0,5.5,0.0, 0.5,0.10, 0.1);
-var box = scene.createCuboid(0.0,0.0,0.0, 1, 1, 1);
-var box2 = scene.createCuboid(0.0, 2.5, -.2, 1, 1, .35)
-var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
+var sphere3 = scene.createSphere(2.5, -2.5, 0,0.9,0.1);
 
-scene.add(cyl);
-scene.add(box);
+//var sphere3 = scene.createSphere(.40,3,0.0,0.3,0.9,0.1);
+//var sphere4 = scene.createSphere(-.40,3,0.0,0.3,0.9,0.1);
 
-var cut1 = scene.createCut(cyl, box);
-var cut2 = scene.createCut(sphere, box);
+// var cyl = scene.createCappedCylinder(0.0,5.5,0.0, 0.5,0.10, 0.1);
+// var box = scene.createCuboid(0.0,0.0,0.0, 1, 1, 1);
+// var box2 = scene.createCuboid(0.0, 2.5, -.2, 1, 1, .35)
+// var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
+
+//scene.add(cyl);
+//scene.add(box);
+
+//var cut1 = scene.createCut(cyl, box);
+//var cut2 = scene.createCut(sphere, box);
 
 scene.add(sphere);
 scene.add(sphere2);
 scene.add(sphere3);
-scene.add(sphere4);
-var mouseBase = scene.createUnion([sphere2, sphere3, sphere4]);
+//scene.add(sphere4);
+//var mouseBase = scene.createUnion([sphere2, sphere3, sphere4]);
 
-scene.add(mouseBase);
-scene.add(box2)
-var mouseCut = scene.createCut(mouseBase, box2);
-scene.add(mouseCut);
-scene.add(tor);
+//scene.add(mouseBase);
+//scene.add(box2)
+//var mouseCut = scene.createCut(mouseBase, box2);
+//scene.add(mouseCut);
+//scene.add(tor);
 
-scene.add(cut1);
-scene.add(cut2);
+//scene.add(cut1);
+//scene.add(cut2);
 
-scene.add(scene.createDisplay([box, cut1, cut2, mouseCut, tor]));
+scene.add(scene.createDisplay([sphere, sphere2, sphere3]));//, sphere3, sphere4]));
 
 window.camera = camera;
 
@@ -256,7 +260,7 @@ function handleMouse(e) {
         var l = mouse.pos;
         // TODO: pre-allocate these vectors to avoid gc hickups
         camera.rotate(
-          [x/w - .5, y/h - .5,],
+          [x/w - .5, y/h - .5],
           [l[0]/w - .5, l[1]/h - .5]
         )
       }
@@ -266,10 +270,11 @@ function handleMouse(e) {
 
       mouse.pos[0] = x;
       mouse.pos[1] = y;
+      mouse.pick = [x, gl.canvas.height - y];
 
       var rayDirection = vec3.unproject(
         mouse.far,
-        mouse.pos,
+        mouse.pick,
         1,
         view,
         projection,
