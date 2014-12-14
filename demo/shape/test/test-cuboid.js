@@ -2,7 +2,7 @@ var test = require('tape');
 var Box = require('../cuboid')
 
 test('evaluateVec3', function(t) {
-  var box = new Box([0, 0, 0], [1, 1, 1]);
+  var box = new Box(0, 0, 0, 1, 1, 1);
 
   // inside sides
   t.ok(box.evaluateVec3([0, 0, 0]) < 0, 'inside at origin');

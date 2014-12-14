@@ -1,8 +1,8 @@
 var inherits = require('inherits');
 var vec3 = require('gl-vec3');
-require('../util/vec3-unproject');
+require('../util/vec3-unproject')
 var printf = require('printf');
-
+var define = require('../util/define');
 var Shape = require('../shape');
 
 var min = Math.min;
@@ -11,10 +11,13 @@ var max = Math.max;
 var zero = [0,0,0];
 module.exports = Cuboid;
 
-function Cuboid(center, dimensions) {
-  this.center = center;
-  this.dimensions = dimensions;
-
+function Cuboid(x, y, z, w, h, d) {
+  define(this, 'x', x);
+  define(this, 'y', y);
+  define(this, 'z', z);
+  define(this, 'w', w);
+  define(this, 'd', h);
+  define(this, 'h', d);
   Shape.call(this);
 
   this.name = 'cuboid_' + this.id;
@@ -22,15 +25,27 @@ function Cuboid(center, dimensions) {
 
 inherits(Cuboid, Shape);
 
+var scaledDimensions = vec3.create();
+var v3pos = vec3.create();
+var temp = vec3.create();
 Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
-  var d = vec3.create();
-  var scaledDimensions = vec3.create();
-  vec3.scale(scaledDimensions, this.dimensions, 0.5);
-  vec3.subtract(d, vec3.abs(vec), scaledDimensions);
 
-  var temp = vec3.create();
-  vec3.max(temp, d, zero);
-  return min(max(d[0], max(d[1], d[2])), 0.0) + vec3.distance(temp, zero);
+  scaledDimensions[0] = this.w;
+  scaledDimensions[1] = this.h;
+  scaledDimensions[2] = this.d;
+
+  vec3.scale(scaledDimensions, scaledDimensions, 0.5);
+  vec3.subtract(v3pos, vec3.abs(vec), scaledDimensions);
+
+
+  vec3.max(temp, v3pos, zero);
+  return min(
+    max(
+      v3pos[0], max(
+        v3pos[1],
+        v3pos[2]
+      )
+    ), 0.0) + vec3.distance(temp, zero);
 };
 
 /*
@@ -42,16 +57,19 @@ float signed_box_distance(vec3 p, vec3 b) {
 */
 
 Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
-  var halfDimensions = vec3.create();
-  vec3.scale(halfDimensions, this.dimensions, 0.5);
+  scaledDimensions[0] = this.w;
+  scaledDimensions[1] = this.h;
+  scaledDimensions[2] = this.d;
 
-  this.bounds[0][0] = this.center[0] - halfDimensions[0];
-  this.bounds[0][1] = this.center[1] - halfDimensions[1];
-  this.bounds[0][2] = this.center[2] - halfDimensions[2];
+  vec3.scale(scaledDimensions, scaledDimensions, 0.5);
 
-  this.bounds[1][0] = this.center[0] + halfDimensions[0];
-  this.bounds[1][1] = this.center[1] + halfDimensions[1];
-  this.bounds[1][2] = this.center[2] + halfDimensions[2];
+  this.bounds[0][0] = this.x - scaledDimensions[0];
+  this.bounds[0][1] = this.y - scaledDimensions[1];
+  this.bounds[0][2] = this.z - scaledDimensions[2];
+
+  this.bounds[1][0] = this.x + scaledDimensions[0];
+  this.bounds[1][1] = this.y + scaledDimensions[1];
+  this.bounds[1][2] = this.z + scaledDimensions[2];
 };
 
 Object.defineProperty(Cuboid.prototype, 'prefetchCode', {
@@ -59,38 +77,38 @@ Object.defineProperty(Cuboid.prototype, 'prefetchCode', {
     return printf(
       '  float Xpf_%i = sample(%i, %i);\n',
       this.id,
-      this.center[0].position[0],
-      this.center[0].position[1])
+      this.x.position[0],
+      this.x.position[1])
 
     + printf(
       '  float Ypf_%i = sample(%i, %i);\n',
       this.id,
-      this.center[1].position[0],
-      this.center[1].position[1])
+      this.y.position[0],
+      this.y.position[1])
 
     + printf(
       '  float Zpf_%i = sample(%i, %i);\n',
       this.id,
-      this.center[2].position[0],
-      this.center[2].position[1])
+      this.z.position[0],
+      this.z.position[1])
 
     + printf(
       '  float Wpf_%i = sample(%i, %i);\n',
       this.id,
-      this.dimensions[0].position[0],
-      this.dimensions[0].position[1])
+      this.w.position[0],
+      this.w.position[1])
 
     + printf(
       '  float Hpf_%i = sample(%i, %i);\n',
       this.id,
-      this.dimensions[1].position[0],
-      this.dimensions[1].position[1])
+      this.h.position[0],
+      this.h.position[1])
 
     + printf(
       '  float Dpf_%i = sample(%i, %i);\n',
       this.id,
-      this.dimensions[2].position[0],
-      this.dimensions[2].position[1])
+      this.d.position[0],
+      this.d.position[1])
   }
 });
 
