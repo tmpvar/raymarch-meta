@@ -2,6 +2,10 @@ var aabb = require('./util/aabb');
 
 module.exports = Shape;
 
+var Union = require('./shape/op/union');
+var Cut = require('./shape/op/cut');
+
+
 function Shape() {
   this.id = Shape.createShapeId()
   this.bounds = aabb.create();
@@ -21,6 +25,14 @@ Shape.prototype.id = 0;
 Shape.prototype.containsVec3 = function shapeContainsVec3(vec) {
   return aabb.contains(this.bounds, vec) &&
          this.evaluateVec3(vec) < 0;
+};
+
+Shape.prototype.cut = function shapeCutShapes(shapes) {
+  return new Cut(this, shapes);
+};
+
+Shape.prototype.union = function shapeUnionShapes(shapes) {
+  return new Union(shapes.concat(this));
 };
 
 // evaluate the shape's equation (signed distance field) at vec
