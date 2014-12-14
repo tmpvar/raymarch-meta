@@ -1,15 +1,19 @@
 var inherits = require('inherits');
 var vec3 = require('gl-vec3');
+var vec2 = require('gl-vec2');
 var printf = require('printf');
+var define = require('../util/define');
 
 var Shape = require('../shape');
-
+var v2scratch = [0, 0];
 module.exports = Torus;
 
-function Torus(center, radiusMajor, radiusMinor) {
-  this.center = center;
-  this.radiusMajor = radiusMajor;
-  this.radiusMinor = radiusMinor;
+function Torus(x, y, z, radiusMajor, radiusMinor) {
+  define(this, 'x', x);
+  define(this, 'y', y);
+  define(this, 'z', z);
+  define(this, 'radiusMajor', radiusMajor);
+  define(this, 'radiusMinor', radiusMinor);
 
   Shape.call(this);
 
@@ -19,18 +23,24 @@ function Torus(center, radiusMajor, radiusMinor) {
 inherits(Torus, Shape);
 
 Torus.prototype.evaluateVec3 = function torusCylinderEvaluateVec3(vec) {
-  return 0; // vec3.distance(this.center, vec) - this.radius; // XXX: implement me!
+  v2scratch[0] = this.x - vec[0];
+  v2scratch[1] = this.z - vec[2];
+
+  v2scratch[0] = vec2.length(v2scratch) - this.radiusMajor;
+  v2scratch[1] = this.y - vec[1];
+
+  return vec2.length(v2scratch) - this.radiusMinor;
 };
 
 Torus.prototype.computeAABB = function torusComputeAABB() {
   var hr = this.radiusMajor + this.radiusMinor; // horizontal radius (overall)
-  this.bounds[0][0] = this.center[0] - hr
-  this.bounds[0][1] = this.center[1] - this.radiusMinor;
-  this.bounds[0][2] = this.center[2] - hr;
+  this.bounds[0][0] = this.x - hr
+  this.bounds[0][1] = this.y - this.radiusMinor;
+  this.bounds[0][2] = this.z - hr;
 
-  this.bounds[1][0] = this.center[0] + hr;
-  this.bounds[1][1] = this.center[1] + this.radiusMinor;
-  this.bounds[1][2] = this.center[2] + hr;
+  this.bounds[1][0] = this.x + hr;
+  this.bounds[1][1] = this.y + this.radiusMinor;
+  this.bounds[1][2] = this.z + hr;
 };
 
 Object.defineProperty(Torus.prototype, 'prefetchCode', {
@@ -38,20 +48,20 @@ Object.defineProperty(Torus.prototype, 'prefetchCode', {
     return printf(
       '  float Xpf_%i = sample(%i, %i);\n',
       this.id,
-      this.center[0].position[0],
-      this.center[0].position[1])
+      this.x.position[0],
+      this.x.position[1])
 
     + printf(
       '  float Ypf_%i = sample(%i, %i);\n',
       this.id,
-      this.center[1].position[0],
-      this.center[1].position[1])
+      this.y.position[0],
+      this.y.position[1])
 
     + printf(
       '  float Zpf_%i = sample(%i, %i);\n',
       this.id,
-      this.center[2].position[0],
-      this.center[2].position[1])
+      this.z.position[0],
+      this.z.position[1])
 
     + printf(
       '  float Rpf_%i = sample(%i, %i);\n',
