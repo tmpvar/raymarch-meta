@@ -8,6 +8,7 @@ var aabb = require('./util/aabb');
 var Sphere = require('./shape/sphere');
 var Cuboid = require('./shape/cuboid');
 var CappedCylinder = require('./shape/capped-cylinder');
+var Union = require('./shape/op/union');
 var Torus = require('./shape/torus');
 
 var min = Math.min;
@@ -234,40 +235,7 @@ Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color)
 };
 
 Scene.prototype.createUnion = function(shapes) {
-  if (!Array.isArray(shapes)) {
-    shapes = [shapes];
-  }
-
-  var union = {};
-
-  Object.defineProperty(union, 'prefetchCode', {
-    value: ''
-  });
-
-  Object.defineProperty(union, 'name', {
-    value: 'union_' + (this.shapeId++)
-  });
-
-  Object.defineProperty(union, 'bounds', {
-    get: function getUnionBounds() {
-      return aabb.merge(shapes.map(function(shape) { return shape.bounds }));
-    }
-  });
-
-  shapes = shapes.filter(function(shape) {
-    return !!shape.name;
-  });
-
-  var first = shapes.shift();
-
-  Object.defineProperty(union, 'code', {
-    value : '    float ' + union.name + ' = ' + first.name + ';\n' + shapes.map(function(shape) {
-      if (!shape.name) { return false; }
-      return '    ' + union.name + ' =  min(' + union.name + ', ' + shape.name + ');';
-    }).filter(Boolean).join('\n') + '\n'
-  });
-
-  return union;
+  return new Union(shapes);
 }
 
 Scene.prototype.createCut = function(shapes) {
