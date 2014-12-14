@@ -109,28 +109,13 @@ var box = scene.createCuboid(0.0,0.0,0.0, 1, 1, 1);
 var box2 = scene.createCuboid(0.0, 2.5, -.2, 1, 1, .35)
 var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
 
-scene.add(cyl);
-scene.add(box);
-
 var cut1 = scene.createCut(cyl, box);
 var cut2 = scene.createCut(sphere, box);
 
-scene.add(sphere);
-scene.add(sphere2);
-scene.add(sphere3);
-scene.add(sphere4);
 var mouseBase = scene.createUnion([sphere2, sphere3, sphere4]);
-
-scene.add(mouseBase);
-scene.add(box2)
 var mouseCut = scene.createCut(mouseBase, box2);
-scene.add(mouseCut);
-scene.add(tor);
 
-scene.add(cut1);
-scene.add(cut2);
-
-scene.add(scene.createDisplay([mouseCut, tor, box]));//, sphere3, sphere4]));
+scene.display([mouseCut, tor, box, mouseBase]);//, sphere3, sphere4]));
 
 window.camera = camera;
 
@@ -165,8 +150,11 @@ vertBuf.update(cubeVerts);
 gl.start();
 var start = Date.now();
 function render() {
-
-
+  if (!scene.shader) {
+    console.error('not rendering - no shader');
+    gl.stop();
+    return;
+  }
 
   clear(gl);
   scene.shader.bind();

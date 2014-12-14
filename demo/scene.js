@@ -17,7 +17,6 @@ var max = Math.max;
 
 module.exports = Scene;
 
-// TODO: add vert/frag
 function Scene(gl, vert, frag) {
   this.vert = vert;
   this.frag = frag;
@@ -96,54 +95,36 @@ Scene.prototype.march = function(rayOrigin, rayDirection) {
   }
 }
 
-Scene.prototype.createShader = function() {
+Scene.prototype.createShader = function(frag) {
+  if (!frag) {
+    return;
+  }
+
   this.dirty = true;
   if (this.shader) {
     this.shader.dispose();
   }
 
-  var shapes = this.shapes;
-  var l = shapes.length;
-  var shapeStr = '';
-  var prefetchStr = '';
+  try {
+    this.shader = createShader(
+      this.gl,
+      this.vertSource,
+      frag,
+      [
+        { name: 'worldToClip', type: 'mat4' },
+        { name: 'clipToWorld', type: 'mat4' },
+        { name: 'ops', type: 'sampler2D' },
+        { name: 'camera_eye', type: 'vec3' },
+        { name: 'resolution', type: 'vec2' },
+        { name: 'time', type: 'float' },
 
-  for (var i=0; i<l; i++) {
-    console.log('shapes[' + i + '].prefetchCode: ' + shapes[i].prefetchCode);
-    console.log('shapes[' + i + '].code: ' + shapes[i].code);
-
-    prefetchStr += shapes[i].prefetchCode;
-    shapeStr += shapes[i].code;
+      ],
+      [{ name: 'position', type: 'vec3' }]
+    );
+  } catch (e) {
+    console.log(frag);
+    console.error(e.message);
   }
-
-  console.log("prefetchStr:", prefetchStr);
-
-  var frag = this.fragSource.replace('/* RAYMARCH_SETUP */', prefetchStr);
-  frag = frag.replace('/* RAYMARCH_OPS */', shapeStr);
-  frag = frag.replace(/\/\* OPS_SIZE \*\//g, this.variableMapSize.toFixed(1));
-
-  var raymarchDefines = this.raymarch;
-  Object.keys(raymarchDefines).forEach(function(key) {
-    var exp = new RegExp('\\/\\* RAYMARCH_' + key + ' \\*\\/', 'g');
-    frag = frag.replace(exp, raymarchDefines[key]);
-  });
-
-  console.log('frag:', frag);
-
-  this.shader = createShader(
-    this.gl,
-    this.vertSource,
-    frag,
-    [
-      { name: 'worldToClip', type: 'mat4' },
-      { name: 'clipToWorld', type: 'mat4' },
-      { name: 'ops', type: 'sampler2D' },
-      { name: 'camera_eye', type: 'vec3' },
-      { name: 'resolution', type: 'vec2' },
-      { name: 'time', type: 'float' },
-
-    ],
-    [{ name: 'position', type: 'vec3' }]
-  );
 
   return this.shader;
 }
@@ -210,16 +191,14 @@ Scene.prototype.createSphere = function createSphere(x, y, z, radius) {
 };
 
 Scene.prototype.createCuboid = function createCuboid(x, y, z, width, height, depth) {
-  return new Cuboid([
+  return new Cuboid(
     this.alloc(x),
     this.alloc(y),
-    this.alloc(z)
-  ],
-  [
+    this.alloc(z),
     this.alloc(width, 0.5),
     this.alloc(height, 0.5),
-    this.alloc(depth, 0.5),
-  ]);
+    this.alloc(depth, 0.5)
+  );
 };
 
 Scene.prototype.createCappedCylinder = function(x, y, z, radius, height) {
@@ -270,34 +249,66 @@ Scene.prototype.getAABB = function() {
   return this._bounds;
 }
 
-Scene.prototype.createDisplay = function(shapes) {
+Scene.prototype.display = function sceneDisplay(shapes) {
   if (!Array.isArray(shapes)) {
     shapes = [shapes];
   }
-  var display = {};
 
+  var shaderSource = this.generateFragShader(shapes.concat({
+    get code() {
+      // merge the results into h as a pseudo-union
+      return '    ' + shapes.map(function(shape) {
+        return printf('h = min(h, %s);', shape.name);
+      }).join('\n    ')
+    }
+  }));
 
-  Object.defineProperty(display, 'prefetchCode', {
-    value: ''
-  });
-
-  Object.defineProperty(display, 'code', {
-    value : shapes.map(function(shape) {
-      if (!shape.name) { return false; }
-      return '    h = min(h, ' + shape.name + ');';
-    }).filter(Boolean).join('\n') + '\n'
-  });
-
-  return display;
+  this.createShader(shaderSource);
 }
 
-Scene.prototype.add = function addShape(thing) {
-  this.dirtyBounds = true;
-  this.getAABB();
+Scene.prototype.generateFragShader = function(shapes) {
+  var l = shapes.length;
+  var shapeStr = '';
+  var prefetchStr = '';
+  aabb.initialize(this._bounds);
 
-  this.shapes.push(thing)
+  var handledChildren = {};
+  var seenIds = {};
+  var stack = shapes.slice().reverse();
+  while(stack.length) {
+    var last = stack.length-1;
+    if (!stack[last]) {
+      stack.pop();
+      continue;
+    }
 
-  this.createShader();
+    if (stack[last].shapes && !handledChildren[stack[last].id]) {
+      handledChildren[stack[last].id] = true;
+      stack.push.apply(stack, stack[last].shapes.slice().reverse());
+    } else {
+      var shape = stack.pop();
+
+      if (!seenIds[shape.id]) {
+        prefetchStr += shape.prefetchCode || '';
+        shapeStr += shape.code || '';
+
+        shape.bounds && aabb.merge([shape.bounds], this._bounds);
+        seenIds[shape.id] = true;
+      }
+    }
+  }
+
+  var frag = this.fragSource.replace('/* RAYMARCH_SETUP */', prefetchStr);
+  frag = frag.replace('/* RAYMARCH_OPS */', shapeStr);
+  frag = frag.replace(/\/\* OPS_SIZE \*\//g, this.variableMapSize.toFixed(1));
+
+  var raymarchDefines = this.raymarch;
+  Object.keys(raymarchDefines).forEach(function(key) {
+    var exp = new RegExp('\\/\\* RAYMARCH_' + key + ' \\*\\/', 'g');
+    frag = frag.replace(exp, raymarchDefines[key]);
+  });
+
+  return frag;
 }
 
 Scene.prototype.render = function renderScene() {
