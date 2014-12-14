@@ -2,8 +2,12 @@ var aabb = require('./util/aabb');
 
 module.exports = Shape;
 
+// put these below the exports to avoid recursion
+
 var Union = require('./shape/op/union');
 var Cut = require('./shape/op/cut');
+
+var Mat4 = require('./util/ops-mat4');
 
 
 function Shape() {
@@ -18,6 +22,11 @@ Shape.createShapeId = function createShapeId() {
 }
 
 Shape.prototype.id = 0;
+Shape.prototype.model = null;
+
+Shape.prototype.createModelMatrix = function shapeCreateModelMatrix(array) {
+  this.model = new Mat4(array);
+}
 
 // test if this shape contains the passed vec
 // vec is an array e.g. [1, 2, 3]
