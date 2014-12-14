@@ -56,14 +56,17 @@ Cut.prototype.evaluateVec3 = function unionEvaluateVec3(vec) {
 
 Object.defineProperty(Cut.prototype, 'code', {
   get : function getCutShaderCoder() {
+    var cut = this;
+    var shapes = this.cutters;
+
     return [
-      printf('float %s = %s;', cut.name, first.name)
+      printf('float %s = %s;', cut.name, cut.target.name)
     ].concat(
 
       shapes.map(function(shape) {
         if (!shape.name) { return false}
         return printf(
-          '%s = max(-%s, %s);',
+          '%s = max(%s, -%s);',
           cut.name,
           cut.name,
           shape.name
