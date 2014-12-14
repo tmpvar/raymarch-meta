@@ -42,20 +42,12 @@ Sphere.prototype.computeAABB = function sphereComputeAABB() {
 Object.defineProperty(Sphere.prototype, 'prefetchCode', {
   get: function getSpherePrefetchCode() {
     return printf(
-      '  float Xpf_%s = sample(%i, %i);\n',
+      '  vec3 sphere_center_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
       this.id,
       this.x.position[0],
-      this.x.position[1])
-
-    + printf(
-      '  float Ypf_%s = sample(%i, %i);\n',
-      this.id,
+      this.x.position[1],
       this.y.position[0],
-      this.y.position[1])
-
-    + printf(
-      '  float Zpf_%s = sample(%i, %i);\n',
-      this.id,
+      this.y.position[1],
       this.z.position[0],
       this.z.position[1])
 
@@ -70,7 +62,7 @@ Object.defineProperty(Sphere.prototype, 'prefetchCode', {
 Object.defineProperty(Sphere.prototype, 'code', {
   get: function getSphereCode() {
     return printf(
-      '    float %s = solid_sphere(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), Rpf_%i);\n',
+      '    float %s = solid_sphere(position - sphere_center_%i, Rpf_%i);\n',
       this.name,
       this.id,
       this.id,
