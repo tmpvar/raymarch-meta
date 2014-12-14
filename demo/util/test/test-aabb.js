@@ -34,3 +34,12 @@ test('aabb - merge', function(t) {
 
   t.end();
 });
+
+test('aabb - contains', function (t) {
+  var testBounds = aabb.create();
+
+  aabb.update(testBounds, [ 3.0, 6.0, 2.0 ]);
+  aabb.contains(testBounds, [6, 1, 2]);
+
+  t.end();
+})

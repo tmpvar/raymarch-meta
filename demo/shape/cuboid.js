@@ -11,13 +11,16 @@ var max = Math.max;
 var zero = [0,0,0];
 module.exports = Cuboid;
 
-function Cuboid(x, y, z, w, h, d) {
+function Cuboid(x, y, z, w, h, d, r, g, b) {
   define(this, 'x', x);
   define(this, 'y', y);
   define(this, 'z', z);
   define(this, 'width', w);
   define(this, 'height', h);
   define(this, 'depth', d);
+  define(this, 'r', r);
+  define(this, 'g', g);
+  define(this, 'b', b);
   Shape.call(this);
 
   this.name = 'cuboid_' + this.id;
@@ -64,6 +67,20 @@ Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
   this.bounds[1][1] = this.y + scaledDimensions[1];
   this.bounds[1][2] = this.z + scaledDimensions[2];
 };
+
+Object.defineProperty(Cuboid.prototype, 'colorCode', {
+  get: function getColorCode() {
+    return printf(
+   '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
+      this.id,
+      this.r.position[0],
+      this.r.position[1],
+      this.g.position[0],
+      this.g.position[1],
+      this.b.position[0],
+      this.b.position[1]);
+  }
+});
 
 Object.defineProperty(Cuboid.prototype, 'prefetchCode', {
   get: function getCuboidPrefetchCode() {
@@ -115,7 +132,6 @@ Object.defineProperty(Cuboid.prototype, 'code', {
       this.id,
       this.id,
       this.id,
-      this.id
-    );
+      this.id);
   }
 });

@@ -100,16 +100,16 @@ var vao = createVAO(gl, [
 
 var scene = window.scene = new Scene(gl, vert, frag)
 
-var sphere = cmd.sphere(0.0,0.0,0.0,.5,0.1);
+var sphere = cmd.sphere(   0.0,0.0,0.0, 0.5, 0.1,0.1,1.0);
 
-var sphere2 = cmd.sphere(0, 2.5, 0,0.5,0.1);
-var sphere3 = cmd.sphere(.40,3,0.0,0.3,0.9,0.1);
-var sphere4 = cmd.sphere(-.40,3,0.0,0.3,0.9,0.1);
+var sphere2 = cmd.sphere(  0.0,2.5,0.0, 0.5, 0.1,0.5,0.9);
+var sphere3 = cmd.sphere( 0.40,3.0,0.0, 0.3, 0.6,0.1,0.3);
+var sphere4 = cmd.sphere(-0.40,3.0,0.0, 0.3, 0.9,0.6,0.3);
 
-var cyl = cmd.cylinder(0.0,5.5,0.0, 0.5,0.10, 0.1);
-var box = cmd.cube(0.0, 0.0, 0.0, 1);
-var box2 = cmd.box(0.0, 2.5, -.25, 2, 2, .75)
-var tor = cmd.torus(0.9,0.5,0.4, 0.3,0.1, 0.1);
+var cyl = cmd.cylinder(0.0,5.5,0.0, 0.5,0.0,0.10, 0.3,0.4,0.5);
+var box = cmd.cube(0.0,0.4,0.0, 0.3, 0.5,0.6,0.7);
+var box2 = cmd.box(0.0,2.5,-0.25, 2.0,2.0,0.75, 1.0,0.1,0.1);
+var tor = cmd.torus(0.9,0.5,0.4, 0.3,0.1, 0.7,0.2,0.5);
 
 var cut1 = cmd.cut(cyl, box);
 var cut2 = cmd.cut(sphere, box);
@@ -118,7 +118,10 @@ var mouseCut = sphere2.union([sphere3, sphere4]).cut(box2);
 var isect = cmd.box(0, 1, 0, 1, .25, 1).intersect(
   cmd.sphere(0, .75, 0, .5)
 );
-scene.display([mouseCut, tor, cyl, box, isect]);
+// scene.display([mouseCut, tor, cyl, box, isect]);
+
+scene.display([sphere, sphere2, sphere3, sphere4, cyl, box, tor, box2]);
+//scene.display([sphere, tor]);
 
 window.camera = camera;
 
@@ -270,7 +273,16 @@ function handleMouse(e) {
       );
 
       vec3.normalize(rayDirection, rayDirection)
-      scene.march(eye, rayDirection);
+      var shapeFound = scene.march(eye, rayDirection);
+      if (shapeFound) {
+        console.log(shapeFound);
+
+        shapeFound.r = 1.0;
+        shapeFound.g = 1.0;
+        shapeFound.b = 1.0;
+
+       scene.render();
+      }
     break;
 
     case 'mousewheel':

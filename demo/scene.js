@@ -69,7 +69,9 @@ Scene.prototype.march = function(rayOrigin, rayDirection) {
     }
 
     if (h < eps) {
-      console.log('hit on shape %i (%f)', i, dist, shapes[i])
+//      console.log('hit on shape %i (%f)', i, dist, shapes[i]);
+
+      return shapes[i];
       break;
     }
 
@@ -149,7 +151,15 @@ Scene.prototype.display = function sceneDisplay(shapes) {
     get code() {
       // merge the results into h as a pseudo-union
       return '    ' + shapes.map(function(shape) {
-        return printf('h = min(h, %s);', shape.name);
+
+        var x = 
+          printf('if (%s < h) { color = color_%s; }\n',
+          shape.name,
+          shape.id)
+
+        + printf('    h = min(h, %s);', shape.name);
+
+        return x;
       }).join('\n    ')
     }
   }));
@@ -159,6 +169,7 @@ Scene.prototype.display = function sceneDisplay(shapes) {
 
 Scene.prototype.generateFragShader = function(shapes) {
   var l = shapes.length;
+  var colorStr = '';
   var shapeStr = '';
   var prefetchStr = '';
   aabb.initialize(this._bounds);
@@ -180,6 +191,7 @@ Scene.prototype.generateFragShader = function(shapes) {
       var shape = stack.pop();
 
       if (!seenIds[shape.id]) {
+        colorStr += shape.colorCode || '';
         prefetchStr += shape.prefetchCode || '';
         shapeStr += shape.code || '';
 
@@ -189,7 +201,8 @@ Scene.prototype.generateFragShader = function(shapes) {
     }
   }
 
-  var frag = this.fragSource.replace('/* RAYMARCH_SETUP */', prefetchStr);
+  var frag = this.fragSource.replace('/* RAYMARCH_COLOR */', colorStr);
+  frag = frag.replace('/* RAYMARCH_SETUP */', prefetchStr);
   frag = frag.replace('/* RAYMARCH_OPS */', shapeStr);
   frag = frag.replace(/\/\* OPS_SIZE \*\//g, alloc.variableMapSize.toFixed(1));
 
@@ -198,6 +211,8 @@ Scene.prototype.generateFragShader = function(shapes) {
     var exp = new RegExp('\\/\\* RAYMARCH_' + key + ' \\*\\/', 'g');
     frag = frag.replace(exp, raymarchDefines[key]);
   });
+
+  console.log('frag:', frag);
 
   return frag;
 }
