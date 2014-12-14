@@ -76,7 +76,7 @@ Scene.prototype.march = function(rayOrigin, rayDirection) {
     }
 
     if (h < eps) {
-      console.log('hit on shape %i (%f)', i, dist)
+      console.log('hit on shape %i (%f)', i, dist, shapes[i])
       break;
     }
 
@@ -224,13 +224,13 @@ Scene.prototype.createCappedCylinder = function(x, y, z, radius, height) {
 };
 
 Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color) {
-  return new Torus([
+  return new Torus(
     this.alloc(x),
     this.alloc(y),
-    this.alloc(z)
-  ],
-  this.alloc(radiusMajor),
-  this.alloc(radiusMinor));
+    this.alloc(z),
+    this.alloc(radiusMajor),
+    this.alloc(radiusMinor)
+  );
 };
 
 Scene.prototype.createUnion = function(shapes) {
