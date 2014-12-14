@@ -1,6 +1,7 @@
 module.exports = function define(obj, name, getter) {
   if (typeof getter === 'function') {
     Object.defineProperty(obj, name, {
+      enumerable: true,
       get: function propertyGetter() {
         return getter;
       },
@@ -9,6 +10,10 @@ module.exports = function define(obj, name, getter) {
       }
     });
   } else {
-    Object.defineProperty(obj, name, { value: getter });
+    Object.defineProperty(obj, name, {
+      enumerable: true,
+      writable: true,
+      value: getter
+    });
   }
 };
