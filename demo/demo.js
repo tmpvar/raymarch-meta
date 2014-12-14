@@ -111,8 +111,8 @@ var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
 scene.add(cyl);
 scene.add(box);
 
-var cut1 = scene.createCut([box, cyl])
-var cut2 = scene.createCut([box, sphere])
+var cut1 = scene.createCut(cyl, box);
+var cut2 = scene.createCut(sphere, box);
 
 scene.add(sphere);
 scene.add(sphere2);
@@ -122,7 +122,7 @@ var mouseBase = scene.createUnion([sphere2, sphere3, sphere4]);
 
 scene.add(mouseBase);
 scene.add(box2)
-var mouseCut = scene.createCut([box2, mouseBase]);
+var mouseCut = scene.createCut(mouseBase, box2);
 scene.add(mouseCut);
 scene.add(tor);
 
