@@ -21,8 +21,6 @@ function Scene(gl, vert, frag) {
     CYCLES: 128
   };
 
-  this.shapes = [];
-
   this.scale = [1,1,1];
 
   this.vertSource = vert;
@@ -33,6 +31,8 @@ function Scene(gl, vert, frag) {
   this.viewport = [0, 0, 300, 200];
 
   this.initGL(gl);
+
+  this.displayedObjects = null;
 }
 
 Scene.prototype.initGL = function initializeGL(gl) {
@@ -42,12 +42,16 @@ Scene.prototype.initGL = function initializeGL(gl) {
 
 var v3temp = [0, 0, 0];
 Scene.prototype.march = function(rayOrigin, rayDirection) {
+  if (!this.displayedObjects || !this.displayedObjects.length) {
+    return;
+  }
+
   var rayPosition = vec3.clone(rayOrigin);
 
   // attempt a march
   var dist = 0;
 
-  var shapes = this.shapes.filter(function(shape) {
+  var shapes = this.displayedObjects.filter(function(shape) {
     return !!shape.evaluateVec3
   });
 
@@ -138,6 +142,8 @@ Scene.prototype.display = function sceneDisplay(shapes) {
   if (!Array.isArray(shapes)) {
     shapes = [shapes];
   }
+
+  this.displayedObjects = shapes;
 
   var shaderSource = this.generateFragShader(shapes.concat({
     get code() {
