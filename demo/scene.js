@@ -1,5 +1,6 @@
 var createShader = require('gl-shader-core');
 var vec3 = require('gl-vec3');
+var mat4 = require('gl-mat4');
 var ndarray = require('ndarray');
 var createTexture = require('gl-texture2d');
 var show = require('ndarray-show');
@@ -179,19 +180,35 @@ Scene.prototype.alloc = function(value, multiplier) {
   return getset;
 }
 
+Scene.prototype.allocArray = function(length) {
+  var ret = Array(length);
+
+  for (var i=0; i<length; i++) {
+    ret[i] = this.alloc()
+  }
+
+  return ret;
+}
+
 Scene.prototype.dirty = false;
 Scene.prototype.shapeId = 0;
 Scene.prototype.createSphere = function createSphere(x, y, z, radius) {
-  return new Sphere(
+  var s = new Sphere(
     this.alloc(x),
     this.alloc(y),
     this.alloc(z),
     this.alloc(radius)
   );
+
+  s.createModelMatrix(
+    mat4.identity(this.allocArray(16))
+  );
+
+  return s;
 };
 
 Scene.prototype.createCuboid = function createCuboid(x, y, z, width, height, depth) {
-  return new Cuboid(
+  var s = new Cuboid(
     this.alloc(x),
     this.alloc(y),
     this.alloc(z),
@@ -199,32 +216,52 @@ Scene.prototype.createCuboid = function createCuboid(x, y, z, width, height, dep
     this.alloc(height, 0.5),
     this.alloc(depth, 0.5)
   );
+
+  s.createModelMatrix(
+    mat4.identity(this.allocArray(16))
+  );
+
+  return s;
 };
 
 Scene.prototype.createCappedCylinder = function(x, y, z, radius, height) {
-  return new CappedCylinder(
+  var s = new CappedCylinder(
     this.alloc(x),
     this.alloc(y),
     this.alloc(z),
     this.alloc(radius),
     this.alloc(height)
   );
+
+  s.createModelMatrix(
+    mat4.identity(this.allocArray(16))
+  );
+
+  return s;
 };
 
 Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color) {
-  return new Torus(
+  var s = new Torus(
     this.alloc(x),
     this.alloc(y),
     this.alloc(z),
     this.alloc(radiusMajor),
     this.alloc(radiusMinor)
   );
+
+  s.createModelMatrix(
+    mat4.identity(this.allocArray(16))
+  );
+
+  return s;
 };
 
+// TODO: what does a transform on a union look like?
 Scene.prototype.createUnion = function(shapes) {
   return new Union(shapes);
 }
 
+// TODO: what does a transform on a cut look like?
 Scene.prototype.createCut = function(target, cutters) {
   return new Cut(target, cutters);
 };
