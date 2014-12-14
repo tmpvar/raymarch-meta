@@ -23,7 +23,6 @@ function Scene(gl, vert, frag) {
   this.frag = frag;
 
   this.gl = gl;
-  // this.shader = this.createShader(gl);
 
   this.raymarch = {
     CYCLES: 128
@@ -37,7 +36,7 @@ function Scene(gl, vert, frag) {
   );
 
   this.pointer = [0,0];
-  this.opsTexture = createTexture(gl, this.ops);
+
   this.shapes = [];
 
   this.scale = [1,1,1];
@@ -46,11 +45,17 @@ function Scene(gl, vert, frag) {
 
   this.vertSource = vert;
   this.fragSource = frag;
-  this.shader = this.createShader();
 
   this._bounds = [[0, 0, 0], [0, 0, 0]];
   this.dirtyBounds = false;
   this.viewport = [0, 0, 300, 200];
+
+  this.initGL(gl);
+}
+
+Scene.prototype.initGL = function initializeGL(gl) {
+  this.opsTexture = createTexture(gl, this.ops);
+  this.shader = this.createShader();
 }
 
 var v3temp = [0, 0, 0];
