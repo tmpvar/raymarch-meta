@@ -29,14 +29,17 @@ var scaledDimensions = vec3.create();
 var v3pos = vec3.create();
 var temp = vec3.create();
 Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
+  v3pos[0] = this.x;
+  v3pos[1] = this.y;
+  v3pos[2] = this.z;
 
   scaledDimensions[0] = this.width;
   scaledDimensions[1] = this.height;
   scaledDimensions[2] = this.depth;
 
   vec3.scale(scaledDimensions, scaledDimensions, 0.5);
-  vec3.subtract(v3pos, vec3.abs(vec), scaledDimensions);
-
+  vec3.subtract(v3pos, vec, v3pos);
+  vec3.subtract(v3pos, vec3.abs(v3pos), scaledDimensions);
 
   vec3.max(temp, v3pos, zero);
   return min(
@@ -49,11 +52,9 @@ Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
 };
 
 Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
-  scaledDimensions[0] = this.width;
-  scaledDimensions[1] = this.height;
-  scaledDimensions[2] = this.depth;
-
-  vec3.scale(scaledDimensions, scaledDimensions, 0.5);
+  scaledDimensions[0] = this.width * 0.5;
+  scaledDimensions[1] = this.height * 0.5;
+  scaledDimensions[2] = this.depth * 0.5;
 
   this.bounds[0][0] = this.x - scaledDimensions[0];
   this.bounds[0][1] = this.y - scaledDimensions[1];
