@@ -4,8 +4,9 @@ module.exports = Shape;
 
 // put these below the exports to avoid recursion
 
-var Union = require('./shape/op/union');
 var Cut = require('./shape/op/cut');
+var Intersect = require('./shape/op/intersect');
+var Union = require('./shape/op/union');
 
 var Mat4 = require('./util/ops-mat4');
 
@@ -41,7 +42,13 @@ Shape.prototype.cut = function shapeCutShapes(shapes) {
 };
 
 Shape.prototype.union = function shapeUnionShapes(shapes) {
+  shapes = (Array.isArray(shapes)) ? shapes : [shapes];
   return new Union(shapes.concat(this));
+};
+
+Shape.prototype.intersect = function shapeIntersectShapes(shapes) {
+  shapes = (Array.isArray(shapes)) ? shapes : [shapes];
+  return new Intersect(shapes.concat(this));
 };
 
 // evaluate the shape's equation (signed distance field) at vec

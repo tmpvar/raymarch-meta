@@ -115,8 +115,10 @@ var cut1 = cmd.cut(cyl, box);
 var cut2 = cmd.cut(sphere, box);
 
 var mouseCut = sphere2.union([sphere3, sphere4]).cut(box2);
-
-scene.display([mouseCut, tor, cyl, box]);
+var isect = cmd.box(0, 1, 0, 1, .25, 1).intersect(
+  cmd.sphere(0, .75, 0, .5)
+);
+scene.display([mouseCut, tor, cyl, box, isect]);
 
 window.camera = camera;
 

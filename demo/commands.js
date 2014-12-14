@@ -1,13 +1,21 @@
-var mat4 = require('gl-mat4')
-
+// shapes
 var Sphere = require('./shape/sphere');
 var Cuboid = require('./shape/cuboid');
 var CappedCylinder = require('./shape/capped-cylinder');
+var Torus = require('./shape/torus');
+
+// ops
+var Intersect = require('./shape/op/intersect');
 var Union = require('./shape/op/union');
 var Cut = require('./shape/op/cut');
-var Torus = require('./shape/torus');
-var alloc = require('./util/allocator');
 
+// utils
+var alloc = require('./util/allocator');
+var mat4 = require('gl-mat4')
+
+// helper method to allocate an array of
+// tracked memory that is shared with the
+// gpu
 function allocArray(length) {
   var ret = Array(length);
 
