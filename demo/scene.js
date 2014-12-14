@@ -273,6 +273,32 @@ Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color)
   return s;
 };
 
+/*
+  for boolean operators the main concern is how does
+  the shader represent transforms after the fact.
+
+  Taking some advice from livecad, every operation
+  should return a shape.
+
+  Now, the definition of a shape is quite lax and
+  could be thought of as a unit of work on the gpu.
+
+  When running evaluateVec3 on a Union object there
+  should be no disparity. It needs to work exactly
+  like a normal shape. To do this we invert the
+  model matrix when performing child based
+  evaluateVec3 calls. easy.
+
+  In the shader however, the result of a boolean op
+  is a float. Which means we need to duplicate the
+  shapes involved before performing the actual
+  boolean operation.
+
+  It might be worth generating a new function per
+  boolean operation in the shader generator code
+  to account for this
+*/
+
 // TODO: what does a transform on a union look like?
 Scene.prototype.createUnion = function(shapes) {
   return new Union(shapes);
