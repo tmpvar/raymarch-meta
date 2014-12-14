@@ -15,9 +15,9 @@ function Cuboid(x, y, z, w, h, d) {
   define(this, 'x', x);
   define(this, 'y', y);
   define(this, 'z', z);
-  define(this, 'w', w);
-  define(this, 'h', h);
-  define(this, 'd', d);
+  define(this, 'width', w);
+  define(this, 'height', h);
+  define(this, 'depth', d);
   Shape.call(this);
 
   this.name = 'cuboid_' + this.id;
@@ -30,9 +30,9 @@ var v3pos = vec3.create();
 var temp = vec3.create();
 Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
 
-  scaledDimensions[0] = this.w;
-  scaledDimensions[1] = this.h;
-  scaledDimensions[2] = this.d;
+  scaledDimensions[0] = this.width;
+  scaledDimensions[1] = this.height;
+  scaledDimensions[2] = this.depth;
 
   vec3.scale(scaledDimensions, scaledDimensions, 0.5);
   vec3.subtract(v3pos, vec3.abs(vec), scaledDimensions);
@@ -48,18 +48,10 @@ Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
     ), 0.0) + vec3.distance(temp, zero);
 };
 
-/*
-float signed_box_distance(vec3 p, vec3 b) {
-  vec3 d = abs(p) - b;
-  return min(max(d.x,max(d.y,d.z)),0.0) +
-         length(max(d,0.0));
-}
-*/
-
 Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
-  scaledDimensions[0] = this.w;
-  scaledDimensions[1] = this.h;
-  scaledDimensions[2] = this.d;
+  scaledDimensions[0] = this.width;
+  scaledDimensions[1] = this.height;
+  scaledDimensions[2] = this.depth;
 
   vec3.scale(scaledDimensions, scaledDimensions, 0.5);
 
@@ -95,20 +87,20 @@ Object.defineProperty(Cuboid.prototype, 'prefetchCode', {
     + printf(
       '  float Wpf_%i = sample(%i, %i);\n',
       this.id,
-      this.w.position[0],
-      this.w.position[1])
+      this.width.position[0],
+      this.width.position[1])
 
     + printf(
       '  float Hpf_%i = sample(%i, %i);\n',
       this.id,
-      this.h.position[0],
-      this.h.position[1])
+      this.height.position[0],
+      this.height.position[1])
 
     + printf(
       '  float Dpf_%i = sample(%i, %i);\n',
       this.id,
-      this.d.position[0],
-      this.d.position[1])
+      this.depth.position[0],
+      this.depth.position[1])
   }
 });
 
