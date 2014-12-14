@@ -28,12 +28,15 @@ function allocArray(length) {
 
 var commands = module.exports = {};
 
-commands.sphere = function createSphere(x, y, z, radius) {
+commands.sphere = function createSphere(x, y, z, radius, r, g, b) {
   var s = new Sphere(
     alloc(x),
     alloc(y),
     alloc(z),
-    alloc(radius)
+    alloc(radius),
+    alloc(r),
+    alloc(g),
+    alloc(b)
   );
 
   s.createModelMatrix(
@@ -43,14 +46,17 @@ commands.sphere = function createSphere(x, y, z, radius) {
   return s;
 };
 
-commands.box = function createCuboid(x, y, z, width, height, depth) {
+commands.box = function createCuboid(x, y, z, width, height, depth, r, g, b) {
   var s = new Cuboid(
     alloc(x),
     alloc(y),
     alloc(z),
     alloc(width, 0.5),
     alloc(height, 0.5),
-    alloc(depth, 0.5)
+    alloc(depth, 0.5),
+    alloc(r),
+    alloc(g),
+    alloc(b)
   );
 
   s.createModelMatrix(
@@ -60,14 +66,17 @@ commands.box = function createCuboid(x, y, z, width, height, depth) {
   return s;
 };
 
-commands.cube = function createCuboid(x, y, z, radius) {
+commands.cube = function createCuboid(x, y, z, radius, r, g, b) {
   var s = new Cuboid(
     alloc(x),
     alloc(y),
     alloc(z),
     alloc(radius, 0.5),
     alloc(radius, 0.5),
-    alloc(radius, 0.5)
+    alloc(radius, 0.5),
+    alloc(r),
+    alloc(g),
+    alloc(b)
   );
 
   s.createModelMatrix(
@@ -77,13 +86,16 @@ commands.cube = function createCuboid(x, y, z, radius) {
   return s;
 };
 
-commands.cylinder = function(x, y, z, radius, height) {
+commands.cylinder = function(x, y, z, radius, height, r, g, b) {
   var s = new CappedCylinder(
     alloc(x),
     alloc(y),
     alloc(z),
     alloc(radius),
-    alloc(height)
+    alloc(height),
+    alloc(r),
+    alloc(g),
+    alloc(b)
   );
 
   s.createModelMatrix(
@@ -93,13 +105,16 @@ commands.cylinder = function(x, y, z, radius, height) {
   return s;
 };
 
-commands.torus = function(x, y, z, radiusMajor, radiusMinor, color) {
+commands.torus = function(x, y, z, radiusMajor, radiusMinor, r, g, b) {
   var s = new Torus(
     alloc(x),
     alloc(y),
     alloc(z),
     alloc(radiusMajor),
-    alloc(radiusMinor)
+    alloc(radiusMinor),
+    alloc(r),
+    alloc(g),
+    alloc(b)
   );
 
   s.createModelMatrix(

@@ -3,7 +3,7 @@ var Sphere = require('../sphere')
 
 test('Sphere - evaluateVec3 (0, 0, 0)', function(t) {
 
-  var s = new Sphere(0, 0, 0, 1);
+  var s = new Sphere(0, 0, 0, 1,  0, 0, 0);
 
   // test some interior points
   t.ok(s.evaluateVec3([0.0, 0.0, 0.0]) < 0, '0,0,0 is inside');
@@ -33,7 +33,7 @@ test('Sphere - evaluateVec3 (0, 0, 0)', function(t) {
 
 test('Sphere - evaluateVec3 (0, 5, 0)', function(t) {
 
-  var s = new Sphere(0, 5, 0, 1);
+  var s = new Sphere(0, 5, 0, 1,  0, 0, 0);
 
   // test some interior points
   t.ok(s.evaluateVec3([0.0, 5.0, 0.0]) < 0, '0,0,0 is inside');
@@ -63,22 +63,22 @@ test('Sphere - evaluateVec3 (0, 5, 0)', function(t) {
 
 test('Sphere - bounds', function(t) {
 
-  t.deepEqual((new Sphere(0, 0, 0, 1)).bounds, [
+  t.deepEqual((new Sphere(0, 0, 0, 1,  0, 0, 0)).bounds, [
     [-1, -1, -1],
     [ 1,  1,  1],
   ], 'bounds around origin');
 
-  t.deepEqual((new Sphere(0, 5, 0, 1)).bounds, [
+  t.deepEqual((new Sphere(0, 5, 0, 1,  0, 0, 0)).bounds, [
     [-1,  4, -1],
     [ 1,  6,  1],
   ], 'bounds around (0, 5, 0)');
 
-  t.deepEqual((new Sphere(5, 5, 5, 5)).bounds, [
+  t.deepEqual((new Sphere(5, 5, 5, 5,  0, 0, 0)).bounds, [
     [0,  0, 0],
     [ 10,  10,  10],
   ], 'bounds around (5, 5, 5) r=5');
 
-  t.deepEqual((new Sphere(5, 5, 5, 10)).bounds, [
+  t.deepEqual((new Sphere(5, 5, 5, 10,  0, 0, 0)).bounds, [
     [-5, -5, -5],
     [ 15,  15,  15],
   ], 'bounds around (5, 5, 5) r=10');

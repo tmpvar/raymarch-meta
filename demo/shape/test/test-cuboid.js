@@ -2,7 +2,7 @@ var test = require('tape');
 var Box = require('../cuboid')
 
 test('Cuboid - evaluateVec3', function(t) {
-  var box = new Box(0, 0, 0, 1, 1, 1);
+  var box = new Box(0, 0, 0, 1, 1, 1,  0, 0, 0);
 
   // inside sides
   t.ok(box.evaluateVec3([0, 0, 0]) < 0, 'inside at origin');
@@ -32,7 +32,7 @@ test('Cuboid - evaluateVec3', function(t) {
 });
 
 test('Cuboid - evaluateVec3 at 0, 10, 0', function(t) {
-  var box = new Box(0, 10, 0, 1, 1, 1);
+  var box = new Box(0, 10, 0, 1, 1, 1,  0, 0, 0);
 
   // inside sides
   t.ok(box.evaluateVec3([0, 10, 0]) < 0, 'inside at 0, 10, 0');
@@ -62,17 +62,17 @@ test('Cuboid - evaluateVec3 at 0, 10, 0', function(t) {
 });
 
 test('Cuboid - aabb', function(t) {
-  t.deepEqual((new Box(0, 0, 0, 2, 2, 2)).bounds, [
+  t.deepEqual((new Box(0, 0, 0, 2, 2, 2,  0, 0, 0)).bounds, [
     [-1, -1, -1],
     [ 1,  1,  1],
   ], 'bounds around origin');
 
-  t.deepEqual((new Box(0, 1, 0, 2, 2, 2)).bounds, [
+  t.deepEqual((new Box(0, 1, 0, 2, 2, 2,  0, 0, 0)).bounds, [
     [ -1, 0, -1],
     [ 1,  2,  1],
   ], 'bounds at y=1');
 
-  t.deepEqual((new Box(1, 1, 1, 2, 2, 2)).bounds, [
+  t.deepEqual((new Box(1, 1, 1, 2, 2, 2,  0, 0, 0)).bounds, [
     [ 0, 0, 0],
     [ 2, 2, 2],
   ], 'bounds at 1, 1, 1');

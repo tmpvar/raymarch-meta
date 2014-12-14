@@ -7,7 +7,6 @@ uniform mat4 clipToWorld;
 uniform vec2 resolution;
 uniform float time;
 
-
 varying vec3 v_uv;
 
 #define EPS       0.001
@@ -69,11 +68,13 @@ float solid_capped_cylinder(vec3 p, vec2 h) {
 //   return length(max(abs(p)-b,0.0))-r;
 // }
 
-float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, out vec3 position) {
+float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, out vec3 position, out vec3 color) {
   float dist = 0.0;
   float h = 1.0;
   hit = 10.0;
   float minStep = 0.00001;
+
+/* RAYMARCH_COLOR */
 
 /* RAYMARCH_SETUP */
 
@@ -102,16 +103,17 @@ vec3 gradientNormal(vec3 p) {
   int steps;
   float hit;
   vec3 pos;
+  vec3 scratchColor = vec3(0.0, 0.0, 0.0);
   return normalize(
     vec3(
-      raymarch(p + vec3(EPS, 0, 0), dir, steps, hit, pos) -
-      raymarch(p - vec3(EPS, 0, 0), dir, steps, hit, pos),
+      raymarch(p + vec3(EPS, 0, 0), dir, steps, hit, pos, scratchColor) -
+      raymarch(p - vec3(EPS, 0, 0), dir, steps, hit, pos, scratchColor),
 
-      raymarch(p + vec3(0, EPS, 0), dir, steps, hit, pos) -
-      raymarch(p - vec3(0, EPS, 0), dir, steps, hit, pos),
+      raymarch(p + vec3(0, EPS, 0), dir, steps, hit, pos, scratchColor) -
+      raymarch(p - vec3(0, EPS, 0), dir, steps, hit, pos, scratchColor),
 
-      raymarch(p + vec3(0, 0, EPS), dir, steps, hit, pos) -
-      raymarch(p - vec3(0, 0, EPS), dir, steps, hit, pos)
+      raymarch(p + vec3(0, 0, EPS), dir, steps, hit, pos, scratchColor) -
+      raymarch(p - vec3(0, 0, EPS), dir, steps, hit, pos, scratchColor)
     )
   );
 }
@@ -120,12 +122,14 @@ vec3 computeLight(in vec3 light_pos, in vec3 light_dir, in vec3 surface_position
   int steps;
   float hit;
   vec3 lighthit;
+  vec3 scratchColor = vec3(0.0, 0.0, 0.0);
   float light = raymarch(
     light_pos,
     light_dir,
     steps,
     hit,
-    lighthit
+    lighthit,
+    scratchColor
   );
 
   return vec3(1.0, 0.8, 0.6) * max(
@@ -143,9 +147,9 @@ void main() {
   int steps = 0;
   float hit;
   vec3 surface_position;
-  surface_distance = raymarch(eye, dir, steps, hit, surface_position);
-
   vec3 orange = vec3(1.0, 0.36, 0);
+
+  surface_distance = raymarch(eye, dir, steps, hit, surface_position, orange);
   vec3 surface_normal = gradientNormal(surface_position);
 
   vec3 diffuse = computeLight(

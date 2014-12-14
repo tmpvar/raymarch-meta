@@ -2,7 +2,7 @@ var test = require('tape');
 var Cyl = require('../capped-cylinder')
 
 test('CappedCylinder - evaluateVec3 (0, 0, 0)', function(t) {
-  var cyl = new Cyl(0, 0, 0, 1, 1);
+  var cyl = new Cyl(0, 0, 0, 1, 1,  0, 0, 0);
 
   // inside sides
   t.ok(cyl.evaluateVec3([0, 0, 0]) < 0, 'inside at origin');
@@ -32,7 +32,7 @@ test('CappedCylinder - evaluateVec3 (0, 0, 0)', function(t) {
 });
 
 test('CappedCylinder - evaluateVec3 (0, 10, 0)', function(t) {
-  var cyl = new Cyl(0, 10, 0, 1, 1);
+  var cyl = new Cyl(0, 10, 0, 1, 1,  0, 0, 0);
 
   // inside sides
   t.ok(cyl.evaluateVec3([0, 10, 0]) < 0, 'inside at origin');
@@ -63,7 +63,7 @@ test('CappedCylinder - evaluateVec3 (0, 10, 0)', function(t) {
 
 test('CappedCylinder - bounds', function(t) {
 
-  t.deepEqual((new Cyl(0, 0, 0, 1, 1)).bounds, [
+  t.deepEqual((new Cyl(0, 0, 0, 1, 1,  0, 0, 0)).bounds, [
     [-1, -.5, -1],
     [ 1,  .5,  1],
   ], 'bounds around origin r=1, h=1');
@@ -73,7 +73,7 @@ test('CappedCylinder - bounds', function(t) {
     [ 1,  5.5,  1],
   ], 'bounds around (0, 5, 0) r=1, h=1');
 
-  t.deepEqual((new Cyl(0, 5, 0, 1, 10)).bounds, [
+  t.deepEqual((new Cyl(0, 5, 0, 1, 10,  0, 0, 0)).bounds, [
     [-1,  0, -1],
     [ 1,  10,  1],
   ], 'bounds around (0, 5, 0) r=1, h=5');
