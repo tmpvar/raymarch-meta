@@ -9,6 +9,7 @@ var Sphere = require('./shape/sphere');
 var Cuboid = require('./shape/cuboid');
 var CappedCylinder = require('./shape/capped-cylinder');
 var Union = require('./shape/op/union');
+var Cut = require('./shape/op/cut');
 var Torus = require('./shape/torus');
 
 var min = Math.min;
@@ -238,44 +239,9 @@ Scene.prototype.createUnion = function(shapes) {
   return new Union(shapes);
 }
 
-Scene.prototype.createCut = function(shapes) {
-  if (!Array.isArray(shapes)) {
-    shapes = [shapes];
-  }
-
-  // NOTE: as of right today 12/9/2014, I don't think there
-  //       is a reason to include bounds here.  This may result
-  //       in a less than optimal bounding box overall, but
-  //       it will likely be more robust.
-  //
-  //       will revisit if struck by a bolt of inspiration
-
-  var cut = {};
-
-  shapes = shapes.filter(function(shape) {
-    return !!shape.name;
-  });
-
-  var first = shapes.shift();
-
-
-  Object.defineProperty(cut, 'prefetchCode', {
-    value: ''
-  });
-
-  Object.defineProperty(cut, 'name', {
-    value: 'cut_' + (this.shapeId++)
-  });
-
-  Object.defineProperty(cut, 'code', {
-    value : '    float ' + cut.name + ' = ' + first.name + ';\n' + shapes.map(function(shape) {
-      if (!shape.name) { return false}
-      return '    ' + cut.name + ' =  max(-' + cut.name + ', ' + shape.name + ');';
-    }).filter(Boolean).join('\n') + '\n'
-  });
-
-  return cut;
-}
+Scene.prototype.createCut = function(target, cutters) {
+  return new Cut(target, cutters);
+};
 
 Scene.prototype.getAABB = function() {
   if (this.dirtyBounds) {
