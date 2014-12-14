@@ -148,9 +148,11 @@ Scene.prototype.createShader = function() {
   return this.shader;
 }
 
-Scene.prototype.alloc = function(value) {
+Scene.prototype.alloc = function(value, multiplier) {
   var x = this.pointer[0];
   var y = this.pointer[1];
+
+  multiplier = multiplier || 1;
 
   if (x >= this.variableMapSize) {
     x=0;
@@ -170,7 +172,7 @@ Scene.prototype.alloc = function(value) {
     if (typeof v !== 'undefined') {
       scene.dirty = true;
       value = v;
-      ops.set(x, y, v);
+      ops.set(x, y, v * multiplier);
       return v;
     }
 
@@ -214,9 +216,9 @@ Scene.prototype.createCuboid = function createCuboid(x, y, z, width, height, dep
     this.alloc(z)
   ],
   [
-    this.alloc(width),
-    this.alloc(height),
-    this.alloc(depth),
+    this.alloc(width, 0.5),
+    this.alloc(height, 0.5),
+    this.alloc(depth, 0.5),
   ]);
 };
 
