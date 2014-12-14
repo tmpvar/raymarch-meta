@@ -1,3 +1,7 @@
+var ndarray = require('ndarray');
+var inherits = require('inherits');
+var EventEmitter = require('events').EventEmitter;
+
 module.exports = alloc;
 
 // TODO: enable a realloc situation when memory is exhausted
@@ -8,36 +12,41 @@ module.exports = alloc;
 // ndarray which will be used later to create
 // a texture for controlling the objects in
 // the scene.
-var variableMapSize = 128;
+var variableMapSize = alloc.variableMapSize = 128;
 
-alloc.ops = ndarray(
-  new Float32Array(this.variableMapSize*this.variableMapSize),
-  [this.variableMapSize, this.variableMapSize]
+
+// this is a 3 part vector as we will want to split ops across
+// multiple textures as mentioned above.
+var pointer = [0, 0, 0];
+
+var ops = alloc.ops = ndarray(
+  new Float32Array(variableMapSize*variableMapSize),
+  [variableMapSize, variableMapSize]
 );
 
 function alloc(value, multiplier) {
-  var x = this.pointer[0];
-  var y = this.pointer[1];
+  var x =pointer[0];
+  var y =pointer[1];
 
   multiplier = multiplier || 1;
 
-  if (x >= this.variableMapSize) {
+  if (x >= variableMapSize) {
     x=0;
     y++;
   }
 
-  if (y > this.variableMapSize) {
+  if (y > variableMapSize) {
     throw new Error('ENOMEM');
   }
 
-  this.pointer[0] = x + 1;
-  this.pointer[1] = y;
+  pointer[0] = x + 1;
+  pointer[1] = y;
 
-  var ops = this.ops;
-  var scene = this;
   function getset(v) {
     if (typeof v !== 'undefined') {
-      scene.dirty = true;
+
+      // TODO: enable notifications
+      // scene.dirty = true;
       value = v;
       ops.set(x, y, v * multiplier);
       return v;

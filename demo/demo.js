@@ -11,6 +11,7 @@ var createVAO = require('gl-vao');
 var fs = require('fs');
 var varargs = require('varargs');
 var Scene = require('./scene')
+var cmd = require('./commands')
 var ndarray = require('ndarray');
 
 var aabb = require('./util/aabb');
@@ -99,19 +100,19 @@ var vao = createVAO(gl, [
 
 var scene = window.scene = new Scene(gl, vert, frag)
 
-var sphere = scene.createSphere(0.0,0.0,0.0,.5,0.1);
+var sphere = cmd.sphere(0.0,0.0,0.0,.5,0.1);
 
-var sphere2 = scene.createSphere(0, 2.5, 0,0.5,0.1);
-var sphere3 = scene.createSphere(.40,3,0.0,0.3,0.9,0.1);
-var sphere4 = scene.createSphere(-.40,3,0.0,0.3,0.9,0.1);
+var sphere2 = cmd.sphere(0, 2.5, 0,0.5,0.1);
+var sphere3 = cmd.sphere(.40,3,0.0,0.3,0.9,0.1);
+var sphere4 = cmd.sphere(-.40,3,0.0,0.3,0.9,0.1);
 
-var cyl = scene.createCappedCylinder(0.0,5.5,0.0, 0.5,0.10, 0.1);
-var box = scene.createCube(0.0, 0.0, 0.0, 1);
-var box2 = scene.createBox(0.0, 2.5, -.25, 2, 2, .75)
-var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
+var cyl = cmd.cylinder(0.0,5.5,0.0, 0.5,0.10, 0.1);
+var box = cmd.cube(0.0, 0.0, 0.0, 1);
+var box2 = cmd.box(0.0, 2.5, -.25, 2, 2, .75)
+var tor = cmd.torus(0.9,0.5,0.4, 0.3,0.1, 0.1);
 
-var cut1 = scene.createCut(cyl, box);
-var cut2 = scene.createCut(sphere, box);
+var cut1 = cmd.cut(cyl, box);
+var cut2 = cmd.cut(sphere, box);
 
 var mouseCut = sphere2.union([sphere3, sphere4]).cut(box2);
 

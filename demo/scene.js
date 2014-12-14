@@ -1,17 +1,10 @@
 var createShader = require('gl-shader-core');
 var vec3 = require('gl-vec3');
 var mat4 = require('gl-mat4');
-var ndarray = require('ndarray');
 var createTexture = require('gl-texture2d');
-var show = require('ndarray-show');
 var printf = require('printf');
 var aabb = require('./util/aabb');
-var Sphere = require('./shape/sphere');
-var Cuboid = require('./shape/cuboid');
-var CappedCylinder = require('./shape/capped-cylinder');
-var Union = require('./shape/op/union');
-var Cut = require('./shape/op/cut');
-var Torus = require('./shape/torus');
+var alloc = require('./util/allocator');
 
 var min = Math.min;
 var max = Math.max;
@@ -28,20 +21,9 @@ function Scene(gl, vert, frag) {
     CYCLES: 128
   };
 
-  this.variableMapSize = 16;
-
-  this.ops = ndarray(
-    new Float32Array(this.variableMapSize*this.variableMapSize),
-    [this.variableMapSize, this.variableMapSize]
-  );
-
-  this.pointer = [0,0];
-
   this.shapes = [];
 
   this.scale = [1,1,1];
-
-  this.prefetchCommands = [];
 
   this.vertSource = vert;
   this.fragSource = frag;
@@ -54,7 +36,7 @@ function Scene(gl, vert, frag) {
 }
 
 Scene.prototype.initGL = function initializeGL(gl) {
-  this.opsTexture = createTexture(gl, this.ops);
+  this.opsTexture = createTexture(gl, alloc.ops);
   this.shader = this.createShader();
 }
 
@@ -130,184 +112,7 @@ Scene.prototype.createShader = function(frag) {
   return this.shader;
 }
 
-Scene.prototype.alloc = function(value, multiplier) {
-  var x = this.pointer[0];
-  var y = this.pointer[1];
-
-  multiplier = multiplier || 1;
-
-  if (x >= this.variableMapSize) {
-    x=0;
-    y++;
-  }
-
-  if (y > this.variableMapSize) {
-    throw new Error('ENOMEM');
-  }
-
-  this.pointer[0] = x + 1;
-  this.pointer[1] = y;
-
-  var ops = this.ops;
-  var scene = this;
-  function getset(v) {
-    if (typeof v !== 'undefined') {
-      scene.dirty = true;
-      value = v;
-      ops.set(x, y, v * multiplier);
-      return v;
-    }
-
-    return ops.get(x, y);
-  }
-
-  if (typeof value !== 'undefined') {
-    getset(value);
-  }
-
-  getset.position = [x, y];
-
-  // allow normal operators to work
-  // e.g. scene.alloc(8) + 1 === 9
-  getset.valueOf = function() {
-    return value;
-  };
-
-  getset.toString = function() {
-    return value + '';
-  }
-
-  return getset;
-}
-
-Scene.prototype.allocArray = function(length) {
-  var ret = Array(length);
-
-  for (var i=0; i<length; i++) {
-    ret[i] = this.alloc()
-  }
-
-  return ret;
-}
-
 Scene.prototype.dirty = false;
-Scene.prototype.shapeId = 0;
-Scene.prototype.createSphere = function createSphere(x, y, z, radius) {
-  var s = new Sphere(
-    this.alloc(x),
-    this.alloc(y),
-    this.alloc(z),
-    this.alloc(radius)
-  );
-
-  s.createModelMatrix(
-    mat4.identity(this.allocArray(16))
-  );
-
-  return s;
-};
-
-Scene.prototype.createBox = function createCuboid(x, y, z, width, height, depth) {
-  var s = new Cuboid(
-    this.alloc(x),
-    this.alloc(y),
-    this.alloc(z),
-    this.alloc(width, 0.5),
-    this.alloc(height, 0.5),
-    this.alloc(depth, 0.5)
-  );
-
-  s.createModelMatrix(
-    mat4.identity(this.allocArray(16))
-  );
-
-  return s;
-};
-
-Scene.prototype.createCube = function createCuboid(x, y, z, radius) {
-  var s = new Cuboid(
-    this.alloc(x),
-    this.alloc(y),
-    this.alloc(z),
-    this.alloc(radius, 0.5),
-    this.alloc(radius, 0.5),
-    this.alloc(radius, 0.5)
-  );
-
-  s.createModelMatrix(
-    mat4.identity(this.allocArray(16))
-  );
-
-  return s;
-};
-
-Scene.prototype.createCappedCylinder = function(x, y, z, radius, height) {
-  var s = new CappedCylinder(
-    this.alloc(x),
-    this.alloc(y),
-    this.alloc(z),
-    this.alloc(radius),
-    this.alloc(height)
-  );
-
-  s.createModelMatrix(
-    mat4.identity(this.allocArray(16))
-  );
-
-  return s;
-};
-
-Scene.prototype.createTorus = function(x, y, z, radiusMajor, radiusMinor, color) {
-  var s = new Torus(
-    this.alloc(x),
-    this.alloc(y),
-    this.alloc(z),
-    this.alloc(radiusMajor),
-    this.alloc(radiusMinor)
-  );
-
-  s.createModelMatrix(
-    mat4.identity(this.allocArray(16))
-  );
-
-  return s;
-};
-
-/*
-  for boolean operators the main concern is how does
-  the shader represent transforms after the fact.
-
-  Taking some advice from livecad, every operation
-  should return a shape.
-
-  Now, the definition of a shape is quite lax and
-  could be thought of as a unit of work on the gpu.
-
-  When running evaluateVec3 on a Union object there
-  should be no disparity. It needs to work exactly
-  like a normal shape. To do this we invert the
-  model matrix when performing child based
-  evaluateVec3 calls. easy.
-
-  In the shader however, the result of a boolean op
-  is a float. Which means we need to duplicate the
-  shapes involved before performing the actual
-  boolean operation.
-
-  It might be worth generating a new function per
-  boolean operation in the shader generator code
-  to account for this
-*/
-
-// TODO: what does a transform on a union look like?
-Scene.prototype.createUnion = function(shapes) {
-  return new Union(shapes);
-}
-
-// TODO: what does a transform on a cut look like?
-Scene.prototype.createCut = function(target, cutters) {
-  return new Cut(target, cutters);
-};
 
 Scene.prototype.getAABB = function() {
   if (this.dirtyBounds) {
@@ -380,7 +185,7 @@ Scene.prototype.generateFragShader = function(shapes) {
 
   var frag = this.fragSource.replace('/* RAYMARCH_SETUP */', prefetchStr);
   frag = frag.replace('/* RAYMARCH_OPS */', shapeStr);
-  frag = frag.replace(/\/\* OPS_SIZE \*\//g, this.variableMapSize.toFixed(1));
+  frag = frag.replace(/\/\* OPS_SIZE \*\//g, alloc.variableMapSize.toFixed(1));
 
   var raymarchDefines = this.raymarch;
   Object.keys(raymarchDefines).forEach(function(key) {
@@ -396,7 +201,7 @@ Scene.prototype.render = function renderScene() {
   if (this.dirty) {
     console.log('dirty');
     // TODO: only upload changes
-    this.opsTexture.setPixels(this.ops);
+    this.opsTexture.setPixels(alloc.ops);
     this.dirty = false;
   }
 }
