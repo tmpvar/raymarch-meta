@@ -42,13 +42,16 @@ float signed_box_distance(vec3 p, vec3 b) {
 */
 
 Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
-  this.bounds[0][0] = this.center[0];
-  this.bounds[0][1] = this.center[1];
-  this.bounds[0][2] = this.center[2];
+  var halfDimensions = vec3.create();
+  vec3.scale(halfDimensions, this.dimensions, 0.5);
 
-  this.bounds[1][0] = this.center[0] + this.dimensions[0];
-  this.bounds[1][1] = this.center[1] + this.dimensions[1];
-  this.bounds[1][2] = this.center[2] + this.dimensions[2];
+  this.bounds[0][0] = this.center[0] - halfDimensions[0];
+  this.bounds[0][1] = this.center[1] - halfDimensions[1];
+  this.bounds[0][2] = this.center[2] - halfDimensions[2];
+
+  this.bounds[1][0] = this.center[0] + halfDimensions[0];
+  this.bounds[1][1] = this.center[1] + halfDimensions[1];
+  this.bounds[1][2] = this.center[2] + halfDimensions[2];
 };
 
 Object.defineProperty(Cuboid.prototype, 'prefetchCode', {

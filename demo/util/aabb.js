@@ -17,9 +17,9 @@ aabb.merge = function aabbMerge(array, out) {
     out[0][1] = min(item[0][1], out[0][1]);
     out[0][2] = min(item[0][2], out[0][2]);
 
-    out[1][0] = max(item[1][0], item[1][0]);
-    out[1][1] = max(item[1][1], item[1][1]);
-    out[1][2] = max(item[1][2], item[1][2]);
+    out[1][0] = max(item[1][0], out[1][0]);
+    out[1][1] = max(item[1][1], out[1][1]);
+    out[1][2] = max(item[1][2], out[1][2]);
   }
   return out;
 };
