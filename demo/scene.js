@@ -207,7 +207,7 @@ Scene.prototype.createSphere = function createSphere(x, y, z, radius) {
   return s;
 };
 
-Scene.prototype.createCuboid = function createCuboid(x, y, z, width, height, depth) {
+Scene.prototype.createBox = function createCuboid(x, y, z, width, height, depth) {
   var s = new Cuboid(
     this.alloc(x),
     this.alloc(y),
@@ -215,6 +215,23 @@ Scene.prototype.createCuboid = function createCuboid(x, y, z, width, height, dep
     this.alloc(width, 0.5),
     this.alloc(height, 0.5),
     this.alloc(depth, 0.5)
+  );
+
+  s.createModelMatrix(
+    mat4.identity(this.allocArray(16))
+  );
+
+  return s;
+};
+
+Scene.prototype.createCube = function createCuboid(x, y, z, radius) {
+  var s = new Cuboid(
+    this.alloc(x),
+    this.alloc(y),
+    this.alloc(z),
+    this.alloc(radius, 0.5),
+    this.alloc(radius, 0.5),
+    this.alloc(radius, 0.5)
   );
 
   s.createModelMatrix(

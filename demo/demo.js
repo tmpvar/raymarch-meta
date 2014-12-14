@@ -106,8 +106,8 @@ var sphere3 = scene.createSphere(.40,3,0.0,0.3,0.9,0.1);
 var sphere4 = scene.createSphere(-.40,3,0.0,0.3,0.9,0.1);
 
 var cyl = scene.createCappedCylinder(0.0,5.5,0.0, 0.5,0.10, 0.1);
-var box = scene.createCuboid(0.0,0.0,0.0, 1, 1, 1);
-var box2 = scene.createCuboid(0.0, 2.5, -.25, 2, 2, .75)
+var box = scene.createCube(0.0, 0.0, 0.0, 1);
+var box2 = scene.createBox(0.0, 2.5, -.25, 2, 2, .75)
 var tor = scene.createTorus(0.9,0.5,0.4, 0.3,0.1, 0.1);
 
 var cut1 = scene.createCut(cyl, box);
