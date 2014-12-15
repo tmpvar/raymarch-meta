@@ -1,4 +1,5 @@
 var mat4 = require('gl-mat4');
+var vec3 = require('gl-vec3');
 var aabb = require('./util/aabb');
 var printf = require('printf');
 var Mat4 = require('./util/ops-mat4');
@@ -11,7 +12,9 @@ var Cut = require('./shape/op/cut');
 var Intersect = require('./shape/op/intersect');
 var Union = require('./shape/op/union');
 
-
+var hi = [0, 0, 0];
+var lo = [0, 0, 0];
+var v3scratch = [0, 0, 0]
 
 function Shape() {
   this.id = Shape.createShapeId()
@@ -69,8 +72,6 @@ Shape.prototype.rotate = function shapeRotate(xrads, yrads, zrads) {
 
   return this;
 }
-
-var v3scratch = [0, 0, 0]
 
 Shape.prototype.scale = function shapeScale(x, y, z) {
   v3scratch[0] = x;
@@ -167,6 +168,25 @@ Shape.prototype.evaluateVec3 = notImplemented;
 // the Shape constructor will initialize an infinite bounding box
 // in instantiation (located at this.bounds)
 Shape.prototype.computeAABB = notImplemented;
+
+Shape.prototype.computeTransformedAABB = function shapeComputeTransformedAABB() {
+  if (!this.bounds) {
+    throw new Error('shape does not implement computeAABB:' + this.name);
+  }
+
+  vec3.copy(lo, this.bounds[0]);
+  vec3.copy(hi, this.bounds[1]);
+
+  // reset the aabb
+  aabb.initialize(this.bounds);
+
+  vec3.transformMat4(lo, lo, this.model);
+  vec3.transformMat4(hi, hi, this.model);
+
+  aabb.update(this.bounds, lo);
+  aabb.update(this.bounds, hi);
+  return this.bounds;
+};
 
 function notImplemented() {
   throw new Error('not implemented');

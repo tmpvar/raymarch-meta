@@ -10,9 +10,6 @@ var Shape = require('../shape');
 var min = Math.min;
 var max = Math.max;
 
-
-var hi = [0, 0, 0];
-var lo = [0, 0, 0];
 var zero = [0 , 0, 0];
 module.exports = Cuboid;
 
@@ -57,29 +54,15 @@ Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
 };
 
 Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
-  // if there are no bounds, create some based on the
-  // dimensions of this shape
-  if (!this.bounds) {
-    var w = this.width * 0.5;
-    var h = this.height * 0.5;
-    var d = this.depth * 0.5;
-    this.bounds = [
-      [-w, -h, -d],
-      [ w,  h,  d]
-    ];
-  } else {
-    vec3.copy(lo, this.bounds[0]);
-    vec3.copy(hi, this.bounds[1]);
+  var w = this.width * 0.5;
+  var h = this.height * 0.5;
+  var d = this.depth * 0.5;
+  this.bounds = [
+    [-w, -h, -d],
+    [ w,  h,  d]
+  ];
 
-    // reset the aabb
-    aabb.initialize(this.bounds);
-
-    vec3.transformMat4(lo, lo, this.model);
-    vec3.transformMat4(hi, hi, this.model);
-
-    aabb.update(this.bounds, lo);
-    aabb.update(this.bounds, hi);
-  }
+  this.computeTransformedAABB();
 
   return this.bounds;
 };
