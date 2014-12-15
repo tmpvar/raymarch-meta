@@ -45,26 +45,27 @@ Torus.prototype.computeAABB = function torusComputeAABB() {
 
 Object.defineProperty(Torus.prototype, 'prefetchCode', {
   get: function getTorusPrefetchCode() {
-    return  printf(
-      '  vec2 %s_dimensions = vec2(sample(%i, %i), sample(%i, %i));\n',
-      this.name,
-      this.radiusMajor.position[0],
-      this.radiusMajor.position[1],
-      this.radiusMinor.position[0],
-      this.radiusMinor.position[1]
-    )
+    return [
+      this.invertedMatrixString(),
+      printf(
+        '  vec2 %s_dimensions = vec2(sample(%i, %i), sample(%i, %i));\n',
+        this.name,
+        this.radiusMajor.position[0],
+        this.radiusMajor.position[1],
+        this.radiusMinor.position[0],
+        this.radiusMinor.position[1]
+      )
+    ].join('\n');
   }
 });
 
 Object.defineProperty(Torus.prototype, 'code', {
   get: function getTorusCode() {
-    return [
-      printf(
-        '    float %s = solid_torus(vec4(%s_inv * pos4).xyz, %s_dimensions );\n',
-        this.name,
-        this.name,
-        this.name
-      )
-    ].join('\n')
+    return printf(
+      '    float %s = solid_torus(vec4(%s_inv * pos4).xyz, %s_dimensions );\n',
+      this.name,
+      this.name,
+      this.name
+    );
   }
 });

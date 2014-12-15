@@ -49,7 +49,7 @@ CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec)
   // the algorithm below works on symmetry, so when we say
   // 1 unit tall, it thinks 1.0..-1.0.  By dividing it in
   // half we get back to sanity.
-  v2height[1] = this.height/2;
+  v2height[1] = this.height * 0.5;
 
   v2scratch[0] = vec2.length([v3pos[0], v3pos[2]]);
   v2scratch[1] = v3pos[1];
@@ -78,27 +78,27 @@ CappedCylinder.prototype.computeAABB = function cuboidComputeAABB() {
 
 Object.defineProperty(CappedCylinder.prototype, 'prefetchCode', {
   get : function getCappedCylinderPrefetchCode() {
-    return printf(
-      '  vec2 %s_dimensions = vec2(sample(%i, %i), sample(%i, %i));\n',
-      this.name,
-      this.radius.position[0],
-      this.radius.position[1],
-      this.height.position[0],
-      this.height.position[1]
-    )
+    return [
+      this.invertedMatrixString(),
+      printf(
+        '  vec2 %s_dimensions = vec2(sample(%i, %i), sample(%i, %i));\n',
+        this.name,
+        this.radius.position[0],
+        this.radius.position[1],
+        this.height.position[0],
+        this.height.position[1]
+      )
+    ].join('\n')
   }
 });
 
 Object.defineProperty(CappedCylinder.prototype, 'code', {
   get : function getCappedCylinderCode() {
-    return [
-      this.invertedMatrixString(),
-      printf(
-        '    float %s = solid_capped_cylinder(vec4(%s_inv * pos4).xyz, %s_dimensions);\n',
-        this.name,
-        this.name,
-        this.name
-      )
-    ];
+    return printf(
+      '    float %s = solid_capped_cylinder(vec4(%s_inv * pos4).xyz, %s_dimensions);\n',
+      this.name,
+      this.name,
+      this.name
+    );
   }
 });
