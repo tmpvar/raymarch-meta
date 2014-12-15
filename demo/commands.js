@@ -12,6 +12,7 @@ var Cut = require('./shape/op/cut');
 // utils
 var alloc = require('./util/allocator');
 var mat4 = require('gl-mat4')
+var Mat4 = require('./util/ops-mat4.js');
 
 // helper method to allocate an array of
 // tracked memory that is shared with the
@@ -23,7 +24,7 @@ function allocArray(length, d) {
     ret[i] = alloc(d ? d[i] : 0);
   }
 
-  return ret;
+  return new Mat4(ret);
 }
 
 var commands = module.exports = {};
@@ -39,7 +40,6 @@ commands.sphere = function createSphere(radius, r, g, b, selected) {
   );
 
   s.invertedModel = allocArray(16);
-
   return s;
 };
 
