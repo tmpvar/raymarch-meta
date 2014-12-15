@@ -83,8 +83,8 @@ CappedCylinder.prototype.computeAABB = function cuboidComputeAABB() {
 Object.defineProperty(CappedCylinder.prototype, 'prefetchCode', {
   get : function getCappedCylinderPrefetchCode() {
     return printf(
-      '  vec2 capped_cyl_%i_dimensions = vec2(sample(%i, %i), sample(%i, %i));\n',
-      this.id,
+      '  vec2 %s_dimensions = vec2(sample(%i, %i), sample(%i, %i));\n',
+      this.name,
       this.radius.position[0],
       this.radius.position[1],
       this.height.position[0],
@@ -98,13 +98,10 @@ Object.defineProperty(CappedCylinder.prototype, 'code', {
     return [
       this.invertedMatrixString(),
       printf(
-        '    float %s = solid_capped_cylinder(vec4(%s_inv * pos4).xyz, capped_cyl_%i_dimensions );\n',
+        '    float %s = solid_capped_cylinder(vec4(%s_inv * pos4).xyz, %s_dimensions);\n',
         this.name,
-        this.id,
-        this.id,
-        this.id,
-        this.id,
-        this.id
+        this.name,
+        this.name
       )
     ];
   }

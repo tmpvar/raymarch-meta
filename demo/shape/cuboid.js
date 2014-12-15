@@ -70,8 +70,8 @@ Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
 Object.defineProperty(Cuboid.prototype, 'prefetchCode', {
   get: function getCuboidPrefetchCode() {
     return printf(
-      '  vec3 cuboid_%i_dimensions = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
-      this.id,
+      '  vec3 %s_dimensions = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
+      this.name,
       this.width.position[0],
       this.width.position[1],
       this.height.position[0],
@@ -87,10 +87,10 @@ Object.defineProperty(Cuboid.prototype, 'code', {
     return [
       this.invertedMatrixString(),
       printf(
-        '    float %s = signed_box_distance(vec4(%s_inv * pos4).xyz, cuboid_%i_dimensions );\n',
+        '    float %s = signed_box_distance(vec4(%s_inv * pos4).xyz, %s_dimensions );\n',
         this.name,
         this.name,
-        this.id
+        this.name
       )
     ].join('\n');
   }
