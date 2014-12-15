@@ -3,7 +3,7 @@ var Torus = require('../torus');
 
 test('Torus - evaluateVec3 (0, 0, 0) minor=.25, major=1.0', function(t) {
 
-  var torus = new Torus(0, 0, 0, 1, .25);
+  var torus = new Torus(1, .25);
 
   // outside
   t.ok(torus.evaluateVec3([0, 0, 0]) > 0, '0,0,0 is in the douhnut hole');
@@ -39,7 +39,8 @@ test('Torus - evaluateVec3 (0, 0, 0) minor=.25, major=1.0', function(t) {
 
 test('Torus - evaluateVec3 (5, 5, 0) minor=.25, major=1.0', function(t) {
 
-  var torus = new Torus(5, 5, 0, 1, .25);
+  var torus = new Torus(1, .25);
+  torus.translate(5, 5, 0);
 
   // outside
   t.ok(torus.evaluateVec3([5, 5, 0]) > 0, '5,5,0 is in the douhnut hole');
@@ -48,7 +49,7 @@ test('Torus - evaluateVec3 (5, 5, 0) minor=.25, major=1.0', function(t) {
   t.ok(torus.evaluateVec3([6, 5.3, 0]) > 0, '6,5.3,0 is above');
 
   // on boundary - majorRadius
-  t.equal(torus.evaluateVec3([ 6.25, 5, 0]), 0, '6.25, 0, 0 is on right boundary');
+  t.equal(torus.evaluateVec3([6.25, 5, 0]), 0, '6.25, 0, 0 is on right boundary');
   t.equal(torus.evaluateVec3([3.75, 5, 0]), 0, '-3.75, 0, 0 is on left boundary');
   t.equal(torus.evaluateVec3([5, 5,  1.25]), 0, '5, 5, 1.25 is on far boundary');
   t.equal(torus.evaluateVec3([5, 5, -1.25]), 0, '5, 5, -1.25 is on near boundary');
@@ -75,22 +76,22 @@ test('Torus - evaluateVec3 (5, 5, 0) minor=.25, major=1.0', function(t) {
 
 test('Torus - bounds', function(t) {
 
-  t.deepEqual((new Torus(0, 0, 0, 1, .5)).bounds, [
+  t.deepEqual((new Torus(1, .5)).computeAABB(), [
     [-1.5, -.5, -1.5],
     [ 1.5,  .5,  1.5],
   ], 'bounds around origin');
 
-  t.deepEqual((new Torus(0, 10, 0, 1, .5)).bounds, [
+  t.deepEqual((new Torus(1, .5)).translate(0, 10, 0).computeAABB(), [
     [-1.5, 9.5, -1.5],
     [ 1.5, 10.5,  1.5],
   ], 'bounds around (0, 10, 0)');
 
-  t.deepEqual((new Torus(2, 10, 0, 1, .5)).bounds, [
+  t.deepEqual((new Torus(1, .5)).translate(2, 10, 0).computeAABB(), [
     [ 0.5, 9.5, -1.5],
     [ 3.5, 10.5,  1.5],
   ], 'bounds around (2, 10, 0)');
 
-  t.deepEqual((new Torus(2, 10, 0, 2, .5)).bounds, [
+  t.deepEqual((new Torus(2, .5)).translate(2, 10, 0).computeAABB(), [
     [ -0.5, 9.5, -2.5],
     [ 4.5, 10.5,  2.5],
   ], 'bounds around (2, 10, 0) minor=.5, major=1');
