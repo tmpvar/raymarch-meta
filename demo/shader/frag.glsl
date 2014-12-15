@@ -68,6 +68,12 @@ float solid_capped_cylinder(vec3 p, vec2 h) {
 //   return length(max(abs(p)-b,0.0))-r;
 // }
 
+vec3 selectionColor = vec3(1.0, 0.3, 0.0);
+
+vec3 perform_selection(in vec3 color, in float val) {
+  return mix(color, selectionColor, val);
+}
+
 float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, out vec3 position, out vec3 color) {
   float dist = 0.0;
   float h = 1.0;

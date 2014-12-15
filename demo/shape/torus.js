@@ -8,7 +8,7 @@ var Shape = require('../shape');
 var v2scratch = [0, 0];
 module.exports = Torus;
 
-function Torus(x, y, z, radiusMajor, radiusMinor, r, g, b) {
+function Torus(x, y, z, radiusMajor, radiusMinor, r, g, b, selected) {
   define(this, 'x', x);
   define(this, 'y', y);
   define(this, 'z', z);
@@ -17,6 +17,7 @@ function Torus(x, y, z, radiusMajor, radiusMinor, r, g, b) {
   define(this, 'r', r);
   define(this, 'g', g);
   define(this, 'b', b);
+  define(this, 'selected', selected);
 
   Shape.call(this);
 
@@ -49,7 +50,13 @@ Torus.prototype.computeAABB = function torusComputeAABB() {
 Object.defineProperty(Torus.prototype, 'colorCode', {
   get: function getColorCode() {
     return printf(
-   '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
+   '  float torus_%s_selected = sample(%i, %i);\n'
+ + '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
+      this.id,
+      this.selected.position[0],
+      this.selected.position[1],
+
+//   '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
       this.id,
       this.r.position[0],
       this.r.position[1],

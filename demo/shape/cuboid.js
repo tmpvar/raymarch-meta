@@ -11,7 +11,7 @@ var max = Math.max;
 var zero = [0,0,0];
 module.exports = Cuboid;
 
-function Cuboid(x, y, z, w, h, d, r, g, b) {
+function Cuboid(x, y, z, w, h, d, r, g, b, selected) {
   define(this, 'x', x);
   define(this, 'y', y);
   define(this, 'z', z);
@@ -21,6 +21,8 @@ function Cuboid(x, y, z, w, h, d, r, g, b) {
   define(this, 'r', r);
   define(this, 'g', g);
   define(this, 'b', b);
+  define(this, 'selected', selected);
+
   Shape.call(this);
 
   this.name = 'cuboid_' + this.id;
@@ -71,7 +73,17 @@ Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
 Object.defineProperty(Cuboid.prototype, 'colorCode', {
   get: function getColorCode() {
     return printf(
-   '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
+
+
+   '  float cuboid_%s_selected = sample(%i, %i);\n'
+ + '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
+      this.id,
+      this.selected.position[0],
+      this.selected.position[1],
+
+
+
+//   '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
       this.id,
       this.r.position[0],
       this.r.position[1],
