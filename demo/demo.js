@@ -100,7 +100,7 @@ var vao = createVAO(gl, [
 
 var scene = window.scene = new Scene(gl, vert, frag)
 
-var sphere = cmd.sphere(   0.0,0.0,0.0, 0.5, 0.1,0.1,1.0);
+var sphere = cmd.sphere(0.5, 0.1,0.1,1.0).translate(0.0,0.0,0.0);
 
 var sphere2 = cmd.sphere(0.5, 0.1,0.5,0.9).translate(0.0, 2.5, 0.0);
 var sphere3 = cmd.sphere(0.3, 0.6,0.1,0.3).translate( 0.40,3.0,0.0);
