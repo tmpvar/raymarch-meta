@@ -33,6 +33,18 @@ function Scene(gl, vert, frag) {
   this.initGL(gl);
 
   this.displayedObjects = null;
+
+  var scene = this;
+  alloc.dirty(function(v, x, y) {
+    scene.dirty();
+  });
+}
+
+
+Scene.prototype._dirty = false;
+Scene.prototype.dirty = function() {
+  this.gl && this.gl.dirty();
+  this._dirty = true;
 }
 
 Scene.prototype.initGL = function initializeGL(gl) {
@@ -182,6 +194,8 @@ Scene.prototype.generateFragShader = function(shapes) {
   var prefetchStr = '';
   aabb.initialize(this._bounds);
 
+  this.activeShapes = [];
+
   var handledChildren = {};
   var seenIds = {};
   var stack = shapes.slice().reverse();
@@ -198,6 +212,11 @@ Scene.prototype.generateFragShader = function(shapes) {
     } else {
       var shape = stack.pop();
 
+      if (!shape) {
+        continue;
+      }
+      // let's keep track of the active shapes
+      this.activeShapes.push(shape);
       if (!seenIds[shape.id]) {
         colorStr += shape.colorCode || '';
         prefetchStr += shape.prefetchCode || '';
@@ -227,8 +246,20 @@ Scene.prototype.generateFragShader = function(shapes) {
 
 Scene.prototype.render = function renderScene() {
 
-  if (this.dirty) {
+  if (this._dirty) {
     console.log('dirty');
+
+    // run through the active shapes and give them
+    // some time to do last chance processing
+    var shapes = this.activeShapes;
+    var l = shapes.length;
+
+    for (var i = 0; i<l; i++) {
+      if (shapes[i].tick) {
+        shapes[i].tick();
+      }
+    }
+
     // TODO: only upload changes
     this.opsTexture.setPixels(alloc.ops);
     this.dirty = false;

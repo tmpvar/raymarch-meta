@@ -2,7 +2,7 @@ var test = require('tape');
 var Box = require('../cuboid')
 
 test('Cuboid - evaluateVec3', function(t) {
-  var box = new Box(0, 0, 0, 1, 1, 1,  0, 0, 0);
+  var box = new Box(1, 1, 1, 0, 0, 0);
 
   // inside sides
   t.ok(box.evaluateVec3([0, 0, 0]) < 0, 'inside at origin');
@@ -32,7 +32,9 @@ test('Cuboid - evaluateVec3', function(t) {
 });
 
 test('Cuboid - evaluateVec3 at 0, 10, 0', function(t) {
-  var box = new Box(0, 10, 0, 1, 1, 1,  0, 0, 0);
+  var box = new Box(1, 1, 1, 0, 0, 0);
+
+  box.translate(0, 10, 0);
 
   // inside sides
   t.ok(box.evaluateVec3([0, 10, 0]) < 0, 'inside at 0, 10, 0');
@@ -61,21 +63,48 @@ test('Cuboid - evaluateVec3 at 0, 10, 0', function(t) {
   t.end();
 });
 
+test('Cuboid - evaluateVec3 (translate)', function(t) {
+  var box = new Box(1, 1, 1);
+
+  t.ok(box.evaluateVec3([0, 0, 0]) < 0, 'inside');
+  t.ok(box.evaluateVec3([1, 0, 0]) > 0, 'outside');
+  t.equal(box.evaluateVec3([.5, 0, 0]), 0, 'border');
+
+  var translated = box.translate(1, 0, 0);
+
+  t.ok(translated.evaluateVec3([0, 0, 0]) > 0, 'outside');
+  t.ok(translated.evaluateVec3([1, 0, 0]) < 0, 'inside');
+  t.equal(translated.evaluateVec3([.5, 0, 0]), 0, 'border');
+
+  t.end();
+});
+
 test('Cuboid - aabb', function(t) {
-  t.deepEqual((new Box(0, 0, 0, 2, 2, 2,  0, 0, 0)).bounds, [
+  t.deepEqual((new Box(2, 2, 2, 0, 0, 0)).bounds, [
     [-1, -1, -1],
     [ 1,  1,  1],
   ], 'bounds around origin');
 
-  t.deepEqual((new Box(0, 1, 0, 2, 2, 2,  0, 0, 0)).bounds, [
+  var box = new Box(2, 2, 2, 0, 0, 0).translate(0, 1, 0);
+  box.computeAABB();
+  t.deepEqual(box.bounds, [
     [ -1, 0, -1],
     [ 1,  2,  1],
   ], 'bounds at y=1');
 
-  t.deepEqual((new Box(1, 1, 1, 2, 2, 2,  0, 0, 0)).bounds, [
+  var box2 = (new Box(2, 2, 2, 0, 0, 0)).translate(1, 1, 1);
+  box2.computeAABB();
+  t.deepEqual(box2.bounds, [
     [ 0, 0, 0],
     [ 2, 2, 2],
   ], 'bounds at 1, 1, 1');
+
+  var box3 = (new Box(2, 3, 2, 0, 0, 0)).rotate(0, 0, Math.PI/2);
+  box3.computeAABB();
+  t.deepEqual(box3.bounds, [
+    [ -1.5, -1, -1],
+    [  1.5, 1, 1],
+  ], 'rotated 90 degrees');
 
   t.end();
 });
