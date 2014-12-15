@@ -55,8 +55,6 @@ Object.defineProperty(Torus.prototype, 'colorCode', {
       this.id,
       this.selected.position[0],
       this.selected.position[1],
-
-//   '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
       this.id,
       this.r.position[0],
       this.r.position[1],

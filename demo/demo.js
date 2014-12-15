@@ -272,24 +272,20 @@ function handleMouse(e) {
         scene.viewport
       );
 
+      for (var i = 0; i < scene.displayedObjects.length; i++) {
+        scene.displayedObjects[i].selected = false;
+      }
+
       vec3.normalize(rayDirection, rayDirection)
       var shapeIndex = scene.march(eye, rayDirection);
       if (-1 !== shapeIndex) {
-        // scene.displayedObjects[shapeIndex].r = 1.0;
-        // scene.displayedObjects[shapeIndex].g = 1.0;
-        // scene.displayedObjects[shapeIndex].b = 1.0;
-
-        for (var i = 0; i < scene.displayedObjects.length; i++) {
-          scene.displayedObjects[i].selected = false;
-        }
-
         scene.displayedObjects[shapeIndex].selected = true;
-
-        scene.dirty = true;
-        scene.gl.dirty = true;
-
-        scene.render();
       }
+
+      scene.dirty = true;
+      scene.gl.dirty = true;
+
+      scene.render();
     break;
 
     case 'mousewheel':
