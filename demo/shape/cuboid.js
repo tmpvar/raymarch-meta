@@ -73,17 +73,11 @@ Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
 Object.defineProperty(Cuboid.prototype, 'colorCode', {
   get: function getColorCode() {
     return printf(
-
-
    '  float cuboid_%s_selected = sample(%i, %i);\n'
  + '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
       this.id,
       this.selected.position[0],
       this.selected.position[1],
-
-
-
-//   '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
       this.id,
       this.r.position[0],
       this.r.position[1],
