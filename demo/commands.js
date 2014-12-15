@@ -16,17 +16,18 @@ var mat4 = require('gl-mat4')
 // helper method to allocate an array of
 // tracked memory that is shared with the
 // gpu
-function allocArray(length) {
+function allocArray(length, d) {
   var ret = Array(length);
 
   for (var i=0; i<length; i++) {
-    ret[i] = alloc();
+    ret[i] = alloc(d[i]);
   }
 
   return ret;
 }
 
 var commands = module.exports = {};
+var m4default = mat4.create();
 
 commands.sphere = function createSphere(x, y, z, radius) {
   var s = new Sphere(
@@ -36,9 +37,7 @@ commands.sphere = function createSphere(x, y, z, radius) {
     alloc(radius)
   );
 
-  s.createModelMatrix(
-    mat4.identity(allocArray(16))
-  );
+  s.createInvertedModelMatrix(allocArray(16, m4default));
 
   return s;
 };
@@ -53,9 +52,7 @@ commands.box = function createCuboid(x, y, z, width, height, depth) {
     alloc(depth, 0.5)
   );
 
-  s.createModelMatrix(
-    mat4.identity(allocArray(16))
-  );
+  s.createInvertedModelMatrix(allocArray(16, m4default));
 
   return s;
 };
@@ -70,9 +67,7 @@ commands.cube = function createCuboid(x, y, z, radius) {
     alloc(radius, 0.5)
   );
 
-  s.createModelMatrix(
-    mat4.identity(allocArray(16))
-  );
+  s.createInvertedModelMatrix(allocArray(16, m4default));
 
   return s;
 };
@@ -86,9 +81,7 @@ commands.cylinder = function(x, y, z, radius, height) {
     alloc(height)
   );
 
-  s.createModelMatrix(
-    mat4.identity(allocArray(16))
-  );
+  s.createInvertedModelMatrix(allocArray(16, m4default));
 
   return s;
 };
@@ -102,9 +95,7 @@ commands.torus = function(x, y, z, radiusMajor, radiusMinor, color) {
     alloc(radiusMinor)
   );
 
-  s.createModelMatrix(
-    mat4.identity(allocArray(16))
-  );
+  s.createInvertedModelMatrix(allocArray(16, m4default));
 
   return s;
 };
