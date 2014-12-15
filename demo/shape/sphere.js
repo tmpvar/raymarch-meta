@@ -63,7 +63,7 @@ Object.defineProperty(Sphere.prototype, 'prefetchCode', {
       this.invertedMatrixString(),
       printf(
         '  float %s_radius = sample(%i, %i);\n',
-        this.id,
+        this.name,
         this.radius.position[0],
         this.radius.position[1]
       )
@@ -76,10 +76,8 @@ Object.defineProperty(Sphere.prototype, 'code', {
     return printf(
       '    float %s = solid_sphere(vec4(%s_inv * pos4).xyz, %s_radius);\n',
       this.name,
-      this.id,
-      this.id,
-      this.id,
-      this.id
+      this.name,
+      this.name
     );
   }
 });

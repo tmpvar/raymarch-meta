@@ -103,7 +103,7 @@ Scene.prototype.createShader = function(frag) {
     return;
   }
 
-  this.dirty = true;
+  this.dirty()
   if (this.shader) {
     this.shader.dispose();
   }
@@ -131,8 +131,6 @@ Scene.prototype.createShader = function(frag) {
 
   return this.shader;
 }
-
-Scene.prototype.dirty = false;
 
 Scene.prototype.getAABB = function() {
   if (this.dirtyBounds) {
@@ -166,7 +164,7 @@ Scene.prototype.display = function sceneDisplay(shapes) {
       // merge the results into h as a pseudo-union
       return '    ' + shapes.map(function(shape) {
 
-        var x = 
+        var x =
 //        + printf('if (%s < h) { color = color_%s; }\n',
 //          shape.name,
 //          shape.id)
@@ -175,7 +173,7 @@ Scene.prototype.display = function sceneDisplay(shapes) {
           shape.name,
           shape.id,
           shape.name)
-          
+
       + printf('    h = min(h, %s);\n', shape.name);
 
 
@@ -246,8 +244,7 @@ Scene.prototype.generateFragShader = function(shapes) {
 
 Scene.prototype.render = function renderScene() {
 
-  if (this._dirty) {
-    console.log('dirty');
+  if (true || this._dirty) {
 
     // run through the active shapes and give them
     // some time to do last chance processing
@@ -262,6 +259,6 @@ Scene.prototype.render = function renderScene() {
 
     // TODO: only upload changes
     this.opsTexture.setPixels(alloc.ops);
-    this.dirty = false;
+    this._dirty = false;
   }
 }
