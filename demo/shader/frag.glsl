@@ -74,14 +74,15 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
   float h = 1.0;
   hit = 10.0;
   float minStep = 0.00001;
-
+  vec4 pos4;
 /* RAYMARCH_SETUP */
 
   for(int i=0; i<RAYMARCH_CYCLES; i++) {
 
     steps = i;
     position = origin+direction*dist;
-    
+    pos4 = vec4(position, 1.0);
+
     //h = min(solid_capped_cylinder(position, vec2(0.23, 0.65)), solid_sphere(position, 0.25) );
     //h = solid_cone(position, normalize(vec2(0.25, 0.25)) );
     //h = solid_capped_cone(position, vec3(0.25, 0.25, 0.1) );
