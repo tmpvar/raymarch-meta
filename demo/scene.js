@@ -33,6 +33,18 @@ function Scene(gl, vert, frag) {
   this.initGL(gl);
 
   this.displayedObjects = null;
+
+  var scene = this;
+  alloc.dirty(function(v, x, y) {
+    scene.dirty();
+  });
+}
+
+
+Scene.prototype._dirty = false;
+Scene.prototype.dirty = function() {
+  this.gl && this.gl.dirty();
+  this._dirty = true;
 }
 
 Scene.prototype.initGL = function initializeGL(gl) {
@@ -211,7 +223,7 @@ Scene.prototype.generateFragShader = function(shapes) {
 
 Scene.prototype.render = function renderScene() {
 
-  if (this.dirty) {
+  if (this._dirty) {
     console.log('dirty');
 
     // run through the active shapes and give them
