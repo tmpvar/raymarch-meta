@@ -70,9 +70,9 @@ Scene.prototype.march = function(rayOrigin, rayDirection) {
 
     if (h < eps) {
 //      console.log('hit on shape %i (%f)', i, dist, shapes[i]);
-
-      return shapes[i];
-      break;
+//      break;
+      //return shapes[i];
+      return i;
     }
 
     dist += h;
@@ -82,6 +82,8 @@ Scene.prototype.march = function(rayOrigin, rayDirection) {
 
     vec3.add(rayPosition, v3temp, rayOrigin);
   }
+
+  return -1; // no shape found
 }
 
 Scene.prototype.createShader = function(frag) {
