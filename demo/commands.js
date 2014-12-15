@@ -29,7 +29,7 @@ function allocArray(length, d) {
 var commands = module.exports = {};
 var m4default = mat4.create();
 
-commands.sphere = function createSphere(x, y, z, radius, r, g, b, selected) {
+commands.sphere = function createSphere(radius, r, g, b, selected) {
   var s = new Sphere(
     alloc(radius),
     alloc(r),
@@ -43,7 +43,7 @@ commands.sphere = function createSphere(x, y, z, radius, r, g, b, selected) {
   return s;
 };
 
-commands.box = function createCuboid(x, y, z, width, height, depth, r, g, b, selected) {
+commands.box = function createCuboid(width, height, depth, r, g, b, selected) {
   var s = new Cuboid(
     alloc(width, 0.5),
     alloc(height, 0.5),
@@ -59,7 +59,7 @@ commands.box = function createCuboid(x, y, z, width, height, depth, r, g, b, sel
   return s;
 };
 
-commands.cube = function createCuboid(x, y, z, radius, r, g, b, selected) {
+commands.cube = function createCuboid(radius, r, g, b, selected) {
   var s = new Cuboid(
     alloc(radius, 0.5),
     alloc(radius, 0.5),
@@ -75,7 +75,7 @@ commands.cube = function createCuboid(x, y, z, radius, r, g, b, selected) {
   return s;
 };
 
-commands.cylinder = function(x, y, z, radius, height, r, g, b, selected) {
+commands.cylinder = function(radius, height, r, g, b, selected) {
   var s = new CappedCylinder(
     alloc(radius),
     alloc(height),
@@ -90,7 +90,7 @@ commands.cylinder = function(x, y, z, radius, height, r, g, b, selected) {
   return s;
 };
 
-commands.torus = function(x, y, z, radiusMajor, radiusMinor, r, g, b, selected) {
+commands.torus = function(radiusMajor, radiusMinor, r, g, b, selected) {
   var s = new Torus(
     alloc(radiusMajor),
     alloc(radiusMinor),
