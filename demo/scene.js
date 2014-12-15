@@ -163,6 +163,8 @@ Scene.prototype.generateFragShader = function(shapes) {
   var prefetchStr = '';
   aabb.initialize(this._bounds);
 
+  this.activeShapes = [];
+
   var handledChildren = {};
   var seenIds = {};
   var stack = shapes.slice().reverse();
@@ -179,6 +181,11 @@ Scene.prototype.generateFragShader = function(shapes) {
     } else {
       var shape = stack.pop();
 
+      if (!shape) {
+        continue;
+      }
+      // let's keep track of the active shapes
+      this.activeShapes.push(shape);
       if (!seenIds[shape.id]) {
         prefetchStr += shape.prefetchCode || '';
         shapeStr += shape.code || '';
@@ -206,6 +213,18 @@ Scene.prototype.render = function renderScene() {
 
   if (this.dirty) {
     console.log('dirty');
+
+    // run through the active shapes and give them
+    // some time to do last chance processing
+    var shapes = this.activeShapes;
+    var l = shapes.length;
+
+    for (var i = 0; i<l; i++) {
+      if (shapes[i].tick) {
+        shapes[i].tick();
+      }
+    }
+
     // TODO: only upload changes
     this.opsTexture.setPixels(alloc.ops);
     this.dirty = false;
