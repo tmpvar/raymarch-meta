@@ -18,6 +18,7 @@ function Shape() {
   this.bounds = aabb.create();
   this.computeAABB();
   this.model = mat4.create();
+  this.invertedModel = mat4.create();
 }
 
 Shape.id = 0;
@@ -28,9 +29,9 @@ Shape.createShapeId = function createShapeId() {
 Shape.prototype.id = 0;
 Shape.prototype.model = null;
 
-Shape.prototype.createInvertedModelMatrix = function createInvertedModelMatrix(array) {
-  this.invertedModel = new Mat4(array);
-  console.log(createInvertedModelMatrix);
+Shape.prototype._dirty = false;
+Shape.prototype.dirty = function() {
+  this._dirty = true;
 }
 
 // test if this shape contains the passed vec
@@ -56,14 +57,18 @@ Shape.prototype.intersect = function shapeIntersectShapes(shapes) {
 };
 
 Shape.prototype.tick = function() {
-  console.log('ticked!')
   this.invertedModel && mat4.invert(this.invertedModel, this.model);
+  this._dirty = false;
 }
 
 Shape.prototype.rotate = function shapeRotate(xrads, yrads, zrads) {
   mat4.rotateX(this.model, this.model, xrads);
   mat4.rotateY(this.model, this.model, yrads);
   mat4.rotateZ(this.model, this.model, zrads);
+
+  this.dirty();
+
+  return this;
 }
 
 var v3scratch = [0, 0, 0]
@@ -74,7 +79,11 @@ Shape.prototype.scale = function shapeScale(x, y, z) {
   v3scratch[2] = z;
 
   mat4.scale(this.model, this.model, v3scratch);
-}
+
+  this.dirty();
+
+  return this;
+};
 
 Shape.prototype.translate = function shapeTranslate(x, y, z) {
   v3scratch[0] = x;
@@ -82,7 +91,11 @@ Shape.prototype.translate = function shapeTranslate(x, y, z) {
   v3scratch[2] = z;
 
   mat4.translate(this.model, this.model, v3scratch);
-}
+
+  this.dirty();
+
+  return this;
+};
 
 Shape.prototype.invertedMatrixString = function shapeInvertedMatrixStr() {
   var m = this.invertedModel;

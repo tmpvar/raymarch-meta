@@ -6,7 +6,7 @@
   },
   "scripts": {
     "demo": "beefy demo/demo.js --live --open",
-    "test": "tape **/test/test-*.js | tap-spec"
+    "test": "tape demo/**/test/test-*.js | tap-spec"
   },
   "devDependencies": {
     "beefy": "^2.1.1",

@@ -37,7 +37,7 @@ commands.sphere = function createSphere(x, y, z, radius) {
     alloc(radius)
   );
 
-  s.createInvertedModelMatrix(allocArray(16, m4default));
+  s.invertedModel = allocArray(16);
 
   return s;
 };
@@ -52,7 +52,7 @@ commands.box = function createCuboid(x, y, z, width, height, depth) {
     alloc(depth, 0.5)
   );
 
-  s.createInvertedModelMatrix(allocArray(16, m4default));
+  s.invertedModel = allocArray(16);
 
   return s;
 };
@@ -67,7 +67,7 @@ commands.cube = function createCuboid(x, y, z, radius) {
     alloc(radius, 0.5)
   );
 
-  s.createInvertedModelMatrix(allocArray(16, m4default));
+  s.invertedModel = allocArray(16);
 
   return s;
 };
@@ -81,7 +81,7 @@ commands.cylinder = function(x, y, z, radius, height) {
     alloc(height)
   );
 
-  s.createInvertedModelMatrix(allocArray(16, m4default));
+  s.invertedModel = allocArray(16);
 
   return s;
 };
@@ -95,7 +95,7 @@ commands.torus = function(x, y, z, radiusMajor, radiusMinor, color) {
     alloc(radiusMinor)
   );
 
-  s.createInvertedModelMatrix(allocArray(16, m4default));
+  s.invertedModel = allocArray(16);
 
   return s;
 };

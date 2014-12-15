@@ -1,5 +1,6 @@
 var inherits = require('inherits');
 var vec3 = require('gl-vec3');
+var mat4 = require('gl-mat4');
 require('../util/vec3-unproject')
 var printf = require('printf');
 var define = require('../util/define');
@@ -29,9 +30,13 @@ var scaledDimensions = vec3.create();
 var v3pos = vec3.create();
 var temp = vec3.create();
 Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
+  this._dirty && this.tick();
+
   v3pos[0] = this.x;
   v3pos[1] = this.y;
   v3pos[2] = this.z;
+
+  vec3.transformMat4(vec, vec, this.invertedModel);
 
   scaledDimensions[0] = this.width;
   scaledDimensions[1] = this.height;

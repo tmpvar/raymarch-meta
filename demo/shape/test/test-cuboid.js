@@ -61,6 +61,23 @@ test('Cuboid - evaluateVec3 at 0, 10, 0', function(t) {
   t.end();
 });
 
+test('Cuboid - evaluateVec3 (translate)', function(t) {
+  var box = new Box(0, 0, 0, 1, 1, 1);
+
+  t.ok(box.evaluateVec3([0, 0, 0]) < 0, 'inside');
+  t.ok(box.evaluateVec3([1, 0, 0]) > 0, 'outside');
+  t.equal(box.evaluateVec3([.5, 0, 0]), 0, 'border');
+
+  var translated = box.translate(1, 0, 0);
+
+  t.ok(translated.evaluateVec3([0, 0, 0]) > 0, 'outside');
+  t.ok(translated.evaluateVec3([1, 0, 0]) < 0, 'inside');
+  t.equal(translated.evaluateVec3([.5, 0, 0]), 0, 'border');
+
+  t.end();
+});
+
+
 test('Cuboid - aabb', function(t) {
   t.deepEqual((new Box(0, 0, 0, 2, 2, 2)).bounds, [
     [-1, -1, -1],
