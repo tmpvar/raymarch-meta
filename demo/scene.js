@@ -5,6 +5,7 @@ var createTexture = require('gl-texture2d');
 var printf = require('printf');
 var aabb = require('./util/aabb');
 var alloc = require('./util/allocator');
+var show = require('ndarray-show');
 
 var min = Math.min;
 var max = Math.max;
@@ -237,14 +238,18 @@ Scene.prototype.generateFragShader = function(shapes) {
     frag = frag.replace(exp, raymarchDefines[key]);
   });
 
-  console.log('frag:', frag);
+  console.groupCollapsed('frag source')
+    console.log(frag);
+  console.groupEnd('frag source');
+
+
 
   return frag;
 }
 
 Scene.prototype.render = function renderScene() {
 
-  if (true || this._dirty) {
+  if (this._dirty) {
 
     // run through the active shapes and give them
     // some time to do last chance processing
