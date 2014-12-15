@@ -107,15 +107,19 @@ Object.defineProperty(Cuboid.prototype, 'prefetchCode', {
 
 Object.defineProperty(Cuboid.prototype, 'code', {
   get: function getCuboidCode() {
-    return printf(
-      '    float %s = signed_box_distance(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), vec3(Wpf_%i, Hpf_%i, Dpf_%i) );\n',
-      this.name,
-      this.id,
-      this.id,
-      this.id,
-      this.id,
-      this.id,
-      this.id
-    );
+    return [
+      this.invertedMatrixString(),
+      printf(
+        '    float %s = signed_box_distance(vec4(%s_inv * vec4(position, 1.0) - vec4(Xpf_%i, Ypf_%i, Zpf_%i, 1.0)).xyz, vec3(Wpf_%i, Hpf_%i, Dpf_%i) );\n',
+        this.name,
+        this.name,
+        this.id,
+        this.id,
+        this.id,
+        this.id,
+        this.id,
+        this.id
+      )
+    ].join('\n');
   }
 });
