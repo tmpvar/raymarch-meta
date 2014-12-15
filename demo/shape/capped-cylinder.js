@@ -70,14 +70,10 @@ CappedCylinder.prototype.computeAABB = function cuboidComputeAABB() {
   var r = this.radius;
   var h = this.height * 0.5;
 
-  this.bounds = [
-    [-r, -h, -r],
-    [ r,  h,  r]
-  ];
-
-  this.computeTransformedAABB();
-
-  return this.bounds;
+  return this.computeTransformedAABB(
+    -r, -h, -r,
+     r,  h,  r
+  );
 };
 
 Object.defineProperty(CappedCylinder.prototype, 'prefetchCode', {

@@ -20,6 +20,7 @@ function Shape() {
   this.id = Shape.createShapeId()
   this.model = mat4.create();
   this.invertedModel = mat4.create();
+  this.bounds = aabb.create();
   this.computeAABB();
 }
 
@@ -169,13 +170,18 @@ Shape.prototype.evaluateVec3 = notImplemented;
 // in instantiation (located at this.bounds)
 Shape.prototype.computeAABB = notImplemented;
 
-Shape.prototype.computeTransformedAABB = function shapeComputeTransformedAABB() {
+Shape.prototype.computeTransformedAABB = function shapeComputeTransformedAABB(a,b,c,d,e,f) {
   if (!this.bounds) {
     throw new Error('shape does not implement computeAABB:' + this.name);
   }
 
-  vec3.copy(lo, this.bounds[0]);
-  vec3.copy(hi, this.bounds[1]);
+  lo[0] = a;
+  lo[1] = b;
+  lo[2] = c;
+
+  hi[0] = d;
+  hi[1] = e;
+  hi[2] = f;
 
   // reset the aabb
   aabb.initialize(this.bounds);

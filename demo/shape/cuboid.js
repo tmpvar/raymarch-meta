@@ -57,14 +57,11 @@ Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
   var w = this.width * 0.5;
   var h = this.height * 0.5;
   var d = this.depth * 0.5;
-  this.bounds = [
-    [-w, -h, -d],
-    [ w,  h,  d]
-  ];
 
-  this.computeTransformedAABB();
-
-  return this.bounds;
+  return this.computeTransformedAABB(
+    -w, -h, -d,
+     w,  h,  d
+  );
 };
 
 Object.defineProperty(Cuboid.prototype, 'prefetchCode', {
