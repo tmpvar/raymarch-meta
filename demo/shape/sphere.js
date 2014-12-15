@@ -8,7 +8,7 @@ var v3pos = [0, 0, 0];
 
 module.exports = Sphere;
 
-function Sphere(x, y, z, radius, r, g, b) {
+function Sphere(x, y, z, radius, r, g, b, selected) {
   define(this, 'x', x);
   define(this, 'y', y);
   define(this, 'z', z);
@@ -16,6 +16,7 @@ function Sphere(x, y, z, radius, r, g, b) {
   define(this, 'r', r);
   define(this, 'g', g);
   define(this, 'b', b);
+  define(this, 'selected', selected);
 
   Shape.call(this);
 
@@ -45,7 +46,13 @@ Sphere.prototype.computeAABB = function sphereComputeAABB() {
 Object.defineProperty(Sphere.prototype, 'colorCode', {
   get: function getColorCode() {
     return printf(
-   '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
+   '  float sphere_%s_selected = sample(%i, %i);\n'
+ + '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
+      this.id,
+      this.selected.position[0],
+      this.selected.position[1],
+
+//   '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
       this.id,
       this.r.position[0],
       this.r.position[1],

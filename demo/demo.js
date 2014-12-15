@@ -275,11 +275,15 @@ function handleMouse(e) {
       vec3.normalize(rayDirection, rayDirection)
       var shapeIndex = scene.march(eye, rayDirection);
       if (-1 !== shapeIndex) {
-//        console.log("shapeFound:", shapeIndex);
+        // scene.displayedObjects[shapeIndex].r = 1.0;
+        // scene.displayedObjects[shapeIndex].g = 1.0;
+        // scene.displayedObjects[shapeIndex].b = 1.0;
 
-        scene.displayedObjects[shapeIndex].r = 1.0;
-        scene.displayedObjects[shapeIndex].g = 1.0;
-        scene.displayedObjects[shapeIndex].b = 1.0;
+        for (var i = 0; i < scene.displayedObjects.length; i++) {
+          scene.displayedObjects[i].selected = false;
+        }
+
+        scene.displayedObjects[shapeIndex].selected = true;
 
         scene.dirty = true;
         scene.gl.dirty = true;

@@ -28,7 +28,7 @@ function allocArray(length) {
 
 var commands = module.exports = {};
 
-commands.sphere = function createSphere(x, y, z, radius, r, g, b) {
+commands.sphere = function createSphere(x, y, z, radius, r, g, b, selected) {
   var s = new Sphere(
     alloc(x),
     alloc(y),
@@ -36,7 +36,8 @@ commands.sphere = function createSphere(x, y, z, radius, r, g, b) {
     alloc(radius),
     alloc(r),
     alloc(g),
-    alloc(b)
+    alloc(b),
+    alloc(selected)
   );
 
   s.createModelMatrix(
@@ -46,7 +47,7 @@ commands.sphere = function createSphere(x, y, z, radius, r, g, b) {
   return s;
 };
 
-commands.box = function createCuboid(x, y, z, width, height, depth, r, g, b) {
+commands.box = function createCuboid(x, y, z, width, height, depth, r, g, b, selected) {
   var s = new Cuboid(
     alloc(x),
     alloc(y),
@@ -56,7 +57,8 @@ commands.box = function createCuboid(x, y, z, width, height, depth, r, g, b) {
     alloc(depth, 0.5),
     alloc(r),
     alloc(g),
-    alloc(b)
+    alloc(b),
+    alloc(selected)
   );
 
   s.createModelMatrix(
@@ -66,7 +68,7 @@ commands.box = function createCuboid(x, y, z, width, height, depth, r, g, b) {
   return s;
 };
 
-commands.cube = function createCuboid(x, y, z, radius, r, g, b) {
+commands.cube = function createCuboid(x, y, z, radius, r, g, b, selected) {
   var s = new Cuboid(
     alloc(x),
     alloc(y),
@@ -76,7 +78,8 @@ commands.cube = function createCuboid(x, y, z, radius, r, g, b) {
     alloc(radius, 0.5),
     alloc(r),
     alloc(g),
-    alloc(b)
+    alloc(b),
+    alloc(selected)
   );
 
   s.createModelMatrix(
@@ -86,7 +89,7 @@ commands.cube = function createCuboid(x, y, z, radius, r, g, b) {
   return s;
 };
 
-commands.cylinder = function(x, y, z, radius, height, r, g, b) {
+commands.cylinder = function(x, y, z, radius, height, r, g, b, selected) {
   var s = new CappedCylinder(
     alloc(x),
     alloc(y),
@@ -95,7 +98,8 @@ commands.cylinder = function(x, y, z, radius, height, r, g, b) {
     alloc(height),
     alloc(r),
     alloc(g),
-    alloc(b)
+    alloc(b),
+    alloc(selected)
   );
 
   s.createModelMatrix(
@@ -105,7 +109,7 @@ commands.cylinder = function(x, y, z, radius, height, r, g, b) {
   return s;
 };
 
-commands.torus = function(x, y, z, radiusMajor, radiusMinor, r, g, b) {
+commands.torus = function(x, y, z, radiusMajor, radiusMinor, r, g, b, selected) {
   var s = new Torus(
     alloc(x),
     alloc(y),
@@ -114,7 +118,8 @@ commands.torus = function(x, y, z, radiusMajor, radiusMinor, r, g, b) {
     alloc(radiusMinor),
     alloc(r),
     alloc(g),
-    alloc(b)
+    alloc(b),
+    alloc(selected)
   );
 
   s.createModelMatrix(

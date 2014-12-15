@@ -19,7 +19,7 @@ var zero = [0, 0, 0];
 
 module.exports = CappedCylinder;
 
-function CappedCylinder(x, y, z, radius, height, r, g, b) {
+function CappedCylinder(x, y, z, radius, height, r, g, b, selected) {
   define(this, 'x', x);
   define(this, 'y', y);
   define(this, 'z', z);
@@ -28,6 +28,7 @@ function CappedCylinder(x, y, z, radius, height, r, g, b) {
   define(this, 'r', r);
   define(this, 'g', g);
   define(this, 'b', b);
+  define(this, 'selected', selected);
 
   Shape.call(this);
 
@@ -81,7 +82,11 @@ CappedCylinder.prototype.computeAABB = function cuboidComputeAABB() {
 Object.defineProperty(CappedCylinder.prototype, 'colorCode', {
   get: function getColorCode() {
     return printf(
-   '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
+   '  float cappedcylinder_%s_selected = sample(%i, %i);\n'
+ + '  vec3 color_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
+      this.id,
+      this.selected.position[0],
+      this.selected.position[1],
       this.id,
       this.r.position[0],
       this.r.position[1],
