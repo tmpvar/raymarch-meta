@@ -1,4 +1,4 @@
-var mat4 = window.mat4 = require('gl-mat4');
+var mat4 = require('gl-mat4');
 var aabb = require('./util/aabb');
 var printf = require('printf');
 var Mat4 = require('./util/ops-mat4');

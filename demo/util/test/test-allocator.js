@@ -30,3 +30,16 @@ test('alloc(5) multiplier=.5', function(t) {
   t.equal(+val, 5, 'is 5 when called')
   t.end();
 });
+
+test('alloc.dirty', function(t) {
+  var val = alloc(5);
+
+  alloc.dirty(function(val, x, y) {
+    t.equal(val, 6)
+
+    t.end();
+  });
+
+  val(5);
+  val(6);
+});
