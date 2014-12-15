@@ -25,13 +25,9 @@ inherits(Sphere, Shape);
 Sphere.prototype.evaluateVec3 = function sphereEvaluateVec3(vec) {
   this._dirty && this.tick();
 
-  vec3.transformMat4(vec, vec, this.invertedModel);
+  vec3.transformMat4(v3pos, vec, this.invertedModel);
 
-  v3pos[0] = this.x;
-  v3pos[1] = this.y;
-  v3pos[2] = this.z;
-
-  return vec3.length(vec) - this.radius;
+  return vec3.length(v3pos) - this.radius;
 };
 
 Sphere.prototype.computeAABB = function sphereComputeAABB() {

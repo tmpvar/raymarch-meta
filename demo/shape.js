@@ -60,7 +60,6 @@ Shape.prototype.intersect = function shapeIntersectShapes(shapes) {
 };
 
 Shape.prototype.tick = function() {
-  console.log('tick');
   mat4.invert(this.invertedModel, this.model);
   this._dirty = false;
 }

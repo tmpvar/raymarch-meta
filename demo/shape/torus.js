@@ -6,6 +6,7 @@ var define = require('../util/define');
 
 var Shape = require('../shape');
 var v2scratch = [0, 0];
+var v3pos = [0, 0, 0];
 module.exports = Torus;
 
 function Torus(radiusMajor, radiusMinor, r, g, b, selected) {
@@ -26,13 +27,13 @@ inherits(Torus, Shape);
 Torus.prototype.evaluateVec3 = function torusCylinderEvaluateVec3(vec) {
   this._dirty && this.tick();
 
-  vec3.transformMat4(vec, vec, this.invertedModel);
+  vec3.transformMat4(v3pos, vec, this.invertedModel);
 
-  v2scratch[0] = vec[0];
-  v2scratch[1] = vec[2];
+  v2scratch[0] = v3pos[0];
+  v2scratch[1] = v3pos[2];
 
   v2scratch[0] = vec2.length(v2scratch) - this.radiusMajor;
-  v2scratch[1] = vec[1];
+  v2scratch[1] = v3pos[1];
 
   return vec2.length(v2scratch) - this.radiusMinor;
 };

@@ -11,6 +11,11 @@ var min = Math.min;
 var max = Math.max;
 
 var zero = [0 , 0, 0];
+var scaledDimensions = [0, 0, 0];
+var v3pos = [0, 0, 0];
+var temp = vec3.create();
+
+
 module.exports = Cuboid;
 
 function Cuboid(w, h, d, r, g, b, selected) {
@@ -29,23 +34,15 @@ function Cuboid(w, h, d, r, g, b, selected) {
 
 inherits(Cuboid, Shape);
 
-var scaledDimensions = vec3.create();
-var v3pos = vec3.create();
-var temp = vec3.create();
 Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
   this._dirty && this.tick();
 
-  v3pos[0] = 0;
-  v3pos[1] = 0;
-  v3pos[2] = 0;
-
-  vec3.transformMat4(vec, vec, this.invertedModel);
+  vec3.transformMat4(v3pos, vec, this.invertedModel);
 
   scaledDimensions[0] = this.width * .5;
   scaledDimensions[1] = this.height * .5;
   scaledDimensions[2] = this.depth * .5;
 
-  vec3.subtract(v3pos, vec, v3pos);
   vec3.subtract(v3pos, vec3.abs(v3pos), scaledDimensions);
 
   vec3.max(temp, v3pos, zero);

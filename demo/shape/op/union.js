@@ -30,9 +30,17 @@ Union.prototype.computeAABB = function unionComputeAABB() {
   aabb.merge(this.shapes.map(function(shape) {
     return shape.bounds
   }).filter(Boolean), this.bounds);
+
+  return this.computeTransformedAABB(
+    this.bounds[0][0], this.bounds[0][1], this.bounds[0][2],
+    this.bounds[1][0], this.bounds[1][1], this.bounds[1][2]
+  );
 };
 
 Union.prototype.evaluateVec3 = function unionEvaluateVec3(vec) {
+  this._dirty && this.tick();
+
+  vec3.transformMat4(vec, vec, this.invertedModel);
 
   var r = Infinity;
   var shapes = this.shapes;

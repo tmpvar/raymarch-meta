@@ -41,10 +41,7 @@ CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec)
   v3pos[1] = 0;
   v3pos[2] = 0;
 
-  vec3.transformMat4(vec, vec, this.invertedModel);
-
-
-  vec3.subtract(v3pos, vec, v3pos);
+  vec3.transformMat4(v3pos, vec, this.invertedModel);
 
   // this order matters.
   v2height[0] = this.radius;
