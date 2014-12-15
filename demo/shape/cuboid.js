@@ -4,18 +4,19 @@ var mat4 = require('gl-mat4');
 require('../util/vec3-unproject')
 var printf = require('printf');
 var define = require('../util/define');
+var aabb = require('../util/aabb');
 var Shape = require('../shape');
 
 var min = Math.min;
 var max = Math.max;
 
-var zero = [0,0,0];
+
+var hi = [0, 0, 0];
+var lo = [0, 0, 0];
+var zero = [0 , 0, 0];
 module.exports = Cuboid;
 
-function Cuboid(x, y, z, w, h, d) {
-  define(this, 'x', x);
-  define(this, 'y', y);
-  define(this, 'z', z);
+function Cuboid(w, h, d) {
   define(this, 'width', w);
   define(this, 'height', h);
   define(this, 'depth', d);
@@ -32,17 +33,16 @@ var temp = vec3.create();
 Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
   this._dirty && this.tick();
 
-  v3pos[0] = this.x;
-  v3pos[1] = this.y;
-  v3pos[2] = this.z;
+  v3pos[0] = 0;
+  v3pos[1] = 0;
+  v3pos[2] = 0;
 
   vec3.transformMat4(vec, vec, this.invertedModel);
 
-  scaledDimensions[0] = this.width;
-  scaledDimensions[1] = this.height;
-  scaledDimensions[2] = this.depth;
+  scaledDimensions[0] = this.width * .5;
+  scaledDimensions[1] = this.height * .5;
+  scaledDimensions[2] = this.depth * .5;
 
-  vec3.scale(scaledDimensions, scaledDimensions, 0.5);
   vec3.subtract(v3pos, vec, v3pos);
   vec3.subtract(v3pos, vec3.abs(v3pos), scaledDimensions);
 
@@ -57,56 +57,45 @@ Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
 };
 
 Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
-  scaledDimensions[0] = this.width * 0.5;
-  scaledDimensions[1] = this.height * 0.5;
-  scaledDimensions[2] = this.depth * 0.5;
+  // if there are no bounds, create some based on the
+  // dimensions of this shape
+  if (!this.bounds) {
+    var w = this.width * 0.5;
+    var h = this.height * 0.5;
+    var d = this.depth * 0.5;
+    this.bounds = [
+      [-w, -h, -d],
+      [ w,  h,  d]
+    ];
+  } else {
+    vec3.copy(lo, this.bounds[0]);
+    vec3.copy(hi, this.bounds[1]);
 
-  this.bounds[0][0] = this.x - scaledDimensions[0];
-  this.bounds[0][1] = this.y - scaledDimensions[1];
-  this.bounds[0][2] = this.z - scaledDimensions[2];
+    // reset the aabb
+    aabb.initialize(this.bounds);
 
-  this.bounds[1][0] = this.x + scaledDimensions[0];
-  this.bounds[1][1] = this.y + scaledDimensions[1];
-  this.bounds[1][2] = this.z + scaledDimensions[2];
+    vec3.transformMat4(lo, lo, this.model);
+    vec3.transformMat4(hi, hi, this.model);
+
+    aabb.update(this.bounds, lo);
+    aabb.update(this.bounds, hi);
+  }
+
+  return this.bounds;
 };
 
 Object.defineProperty(Cuboid.prototype, 'prefetchCode', {
   get: function getCuboidPrefetchCode() {
     return printf(
-      '  float Xpf_%i = sample(%i, %i);\n',
-      this.id,
-      this.x.position[0],
-      this.x.position[1])
-
-    + printf(
-      '  float Ypf_%i = sample(%i, %i);\n',
-      this.id,
-      this.y.position[0],
-      this.y.position[1])
-
-    + printf(
-      '  float Zpf_%i = sample(%i, %i);\n',
-      this.id,
-      this.z.position[0],
-      this.z.position[1])
-
-    + printf(
-      '  float Wpf_%i = sample(%i, %i);\n',
+      '  vec3 cuboid_%i_dimensions = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
       this.id,
       this.width.position[0],
-      this.width.position[1])
-
-    + printf(
-      '  float Hpf_%i = sample(%i, %i);\n',
-      this.id,
+      this.width.position[1],
       this.height.position[0],
-      this.height.position[1])
-
-    + printf(
-      '  float Dpf_%i = sample(%i, %i);\n',
-      this.id,
+      this.height.position[1],
       this.depth.position[0],
-      this.depth.position[1])
+      this.depth.position[1]
+    )
   }
 });
 
@@ -115,14 +104,9 @@ Object.defineProperty(Cuboid.prototype, 'code', {
     return [
       this.invertedMatrixString(),
       printf(
-        '    float %s = signed_box_distance(vec4(%s_inv * vec4(position, 1.0) - vec4(Xpf_%i, Ypf_%i, Zpf_%i, 1.0)).xyz, vec3(Wpf_%i, Hpf_%i, Dpf_%i) );\n',
+        '    float %s = signed_box_distance(vec4(%s_inv * pos4).xyz, cuboid_%i_dimensions );\n',
         this.name,
         this.name,
-        this.id,
-        this.id,
-        this.id,
-        this.id,
-        this.id,
         this.id
       )
     ].join('\n');

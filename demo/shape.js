@@ -15,10 +15,9 @@ var Union = require('./shape/op/union');
 
 function Shape() {
   this.id = Shape.createShapeId()
-  this.bounds = aabb.create();
-  this.computeAABB();
   this.model = mat4.create();
   this.invertedModel = mat4.create();
+  this.computeAABB();
 }
 
 Shape.id = 0;
@@ -29,7 +28,7 @@ Shape.createShapeId = function createShapeId() {
 Shape.prototype.id = 0;
 Shape.prototype.model = null;
 
-Shape.prototype._dirty = false;
+Shape.prototype._dirty = true;
 Shape.prototype.dirty = function() {
   this._dirty = true;
 }
