@@ -15,6 +15,7 @@ varying vec3 v_uv;
 #define OPS_RATIO 1.0//* OPS_SIZE */
 
 #define RAYMARCH_CYCLES /* RAYMARCH_CYCLES */
+#define RAYMARCH_EPS 0.0001
 
 // void circle(vec2 pos, float r, inout float dist) {
 //   vec2 p = v_uv + pos;
@@ -80,13 +81,17 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
   hit = 10.0;
   float minStep = 0.00001;
 
-/* RAYMARCH_COLOR */
 
   vec4 pos4;
 
-/* RAYMARCH_SETUP */
+
 
   for(int i=0; i<RAYMARCH_CYCLES; i++) {
+
+/* RAYMARCH_COLOR */
+
+
+/* RAYMARCH_SETUP */
 
     steps = i;
     position = origin+direction*dist;
@@ -102,6 +107,11 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
 
     dist += h;
     hit = min(hit, h);
+
+    if (h<RAYMARCH_EPS) {
+      break;
+    }
+
   }
 
   return dist;
