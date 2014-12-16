@@ -277,7 +277,7 @@ function handleMouse(e) {
       }
 
       vec3.normalize(rayDirection, rayDirection)
-      var shapeIndex = scene.march(eye, rayDirection);
+      var shapeIndex = scene.march(eye, rayDirection, 64);
       if (-1 !== shapeIndex) {
         scene.displayedObjects[shapeIndex].selected = true;
       }

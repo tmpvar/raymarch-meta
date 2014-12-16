@@ -54,7 +54,7 @@ Scene.prototype.initGL = function initializeGL(gl) {
 }
 
 var v3temp = [0, 0, 0];
-Scene.prototype.march = function(rayOrigin, rayDirection) {
+Scene.prototype.march = function(rayOrigin, rayDirection, steps) {
   if (!this.displayedObjects || !this.displayedObjects.length) {
     return;
   }
@@ -64,13 +64,13 @@ Scene.prototype.march = function(rayOrigin, rayDirection) {
   // attempt a march
   var dist = 0;
 
-  var shapes = this.displayedObjects.filter(function(shape) {
-    return !!shape.evaluateVec3
-  });
+  var shapes = this.displayedObjects;
+
+  steps = steps || this.raymarch.CYCLES;
 
   var l = shapes.length;
-  var eps = 1/this.raymarch.CYCLES;
-  for (var step = 0; step<this.raymarch.CYCLES; step++) {
+  var eps = 1/steps;
+  for (var step = 0; step<steps; step++) {
 
     var h = Infinity;
     for (var i=0; i<l; i++) {
