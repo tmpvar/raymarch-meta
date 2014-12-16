@@ -19,10 +19,7 @@ var zero = [0, 0, 0];
 
 module.exports = CappedCylinder;
 
-function CappedCylinder(x, y, z, radius, height, r, g, b, selected) {
-  define(this, 'x', x);
-  define(this, 'y', y);
-  define(this, 'z', z);
+function CappedCylinder(radius, height, r, g, b, selected) {
   define(this, 'radius', radius);
   define(this, 'height', height);
   define(this, 'r', r);
@@ -38,11 +35,13 @@ function CappedCylinder(x, y, z, radius, height, r, g, b, selected) {
 inherits(CappedCylinder, Shape);
 
 CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec) {
-  v3pos[0] = this.x;
-  v3pos[1] = this.y;
-  v3pos[2] = this.z;
+  this._dirty && this.tick();
 
-  vec3.subtract(v3pos, vec, v3pos);
+  v3pos[0] = 0;
+  v3pos[1] = 0;
+  v3pos[2] = 0;
+
+  vec3.transformMat4(v3pos, vec, this.invertedModel);
 
   // this order matters.
   v2height[0] = this.radius;
@@ -50,7 +49,7 @@ CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec)
   // the algorithm below works on symmetry, so when we say
   // 1 unit tall, it thinks 1.0..-1.0.  By dividing it in
   // half we get back to sanity.
-  v2height[1] = this.height/2;
+  v2height[1] = this.height * 0.5;
 
   v2scratch[0] = vec2.length([v3pos[0], v3pos[2]]);
   v2scratch[1] = v3pos[1];
@@ -68,15 +67,13 @@ CappedCylinder.prototype.evaluateVec3 = function cappedCylinderEvaluateVec3(vec)
 };
 
 CappedCylinder.prototype.computeAABB = function cuboidComputeAABB() {
-  var h2 = this.height/2;
+  var r = this.radius;
+  var h = this.height * 0.5;
 
-  this.bounds[0][0] = this.x - this.radius;
-  this.bounds[0][1] = this.y - h2;
-  this.bounds[0][2] = this.z - this.radius;
-
-  this.bounds[1][0] = this.x + this.radius;
-  this.bounds[1][1] = this.y + h2;
-  this.bounds[1][2] = this.z + this.radius;
+  return this.computeTransformedAABB(
+    -r, -h, -r,
+     r,  h,  r
+  );
 };
 
 Object.defineProperty(CappedCylinder.prototype, 'colorCode', {
@@ -99,48 +96,27 @@ Object.defineProperty(CappedCylinder.prototype, 'colorCode', {
 
 Object.defineProperty(CappedCylinder.prototype, 'prefetchCode', {
   get : function getCappedCylinderPrefetchCode() {
-    return printf(
-      '  float Xpf_%i = sample(%i, %i);\n',
-      this.id,
-      this.x.position[0],
-      this.x.position[1])
-
-    + printf(
-      '  float Ypf_%i = sample(%i, %i);\n',
-      this.id,
-      this.y.position[0],
-      this.y.position[1])
-
-    + printf(
-      '  float Zpf_%i = sample(%i, %i);\n',
-      this.id,
-      this.z.position[0],
-      this.z.position[1])
-
-    + printf(
-      '  float Rpf_%i = sample(%i, %i);\n',
-      this.id,
-      this.radius.position[0],
-      this.radius.position[1])
-
-    + printf(
-      '  float Hpf_%i = sample(%i, %i);\n',
-      this.id,
-      this.height.position[0],
-      this.height.position[1])
+    return [
+      this.invertedMatrixString(),
+      printf(
+        '  vec2 %s_dimensions = vec2(sample(%i, %i), sample(%i, %i));\n',
+        this.name,
+        this.radius.position[0],
+        this.radius.position[1],
+        this.height.position[0],
+        this.height.position[1]
+      )
+    ].join('\n')
   }
 });
 
 Object.defineProperty(CappedCylinder.prototype, 'code', {
   get : function getCappedCylinderCode() {
     return printf(
-      '    float %s = solid_capped_cylinder(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), vec2(Rpf_%i, Hpf_%i) );\n',
+      '    float %s = solid_capped_cylinder(vec4(%s_inv * pos4).xyz, %s_dimensions);\n',
       this.name,
-      this.id,
-      this.id,
-      this.id,
-      this.id,
-      this.id
+      this.name,
+      this.name
     );
   }
 });

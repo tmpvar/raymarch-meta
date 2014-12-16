@@ -1,20 +1,24 @@
 var inherits = require('inherits');
 var vec3 = require('gl-vec3');
+var mat4 = require('gl-mat4');
 require('../util/vec3-unproject')
 var printf = require('printf');
 var define = require('../util/define');
+var aabb = require('../util/aabb');
 var Shape = require('../shape');
 
 var min = Math.min;
 var max = Math.max;
 
-var zero = [0,0,0];
+var zero = [0 , 0, 0];
+var scaledDimensions = [0, 0, 0];
+var v3pos = [0, 0, 0];
+var temp = vec3.create();
+
+
 module.exports = Cuboid;
 
-function Cuboid(x, y, z, w, h, d, r, g, b, selected) {
-  define(this, 'x', x);
-  define(this, 'y', y);
-  define(this, 'z', z);
+function Cuboid(w, h, d, r, g, b, selected) {
   define(this, 'width', w);
   define(this, 'height', h);
   define(this, 'depth', d);
@@ -30,20 +34,15 @@ function Cuboid(x, y, z, w, h, d, r, g, b, selected) {
 
 inherits(Cuboid, Shape);
 
-var scaledDimensions = vec3.create();
-var v3pos = vec3.create();
-var temp = vec3.create();
 Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
-  v3pos[0] = this.x;
-  v3pos[1] = this.y;
-  v3pos[2] = this.z;
+  this._dirty && this.tick();
 
-  scaledDimensions[0] = this.width;
-  scaledDimensions[1] = this.height;
-  scaledDimensions[2] = this.depth;
+  vec3.transformMat4(v3pos, vec, this.invertedModel);
 
-  vec3.scale(scaledDimensions, scaledDimensions, 0.5);
-  vec3.subtract(v3pos, vec, v3pos);
+  scaledDimensions[0] = this.width * .5;
+  scaledDimensions[1] = this.height * .5;
+  scaledDimensions[2] = this.depth * .5;
+
   vec3.subtract(v3pos, vec3.abs(v3pos), scaledDimensions);
 
   vec3.max(temp, v3pos, zero);
@@ -57,17 +56,14 @@ Cuboid.prototype.evaluateVec3 = function cuboidEvaluateVec3(vec) {
 };
 
 Cuboid.prototype.computeAABB = function cuboidComputeAABB() {
-  scaledDimensions[0] = this.width * 0.5;
-  scaledDimensions[1] = this.height * 0.5;
-  scaledDimensions[2] = this.depth * 0.5;
+  var w = this.width * 0.5;
+  var h = this.height * 0.5;
+  var d = this.depth * 0.5;
 
-  this.bounds[0][0] = this.x - scaledDimensions[0];
-  this.bounds[0][1] = this.y - scaledDimensions[1];
-  this.bounds[0][2] = this.z - scaledDimensions[2];
-
-  this.bounds[1][0] = this.x + scaledDimensions[0];
-  this.bounds[1][1] = this.y + scaledDimensions[1];
-  this.bounds[1][2] = this.z + scaledDimensions[2];
+  return this.computeTransformedAABB(
+    -w, -h, -d,
+     w,  h,  d
+  );
 };
 
 Object.defineProperty(Cuboid.prototype, 'colorCode', {
@@ -90,54 +86,29 @@ Object.defineProperty(Cuboid.prototype, 'colorCode', {
 
 Object.defineProperty(Cuboid.prototype, 'prefetchCode', {
   get: function getCuboidPrefetchCode() {
-    return printf(
-      '  float Xpf_%i = sample(%i, %i);\n',
-      this.id,
-      this.x.position[0],
-      this.x.position[1])
-
-    + printf(
-      '  float Ypf_%i = sample(%i, %i);\n',
-      this.id,
-      this.y.position[0],
-      this.y.position[1])
-
-    + printf(
-      '  float Zpf_%i = sample(%i, %i);\n',
-      this.id,
-      this.z.position[0],
-      this.z.position[1])
-
-    + printf(
-      '  float Wpf_%i = sample(%i, %i);\n',
-      this.id,
-      this.width.position[0],
-      this.width.position[1])
-
-    + printf(
-      '  float Hpf_%i = sample(%i, %i);\n',
-      this.id,
-      this.height.position[0],
-      this.height.position[1])
-
-    + printf(
-      '  float Dpf_%i = sample(%i, %i);\n',
-      this.id,
-      this.depth.position[0],
-      this.depth.position[1])
+    return [
+      this.invertedMatrixString(),
+      printf(
+        '  vec3 %s_dimensions = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
+        this.name,
+        this.width.position[0],
+        this.width.position[1],
+        this.height.position[0],
+        this.height.position[1],
+        this.depth.position[0],
+        this.depth.position[1]
+      )
+    ].join('\n');
   }
 });
 
 Object.defineProperty(Cuboid.prototype, 'code', {
   get: function getCuboidCode() {
     return printf(
-      '    float %s = signed_box_distance(position - vec3(Xpf_%i, Ypf_%i, Zpf_%i), vec3(Wpf_%i, Hpf_%i, Dpf_%i) );\n',
+      '    float %s = signed_box_distance(vec4(%s_inv * pos4).xyz, %s_dimensions );\n',
       this.name,
-      this.id,
-      this.id,
-      this.id,
-      this.id,
-      this.id,
-      this.id);
+      this.name,
+      this.name
+    );
   }
 });

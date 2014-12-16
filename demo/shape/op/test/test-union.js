@@ -45,16 +45,17 @@ test('Union passthrough mock (min)', function(t) {
 
 test('Union of two toruses', function(t) {
   var shapes = [
-    new Torus(1, 0, 0, 2, .25),
-    new Torus(-1, 0, 0, 2, .25),
+    (new Torus(2, .25)).translate(1, 0, 0),
+    (new Torus(2, .25)).translate(-1, 0, 0),
   ];
 
   var union = new Union(shapes);
-
   t.ok(union.evaluateVec3([-1, 0, 0]) < 0, 'left doughnut hole is partially filled');
   t.ok(union.evaluateVec3([1, 0, 0]) < 0, 'right doughnut hole is partially filled');
   t.end();
 });
+
+// TODO: rotation of union
 
 test('Union of contained shape aabbs', function(t) {
 

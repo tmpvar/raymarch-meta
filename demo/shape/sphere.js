@@ -8,10 +8,7 @@ var v3pos = [0, 0, 0];
 
 module.exports = Sphere;
 
-function Sphere(x, y, z, radius, r, g, b, selected) {
-  define(this, 'x', x);
-  define(this, 'y', y);
-  define(this, 'z', z);
+function Sphere(radius, r, g, b, selected) {
   define(this, 'radius', radius);
   define(this, 'r', r);
   define(this, 'g', g);
@@ -26,21 +23,16 @@ function Sphere(x, y, z, radius, r, g, b, selected) {
 inherits(Sphere, Shape);
 
 Sphere.prototype.evaluateVec3 = function sphereEvaluateVec3(vec) {
-  v3pos[0] = this.x;
-  v3pos[1] = this.y;
-  v3pos[2] = this.z;
+  this._dirty && this.tick();
 
-  return vec3.distance(v3pos, vec) - this.radius;
+  vec3.transformMat4(v3pos, vec, this.invertedModel);
+
+  return vec3.length(v3pos) - this.radius;
 };
 
 Sphere.prototype.computeAABB = function sphereComputeAABB() {
-  this.bounds[0][0] = this.x - this.radius;
-  this.bounds[0][1] = this.y - this.radius;
-  this.bounds[0][2] = this.z - this.radius;
-
-  this.bounds[1][0] = this.x + this.radius;
-  this.bounds[1][1] = this.y + this.radius;
-  this.bounds[1][2] = this.z + this.radius;
+  var r = this.radius;
+  return this.computeTransformedAABB(-r, -r, -r, r, r, r);
 }
 
 Object.defineProperty(Sphere.prototype, 'colorCode', {
@@ -63,33 +55,25 @@ Object.defineProperty(Sphere.prototype, 'colorCode', {
 
 Object.defineProperty(Sphere.prototype, 'prefetchCode', {
   get: function getSpherePrefetchCode() {
-    return printf(
-      '  vec3 sphere_center_%s = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
-      this.id,
-      this.x.position[0],
-      this.x.position[1],
-      this.y.position[0],
-      this.y.position[1],
-      this.z.position[0],
-      this.z.position[1])
-
-    + printf(
-      '  float Rpf_%s = sample(%i, %i);\n',
-      this.id,
-      this.radius.position[0],
-      this.radius.position[1])
+    return [
+      this.invertedMatrixString(),
+      printf(
+        '  float %s_radius = sample(%i, %i);\n',
+        this.name,
+        this.radius.position[0],
+        this.radius.position[1]
+      )
+    ].join('\n');
   }
 });
 
 Object.defineProperty(Sphere.prototype, 'code', {
   get: function getSphereCode() {
     return printf(
-      '    float %s = solid_sphere(position - sphere_center_%i, Rpf_%i);\n',
+      '    float %s = solid_sphere(vec4(%s_inv * pos4).xyz, %s_radius);\n',
       this.name,
-      this.id,
-      this.id,
-      this.id,
-      this.id
-    )
+      this.name,
+      this.name
+    );
   }
 });

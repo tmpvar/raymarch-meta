@@ -45,8 +45,8 @@ test('Intersect passthrough mock (min)', function(t) {
 
 test('Intersect of two toruses', function(t) {
   var shapes = [
-    new Torus(1, 0, 0, 1, .25),
-    new Torus(-1, 0, 0, 1, .25),
+    (new Torus(1, .25)).translate(1, 0, 0),
+    (new Torus(1, .25)).translate(-1, 0, 0)
   ];
 
   var isect = new Intersect(shapes);

@@ -5,6 +5,7 @@ var createTexture = require('gl-texture2d');
 var printf = require('printf');
 var aabb = require('./util/aabb');
 var alloc = require('./util/allocator');
+var show = require('ndarray-show');
 
 var min = Math.min;
 var max = Math.max;
@@ -33,6 +34,19 @@ function Scene(gl, vert, frag) {
   this.initGL(gl);
 
   this.displayedObjects = null;
+
+  var scene = this;
+  alloc.dirty(function(v, x, y) {
+    scene.dirty();
+  });
+}
+
+
+Scene.prototype._dirty = false;
+Scene.prototype.dirty = function() {
+  this.gl && this.gl.dirty();
+  this._dirty = true;
+  this.dirtyBounds = true;
 }
 
 Scene.prototype.initGL = function initializeGL(gl) {
@@ -41,7 +55,7 @@ Scene.prototype.initGL = function initializeGL(gl) {
 }
 
 var v3temp = [0, 0, 0];
-Scene.prototype.march = function(rayOrigin, rayDirection) {
+Scene.prototype.march = function(rayOrigin, rayDirection, steps) {
   if (!this.displayedObjects || !this.displayedObjects.length) {
     return;
   }
@@ -51,13 +65,13 @@ Scene.prototype.march = function(rayOrigin, rayDirection) {
   // attempt a march
   var dist = 0;
 
-  var shapes = this.displayedObjects.filter(function(shape) {
-    return !!shape.evaluateVec3
-  });
+  var shapes = this.displayedObjects;
+
+  steps = steps || this.raymarch.CYCLES;
 
   var l = shapes.length;
-  var eps = 1/this.raymarch.CYCLES;
-  for (var step = 0; step<this.raymarch.CYCLES; step++) {
+  var eps = 1/steps;
+  for (var step = 0; step<steps; step++) {
 
     var h = Infinity;
     for (var i=0; i<l; i++) {
@@ -91,7 +105,7 @@ Scene.prototype.createShader = function(frag) {
     return;
   }
 
-  this.dirty = true;
+  this.dirty()
   if (this.shader) {
     this.shader.dispose();
   }
@@ -120,19 +134,19 @@ Scene.prototype.createShader = function(frag) {
   return this.shader;
 }
 
-Scene.prototype.dirty = false;
-
 Scene.prototype.getAABB = function() {
+
   if (this.dirtyBounds) {
     var bounds = this._bounds;
-    var shapes = this.shapes;
+    var shapes = this.displayedObjects;
     aabb.initialize(bounds);
 
     for (var i=0; i<shapes.length; i++) {
-      var sbounds = shapes[i].bounds;
+      var sbounds = shapes[i].computeAABB();
       if (!sbounds) {
         continue;
       }
+
       aabb.update(bounds, sbounds[0]);
       aabb.update(bounds, sbounds[1]);
     }
@@ -154,7 +168,7 @@ Scene.prototype.display = function sceneDisplay(shapes) {
       // merge the results into h as a pseudo-union
       return '    ' + shapes.map(function(shape) {
 
-        var x = 
+        var x =
 //        + printf('if (%s < h) { color = color_%s; }\n',
 //          shape.name,
 //          shape.id)
@@ -163,7 +177,7 @@ Scene.prototype.display = function sceneDisplay(shapes) {
           shape.name,
           shape.id,
           shape.name)
-          
+
       + printf('    h = min(h, %s);\n', shape.name);
 
 
@@ -182,6 +196,8 @@ Scene.prototype.generateFragShader = function(shapes) {
   var prefetchStr = '';
   aabb.initialize(this._bounds);
 
+  this.activeShapes = [];
+
   var handledChildren = {};
   var seenIds = {};
   var stack = shapes.slice().reverse();
@@ -198,6 +214,11 @@ Scene.prototype.generateFragShader = function(shapes) {
     } else {
       var shape = stack.pop();
 
+      if (!shape) {
+        continue;
+      }
+      // let's keep track of the active shapes
+      this.activeShapes.push(shape);
       if (!seenIds[shape.id]) {
         colorStr += shape.colorCode || '';
         prefetchStr += shape.prefetchCode || '';
@@ -220,17 +241,32 @@ Scene.prototype.generateFragShader = function(shapes) {
     frag = frag.replace(exp, raymarchDefines[key]);
   });
 
-  console.log('frag:', frag);
+  console.groupCollapsed('frag source')
+    console.log(frag);
+  console.groupEnd('frag source');
+
+
 
   return frag;
 }
 
 Scene.prototype.render = function renderScene() {
 
-  if (this.dirty) {
-    console.log('dirty');
+  if (this._dirty) {
+
+    // run through the active shapes and give them
+    // some time to do last chance processing
+    var shapes = this.activeShapes;
+    var l = shapes.length;
+
+    for (var i = 0; i<l; i++) {
+      if (shapes[i].tick) {
+        shapes[i].tick();
+      }
+    }
+
     // TODO: only upload changes
     this.opsTexture.setPixels(alloc.ops);
-    this.dirty = false;
+    this._dirty = false;
   }
 }

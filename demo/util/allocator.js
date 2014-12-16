@@ -24,10 +24,10 @@ var ops = alloc.ops = ndarray(
   [variableMapSize, variableMapSize]
 );
 
-function alloc(value, multiplier) {
+function alloc(initial, multiplier) {
   var x =pointer[0];
   var y =pointer[1];
-
+  var value;
   multiplier = multiplier || 1;
 
   if (x >= variableMapSize) {
@@ -43,20 +43,18 @@ function alloc(value, multiplier) {
   pointer[1] = y;
 
   function getset(v) {
-    if (typeof v !== 'undefined') {
-
-      // TODO: enable notifications
-      // scene.dirty = true;
+    if (typeof v !== 'undefined' && v !== value) {
       value = v;
       ops.set(x, y, v * multiplier);
+      alloc.dirty(v, x, y);
       return v;
     }
 
     return ops.get(x, y);
   }
 
-  if (typeof value !== 'undefined') {
-    getset(value);
+  if (typeof initial !== 'undefined') {
+    getset(initial);
   }
 
   getset.position = [x, y];
@@ -71,5 +69,21 @@ function alloc(value, multiplier) {
     return value + '';
   }
 
+
+
   return getset;
+}
+
+var listeners = [];
+
+alloc.dirty = function(v, x, y) {
+
+  if (typeof v === 'function') {
+    listeners.push(v);
+  } else {
+    for (var i=0; i<listeners.length; i++) {
+      listeners[i](v, x, y);
+    }
+  }
+
 }

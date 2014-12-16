@@ -43,8 +43,8 @@ test('Cut passthrough mock (max(-a, b))', function(t) {
 
 test('Cut - evaluateVec3 - hollow sphere', function(t) {
 
-  var outer = new Sphere(0, 0, 0, 1);
-  var inner = new Sphere(0, 0, 0, .5);
+  var outer = new Sphere(1);
+  var inner = new Sphere(.5);
   var cut = new Cut(outer, inner);
 
   // test the hollow part
@@ -68,8 +68,8 @@ test('Cut - evaluateVec3 - hollow sphere', function(t) {
 
 // TODO: trim the bounding box
 test('Cut - computeAABB', function(t) {
-  var outer = new Sphere(0, 0, 0, 1);
-  var inner = new Sphere(0, 0, 0, .5);
+  var outer = new Sphere(1);
+  var inner = new Sphere(.5);
 
   // cut the outer from the inner to demonstrate that
   // the bounds are a copy of to the `target`
