@@ -50,7 +50,7 @@ test('Intersect of two toruses', function(t) {
   ];
 
   var isect = new Intersect(shapes);
-console.log(isect.evaluateVec3([0, 0, 0]));
+
   t.ok(isect.evaluateVec3([0, 0, 0]) < 0, 'origin is filled');
   t.end();
 });
