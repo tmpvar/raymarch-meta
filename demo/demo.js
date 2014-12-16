@@ -13,6 +13,13 @@ var varargs = require('varargs');
 var Scene = require('./scene')
 var cmd = require('./commands')
 var ndarray = require('ndarray');
+var stats = new (require('./util/stats.min'))();
+stats.setMode(1);
+stats.domElement.style.position = 'absolute';
+stats.domElement.style.zIndex = '100';
+stats.domElement.style.left = '0px';
+stats.domElement.style.bottom = '0px';
+document.body.appendChild( stats.domElement );
 
 var aabb = require('./util/aabb');
 var mouse = {
@@ -156,6 +163,8 @@ vertBuf.update(cubeVerts);
 gl.start();
 var start = Date.now();
 function render() {
+  stats.end();
+  stats.begin();
   if (!scene.shader) {
     console.error('not rendering - no shader');
     gl.stop();
