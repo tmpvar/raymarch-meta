@@ -46,6 +46,7 @@ Scene.prototype._dirty = false;
 Scene.prototype.dirty = function() {
   this.gl && this.gl.dirty();
   this._dirty = true;
+  this.dirtyBounds = true;
 }
 
 Scene.prototype.initGL = function initializeGL(gl) {
@@ -134,16 +135,18 @@ Scene.prototype.createShader = function(frag) {
 }
 
 Scene.prototype.getAABB = function() {
+
   if (this.dirtyBounds) {
     var bounds = this._bounds;
-    var shapes = this.shapes;
+    var shapes = this.displayedObjects;
     aabb.initialize(bounds);
 
     for (var i=0; i<shapes.length; i++) {
-      var sbounds = shapes[i].bounds;
+      var sbounds = shapes[i].computeAABB();
       if (!sbounds) {
         continue;
       }
+
       aabb.update(bounds, sbounds[0]);
       aabb.update(bounds, sbounds[1]);
     }
