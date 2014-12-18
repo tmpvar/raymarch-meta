@@ -18,9 +18,9 @@ function Scene(gl, vert, frag) {
 
   this.gl = gl;
 
-  this.raymarch = {
-    CYCLES: 128
-  };
+  this.raymarch = {}
+  this.raymarch.CYCLES = 128;
+  this.raymarch.EPS = (1 / this.raymarch.CYCLES)/100;
 
   this.scale = [1,1,1];
 
@@ -82,7 +82,7 @@ Scene.prototype.march = function(rayOrigin, rayDirection, steps) {
       }
     }
 
-    if (h < eps) {
+    if (h < this.raymarch.EPS) {
 //      console.log('hit on shape %i (%f)', i, dist, shapes[i]);
 //      break;
       //return shapes[i];
@@ -169,14 +169,17 @@ Scene.prototype.display = function sceneDisplay(shapes) {
       return '    ' + shapes.map(function(shape) {
 
         var x =
-//        + printf('if (%s < h) { color = color_%s; }\n',
-//          shape.name,
-//          shape.id)
-
-          printf('    if (%s < h) { color = perform_selection(color_%s, %s_selected); }\n',
-          shape.name,
-          shape.id,
-          shape.name)
+          printf('    if (%s < h) { color = perform_selection(vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i)); }\n',
+            shape.name,
+            shape.r.position[0],
+            shape.r.position[1],
+            shape.g.position[0],
+            shape.g.position[1],
+            shape.b.position[0],
+            shape.b.position[1],
+            shape.selected.position[0],
+            shape.selected.position[1]
+          )
 
       + printf('    h = min(h, %s);\n', shape.name);
 
