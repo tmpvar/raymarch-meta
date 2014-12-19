@@ -216,7 +216,7 @@ function render() {
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
   gl.depthMask(false)
   gl.frontFace(gl.CCW)
-  gl.enable(gl.CULL_FACE);
+//  gl.enable(gl.CULL_FACE);
   gl.enable(gl.DEPTH_TEST)
 
   // TODO: this slows things down quite a bit
@@ -280,13 +280,8 @@ function handleMouse(e) {
       }
 
       camera.view(view);
-  //  getEye(eye, view);
 
-      var scratch = new Float32Array(16);
-      mat4.invert(scratch, view);
-      eye[0] = scratch[12];
-      eye[1] = scratch[13];
-      eye[2] = scratch[14];
+      eye = getEye(eye, view);
 
       mouse.pos[0] = x;
       mouse.pos[1] = y;
