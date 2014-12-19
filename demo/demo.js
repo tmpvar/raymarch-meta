@@ -69,41 +69,52 @@ if (!gl) {
 }
 
 //Create buffers for cube
-var cubeVerts = []
-var cubeFacets = []
-for(var i=0; i<8; ++i) {
-  for(var j=0; j<3; ++j) {
-    if(i & (1<<j)) {
-      cubeVerts.push( 1)
-    } else {
-      cubeVerts.push(-1)
-    }
-  }
-}
-for(var d=0; d<3; ++d) {
-  var u = 1<<((d + 1) % 3)
-  var v = 1<<((d + 2) % 3)
-  for(var s=0; s<2; ++s) {
-    var m = s << d
-    cubeFacets.push(m, m+v, m+u, m+u, m+v, m+u+v)
-    var t = u
-    u = v
-    v = t
-  }
-}
+// var cubeVerts = []
+// var cubeFacets = []
+// for(var i=0; i<8; ++i) {
+//   for(var j=0; j<3; ++j) {
+//     if(i & (1<<j)) {
+//       cubeVerts.push( 1)
+//     } else {
+//       cubeVerts.push(-1)
+//     }
+//   }
+// }
+// for(var d=0; d<3; ++d) {
+//   var u = 1<<((d + 1) % 3)
+//   var v = 1<<((d + 2) % 3)
+//   for(var s=0; s<2; ++s) {
+//     var m = s << d
+//     cubeFacets.push(m, m+v, m+u, m+u, m+v, m+u+v)
+//     var t = u
+//     u = v
+//     v = t
+//   }
+// }
 
 //Create cube VAO
-var faceBuf = createBuffer(gl, new Uint16Array(cubeFacets), gl.ELEMENT_ARRAY_BUFFER)
-var vertBuf = createBuffer(gl, new Float32Array(cubeVerts));
-var vao = createVAO(gl, [
-  { "buffer": vertBuf,
-    "type": gl.FLOAT,
-    "size": 3,
-    "stride": 0,
-    "offset": 0,
-    "normalized": false
-  }
-], faceBuf)
+// var faceBuf = createBuffer(gl, new Uint16Array(cubeFacets), gl.ELEMENT_ARRAY_BUFFER)
+// var vertBuf = createBuffer(gl, new Float32Array(cubeVerts));
+var vao = createVAO(gl, [{
+  buffer: createBuffer(gl, [
+    -1,  1,  0,
+     1,  1,  0,
+     1, -1,  0,
+
+    -1,  1,  0,
+     1, -1,  0,
+    -1, -1,  0
+  ]),
+  size: 3
+}]);
+//   { "buffer": vertBuf,
+//     "type": gl.FLOAT,
+//     "size": 3,
+//     "stride": 0,
+//     "offset": 0,
+//     "normalized": false
+//   }
+// ], faceBuf)
 
 var scene = window.scene = new Scene(gl, vert, frag)
 
@@ -143,22 +154,22 @@ camera.center[2] = bounds[0][2] + (bounds[1][2] - bounds[0][2])/2;
 
 // TODO: this is a very mechanical way of doing things and I'm sure
 //       there is a better way!
-var w = 0;
-for(var i=0; i<8; ++i) {
-  for(var j=0; j<3; ++j) {
-    var v;
-    if(i & (1<<j)) {
-      v = 1;
-    } else {
-      v = -1;
-    }
-    var pos = v === -1 ? 0 : 1;
+// var w = 0;
+// for(var i=0; i<8; ++i) {
+//   for(var j=0; j<3; ++j) {
+//     var v;
+//     if(i & (1<<j)) {
+//       v = 1;
+//     } else {
+//       v = -1;
+//     }
+//     var pos = v === -1 ? 0 : 1;
 
-    cubeVerts[w] = bounds[pos][j];
-    w++;
-  }
-}
-vertBuf.update(cubeVerts);
+//     cubeVerts[w] = bounds[pos][j];
+//     w++;
+//   }
+// }
+// vertBuf.update(cubeVerts);
 
 
 gl.start();
@@ -199,7 +210,7 @@ function render() {
   mat4.multiply(clipToWorld, clipToWorld, projection);
 
   // TODO: pre-divide to avoid doing it in frag.glsl:main
-  var w = clipToWorld[11];
+//  var w = clipToWorld[11];
 
   gl.enable(gl.BLEND)
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -209,11 +220,11 @@ function render() {
   gl.enable(gl.DEPTH_TEST)
 
   // TODO: this slows things down quite a bit
-  if (aabb.contains(scene.getAABB(), mouse)) {
+/*  if (aabb.contains(scene.getAABB(), mouse)) {
     gl.cullFace(gl.BACK)
   } else {
     gl.cullFace(gl.FRONT)
-  }
+  } */
 
   //Set up shader
   scene.shader.uniforms.worldToClip = worldToClip;
@@ -229,7 +240,9 @@ function render() {
 
   vao.bind();
 
-  gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0)
+
+  vao.draw(gl.TRIANGLES, 6);
+//  gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0)
   vao.unbind();
   gl.stop();
 }
@@ -267,7 +280,13 @@ function handleMouse(e) {
       }
 
       camera.view(view);
-      getEye(eye, view);
+  //  getEye(eye, view);
+
+      var scratch = new Float32Array(16);
+      mat4.invert(scratch, view);
+      eye[0] = scratch[12];
+      eye[1] = scratch[13];
+      eye[2] = scratch[14];
 
       mouse.pos[0] = x;
       mouse.pos[1] = y;

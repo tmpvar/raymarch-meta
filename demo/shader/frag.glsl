@@ -158,7 +158,10 @@ vec3 computeLight(in vec3 light_pos, in vec3 light_dir, in vec3 surface_position
 }
 
 void main() {
-  vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
+//gl_FragColor = vec4(1.0, 0.0, 0.0, 0.1);
+//return;
+
+  vec3 eye = clipToWorld[3].xyz; // / clipToWorld[3].w;
   vec3 dir = normalize(v_uv - eye);
 
   float surface_distance = 0.0;
@@ -188,7 +191,7 @@ void main() {
   );
 
   gl_FragColor = mix(
-    vec4(0.0),
+    vec4(0.1),
     vec4(
       orange * max(diffuse2, diffuse * 0.5),
       1.0
