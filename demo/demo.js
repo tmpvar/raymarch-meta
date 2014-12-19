@@ -212,23 +212,16 @@ function render() {
   // TODO: pre-divide to avoid doing it in frag.glsl:main
 //  var w = clipToWorld[11];
 
-  gl.enable(gl.BLEND)
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-  gl.depthMask(false)
-  gl.frontFace(gl.CCW)
-//  gl.enable(gl.CULL_FACE);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  gl.depthMask(false);
+  gl.frontFace(gl.CW);
+  gl.enable(gl.CULL_FACE);
   gl.enable(gl.DEPTH_TEST)
 
-  // TODO: this slows things down quite a bit
-/*  if (aabb.contains(scene.getAABB(), mouse)) {
-    gl.cullFace(gl.BACK)
-  } else {
-    gl.cullFace(gl.FRONT)
-  } */
-
   //Set up shader
-  scene.shader.uniforms.worldToClip = worldToClip;
-  scene.shader.uniforms.clipToWorld = clipToWorld;
+  scene.shader.uniforms.worldToClip = clipToWorld;
+  scene.shader.uniforms.clipToWorld = worldToClip;
 
   resolution[0] = gl.canvas.width;
   resolution[1] = gl.canvas.height;
@@ -239,10 +232,7 @@ function render() {
   scene.render();
 
   vao.bind();
-
-
   vao.draw(gl.TRIANGLES, 6);
-//  gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0)
   vao.unbind();
   gl.stop();
 }
