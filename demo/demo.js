@@ -17,7 +17,7 @@ var stats = new (require('./util/stats.min'))();
 stats.setMode(1);
 stats.domElement.style.position = 'absolute';
 stats.domElement.style.zIndex = '100';
-stats.domElement.style.left = '0px';
+stats.domElement.style.right = '0px';
 stats.domElement.style.bottom = '0px';
 document.body.appendChild( stats.domElement );
 
@@ -37,7 +37,7 @@ var camera = require('orbit-camera')(
 );
 
 var vert = fs.readFileSync(__dirname + '/shader/vert.glsl', 'utf8');
-var frag = fs.readFileSync(__dirname + '/shader/frag.glsl', 'utf8');
+var frag = fs.readFileSync(__dirname + '/shader/depth.frag.glsl', 'utf8');
 
 var model = mat4.create();;
 var projection = mat4.create();
@@ -189,7 +189,7 @@ function render() {
   scene.viewport[2] = gl.canvas.width;
   scene.viewport[3] = gl.canvas.height;
 
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  gl.viewport(0, 0, scene.viewport[2], scene.viewport[3]);
 
   mat4.identity(model);
 
@@ -197,7 +197,7 @@ function render() {
   mat4.perspective(
     projection,
     Math.PI/4.0,
-    gl.canvas.width/gl.canvas.height,
+    scene.viewport[2]/scene.viewport[3],
     0.1,
     1000.0
   );
