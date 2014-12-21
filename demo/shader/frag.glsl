@@ -169,7 +169,7 @@ void main() {
   vec2 ep = vec2((gl_FragCoord.xy/resolution.xy * 2.0) - 1.0);
   ep.x *= resolution.x/resolution.y;
   vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
-  vec3 dir = normalize(unproject(ep, time, worldToClip));
+  vec3 dir = normalize(unproject(ep, 0.0, worldToClip));
 
   float surface_distance = 0.0;
 
