@@ -160,14 +160,15 @@ vec3 computeLight(in vec3 light_pos, in vec3 light_dir, in vec3 surface_position
 
 
 vec3 unproject(vec2 pos, float z, mat4 inverted) {
-  vec4 pos4 = vec4(pos, 0.0, 1.0);
+  // TODO: tuning 4.0 causes better results
+  vec4 pos4 = vec4(pos, 4.0, 1.0);
   return (pos4 * inverted).xyz;
 }
 
 void main() {
   vec2 ep = vec2((gl_FragCoord.xy/resolution.xy * 2.0) - 1.0);
-  //ep.x *= resolution.x/resolution.y;
-  vec3 eye = clipToWorld[3].xyz;// / clipToWorld[3].w;
+  ep.x *= resolution.x/resolution.y;
+  vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
   vec3 dir = normalize(unproject(ep, time, worldToClip));
 
   float surface_distance = 0.0;
