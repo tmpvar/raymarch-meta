@@ -222,6 +222,8 @@ function render() {
   //Set up shader
   scene.shader.uniforms.worldToClip = worldToClip;
   scene.shader.uniforms.clipToWorld = clipToWorld;
+  scene.shader.uniforms.camera_distance = camera.distance;
+  scene.shader.uniforms.camera_eye = getEye(eye, clipToWorld);
 
   resolution[0] = gl.canvas.width;
   resolution[1] = gl.canvas.height;
