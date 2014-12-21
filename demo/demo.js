@@ -204,9 +204,12 @@ function render() {
   //Calculate camera matrices
   camera.view(view);
   mat4.multiply(worldToClip, view, model);
+
+  var uvmatrix = mat4.copy(mat4.create(), worldToClip);
   mat4.multiply(worldToClip, projection, worldToClip);
 
   mat4.invert(clipToWorld, worldToClip);
+//console.log(mat4.str(mat4.multiply(mat4.create(), worldToClip, clipToWorld)));
   mat4.multiply(clipToWorld, clipToWorld, projection);
 
   // TODO: pre-divide to avoid doing it in frag.glsl:main
@@ -222,6 +225,7 @@ function render() {
   //Set up shader
   scene.shader.uniforms.worldToClip = worldToClip;
   scene.shader.uniforms.clipToWorld = clipToWorld;
+  scene.shader.uniforms.uvmatrix = clipToWorld;
   scene.shader.uniforms.camera_distance = camera.distance;
   scene.shader.uniforms.camera_eye = getEye(eye, clipToWorld);
 

@@ -12,6 +12,7 @@ uniform vec3 camera_eye;
 uniform float camera_distance;
 
 varying vec3 v_uv;
+varying vec3 v_dir;
 
 #define EPS       0.001
 #define PI 3.14159
@@ -168,12 +169,14 @@ vec3 unproject(vec2 pos, float z, mat4 inverted) {
   return (pos4 * inverted).xyz;
 }
 
+
+
 void main() {
   vec2 ep = vec2((gl_FragCoord.xy/resolution.xy * 2.0) - 1.0);
   ep.x *= resolution.x/resolution.y;
   vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
-  vec3 dir = normalize(unproject(ep, 1.0, worldToClip));
-
+  vec3 dir = unproject(ep, 1.0, clipToWorld);
+  dir = normalize(v_dir);
   float surface_distance = 0.0;
 
   int steps = 0;

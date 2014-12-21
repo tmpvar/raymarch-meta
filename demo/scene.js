@@ -118,6 +118,7 @@ Scene.prototype.createShader = function(frag) {
       [
         { name: 'worldToClip', type: 'mat4' },
         { name: 'clipToWorld', type: 'mat4' },
+        { name: 'uvmatrix', type: 'mat4' },
         { name: 'ops', type: 'sampler2D' },
         { name: 'resolution', type: 'vec2' },
         { name: 'time', type: 'float' },
