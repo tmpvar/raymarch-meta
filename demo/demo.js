@@ -225,7 +225,7 @@ function render() {
   //Set up shader
   scene.shader.uniforms.worldToClip = worldToClip;
   scene.shader.uniforms.clipToWorld = clipToWorld;
-  scene.shader.uniforms.uvmatrix = clipToWorld;
+  scene.shader.uniforms.uvmatrix = uvmatrix;
   scene.shader.uniforms.camera_distance = camera.distance;
   scene.shader.uniforms.camera_eye = getEye(eye, clipToWorld);
 
