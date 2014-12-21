@@ -46,6 +46,7 @@ var worldToClip = mat4.create();
 var clipToWorld = mat4.create();
 var v3scratch = [0, 0, 0];
 var m4scratch = mat4.create();
+var uvmatrix = mat4.create();
 
 function getEye(out, view) {
   mat4.invert(m4scratch, view);
@@ -205,29 +206,25 @@ function render() {
   camera.view(view);
   mat4.multiply(worldToClip, view, model);
 
-  var uvmatrix = mat4.copy(mat4.create(), worldToClip);
+  mat4.copy(uvmatrix, worldToClip);
   mat4.multiply(worldToClip, projection, worldToClip);
 
   mat4.invert(clipToWorld, worldToClip);
-//console.log(mat4.str(mat4.multiply(mat4.create(), worldToClip, clipToWorld)));
+
   mat4.multiply(clipToWorld, clipToWorld, projection);
 
-  // TODO: pre-divide to avoid doing it in frag.glsl:main
-//  var w = clipToWorld[11];
 
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  // gl.depthMask(false);
-  // gl.frontFace(gl.CW);
-  // gl.enable(gl.CULL_FACE);
-  // gl.enable(gl.DEPTH_TEST)
+  gl.depthMask(false);
+  gl.frontFace(gl.CW);
+  gl.enable(gl.CULL_FACE);
+  gl.enable(gl.DEPTH_TEST)
 
   //Set up shader
   scene.shader.uniforms.worldToClip = worldToClip;
   scene.shader.uniforms.clipToWorld = clipToWorld;
   scene.shader.uniforms.uvmatrix = uvmatrix;
-  scene.shader.uniforms.camera_distance = camera.distance;
-  scene.shader.uniforms.camera_eye = getEye(eye, clipToWorld);
 
   resolution[0] = gl.canvas.width;
   resolution[1] = gl.canvas.height;

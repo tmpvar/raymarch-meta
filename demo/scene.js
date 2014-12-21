@@ -122,9 +122,6 @@ Scene.prototype.createShader = function(frag) {
         { name: 'ops', type: 'sampler2D' },
         { name: 'resolution', type: 'vec2' },
         { name: 'time', type: 'float' },
-        { name: 'camera_eye', type: 'vec3' },
-        { name: 'camera_distance', type: 'float' },
-
       ],
       [{ name: 'position', type: 'vec3' }]
     );
@@ -249,8 +246,6 @@ Scene.prototype.generateFragShader = function(shapes) {
   console.groupCollapsed('frag source')
     console.log(frag);
   console.groupEnd('frag source');
-
-
 
   return frag;
 }
