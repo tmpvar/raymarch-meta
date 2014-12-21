@@ -3,11 +3,10 @@ precision highp float;
 #endif
 
 uniform sampler2D ops;
-uniform mat4 clipToWorld;
 uniform vec2 resolution;
 uniform float time;
 
-varying vec3 v_uv;
+uniform mat4 clipToWorld;
 
 #define EPS       0.001
 #define PI 3.14159
@@ -16,11 +15,6 @@ varying vec3 v_uv;
 
 #define RAYMARCH_CYCLES /* RAYMARCH_CYCLES */
 #define RAYMARCH_EPS 0.0001
-
-// void circle(vec2 pos, float r, inout float dist) {
-//   vec2 p = v_uv + pos;
-//   dist = min(dist, length(p)-r);
-// }
 
 float sample(int x, int y) {
   return texture2D(ops, vec2(x, y) * OPS_RATIO).x;
@@ -81,16 +75,11 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
   hit = 10.0;
   float minStep = 0.00001;
 
-
   vec4 pos4;
-
-
 
   for(int i=0; i<RAYMARCH_CYCLES; i++) {
 
 /* RAYMARCH_COLOR */
-
-
 /* RAYMARCH_SETUP */
 
     steps = i;
@@ -153,16 +142,33 @@ vec3 computeLight(in vec3 light_pos, in vec3 light_dir, in vec3 surface_position
 
   return vec3(1.0, 0.8, 0.6) * max(
     0.0,
-    dot(normalize(light_pos - surface_position), surface_normal)// / (surface_distance)
+    dot(normalize(light_pos - surface_position), surface_normal) // / (surface_distance)
   );
 }
 
 void main() {
-//gl_FragColor = vec4(1.0, 0.0, 0.0, 0.1);
-//return;
+  // camera setup courtesy of mrdoob
+  vec2 vPos = -1.0 + 2.0 * gl_FragCoord.xy / resolution.xy;
 
-  vec3 eye = clipToWorld[3].xyz; // / clipToWorld[3].w;
-  vec3 dir = normalize(v_uv - eye);
+  // Camera animation
+  vec3 vuv = vec3(0.0, 1.0, 0.0); // Change camera up vector here
+  vec3 vrp = vec3(0.0, 0.0, 0.0); // Change camera view here
+//  vec3 prp = vec3(-sin(time) * 8.0, 4.0, cos(time) * 8.0); // Change camera path position here
+  vec3 prp = clipToWorld[3].xyz;
+
+  // Camera setup
+  vec3 vpn = normalize(vrp - prp);
+  vec3 u = normalize(cross(vuv, vpn));
+  vec3 v = cross(vpn, u);
+  vec3 vcv = (prp + vpn);
+  vec3 scrCoord = vcv + vPos.x * u * resolution.x / resolution.y + vPos.y * v;
+  vec3 scp = normalize(scrCoord - prp);
+
+
+
+
+
+
 
   float surface_distance = 0.0;
 
@@ -171,20 +177,20 @@ void main() {
   vec3 surface_position;
   vec3 orange = vec3(1.0, 0.36, 0);
 
-  surface_distance = raymarch(eye, dir, steps, hit, surface_position, orange);
+  surface_distance = raymarch(prp, scp, steps, hit, surface_position, orange);
   vec3 surface_normal = gradientNormal(surface_position);
 
   vec3 diffuse = computeLight(
-    vec3(0.0, 2.0, 1.0),    // light position
-    vec3(0.0, -1.0, 0.0),   // light direction
+    vec3(0.0, 2.0, 1.0), // light position
+    vec3(0.0, -1.0, 0.0), // light direction
     surface_position,
     surface_normal,
     surface_distance
   );
 
   vec3 diffuse2 = computeLight(
-    eye,    // light position
-    dir,   // light direction
+    prp, // light position
+    scp, // light direction
     surface_position,
     surface_normal,
     surface_distance

@@ -55,7 +55,6 @@ function getEye(out, view) {
   return out;
 }
 
-
 var clear = require('gl-clear')({
   color : [ 17/255, 17/255, 34/255]
 });
@@ -68,33 +67,6 @@ if (!gl) {
   throw new Error('could not initialize webgl');
 }
 
-//Create buffers for cube
-// var cubeVerts = []
-// var cubeFacets = []
-// for(var i=0; i<8; ++i) {
-//   for(var j=0; j<3; ++j) {
-//     if(i & (1<<j)) {
-//       cubeVerts.push( 1)
-//     } else {
-//       cubeVerts.push(-1)
-//     }
-//   }
-// }
-// for(var d=0; d<3; ++d) {
-//   var u = 1<<((d + 1) % 3)
-//   var v = 1<<((d + 2) % 3)
-//   for(var s=0; s<2; ++s) {
-//     var m = s << d
-//     cubeFacets.push(m, m+v, m+u, m+u, m+v, m+u+v)
-//     var t = u
-//     u = v
-//     v = t
-//   }
-// }
-
-//Create cube VAO
-// var faceBuf = createBuffer(gl, new Uint16Array(cubeFacets), gl.ELEMENT_ARRAY_BUFFER)
-// var vertBuf = createBuffer(gl, new Float32Array(cubeVerts));
 var vao = createVAO(gl, [{
   buffer: createBuffer(gl, [
     -1,  1,  0,
@@ -107,14 +79,6 @@ var vao = createVAO(gl, [{
   ]),
   size: 3
 }]);
-//   { "buffer": vertBuf,
-//     "type": gl.FLOAT,
-//     "size": 3,
-//     "stride": 0,
-//     "offset": 0,
-//     "normalized": false
-//   }
-// ], faceBuf)
 
 var scene = window.scene = new Scene(gl, vert, frag)
 
@@ -190,27 +154,8 @@ function render() {
 
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-  mat4.identity(model);
-
-
-  mat4.perspective(
-    projection,
-    Math.PI/4.0,
-    gl.canvas.width/gl.canvas.height,
-    0.1,
-    1000.0
-  );
-
   //Calculate camera matrices
   camera.view(view);
-  mat4.multiply(worldToClip, view, model);
-  mat4.multiply(worldToClip, projection, worldToClip);
-
-  mat4.invert(clipToWorld, worldToClip);
-  mat4.multiply(clipToWorld, clipToWorld, projection);
-
-  // TODO: pre-divide to avoid doing it in frag.glsl:main
-//  var w = clipToWorld[11];
 
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -220,8 +165,7 @@ function render() {
   gl.enable(gl.DEPTH_TEST)
 
   //Set up shader
-  scene.shader.uniforms.worldToClip = clipToWorld;
-  scene.shader.uniforms.clipToWorld = worldToClip;
+  scene.shader.uniforms.clipToWorld = view;
 
   resolution[0] = gl.canvas.width;
   resolution[1] = gl.canvas.height;
@@ -270,7 +214,6 @@ function handleMouse(e) {
       }
 
       camera.view(view);
-
       eye = getEye(eye, view);
 
       mouse.pos[0] = x;
