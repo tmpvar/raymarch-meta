@@ -214,14 +214,14 @@ function render() {
 
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  gl.depthMask(false);
-  gl.frontFace(gl.CW);
-  gl.enable(gl.CULL_FACE);
-  gl.enable(gl.DEPTH_TEST)
+  // gl.depthMask(false);
+  // gl.frontFace(gl.CW);
+  // gl.enable(gl.CULL_FACE);
+  // gl.enable(gl.DEPTH_TEST)
 
   //Set up shader
-  scene.shader.uniforms.worldToClip = clipToWorld;
-  scene.shader.uniforms.clipToWorld = worldToClip;
+  scene.shader.uniforms.worldToClip = worldToClip;
+  scene.shader.uniforms.clipToWorld = clipToWorld;
 
   resolution[0] = gl.canvas.width;
   resolution[1] = gl.canvas.height;
