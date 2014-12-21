@@ -201,7 +201,7 @@ void main() {
   );
 
   gl_FragColor = mix(
-    vec4(0.1),
+    vec4(abs(dir), 1.0),
     vec4(
       orange * max(diffuse2, diffuse * 0.5),
       1.0
