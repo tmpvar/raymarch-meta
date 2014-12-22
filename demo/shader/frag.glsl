@@ -80,6 +80,25 @@ vec3 perform_selection(in vec3 color, in float val) {
   return mix(color, selectionColor, val);
 }
 
+// http://fhtr.blogspot.com/2013/12/opus-2-glsl-ray-tracing-tutorial.html
+//float rayIntersectsSphere(vec3 ray, vec3 dir, vec3 center, float radius, float closestHit) {
+bool rayIntersectsSphere(vec3 ray, vec3 dir, vec3 center, float radius) {
+  vec3 rc = ray-center;
+  float c = dot(rc, rc) - (radius*radius);
+  float b = dot(dir, rc);
+  float d = b*b - c;
+  float t = -b - sqrt(abs(d));
+  if (d < 0.0 || t < 0.0 /*  || t > closestHit */) {
+    return false; // didn't hit
+    // return closestHit; // Didn't hit, or wasn't the closest hit.
+  } else {
+    return true;
+    // return t
+  }
+}
+
+
+
 float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, out vec3 position, out vec3 color) {
   float dist = 0.0;
   float h = 1.0;
@@ -87,15 +106,14 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
   float minStep = 0.00001;
 
 
-  vec4 pos4;
 
+
+  vec4 pos4;
 
 
   for(int i=0; i<RAYMARCH_CYCLES; i++) {
 
 /* RAYMARCH_COLOR */
-
-
 /* RAYMARCH_SETUP */
 
     steps = i;
@@ -165,6 +183,33 @@ vec3 computeLight(in vec3 light_pos, in vec3 light_dir, in vec3 surface_position
 void main() {
   vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
   vec3 dir = normalize(v_dir);
+
+
+vec3 asdf[4];
+asdf[0] = vec3(0.0, 0.0, 0.0);
+asdf[1] = vec3(0.0, 0.5, 0.0);
+asdf[2] = vec3(0.0, 2.5, 0.0);
+asdf[3] = vec3(0.9, 0.5, 0.4);
+
+float radii[4];
+radii[0] = 0.5;
+radii[1] = 0.23;
+radii[2] = 1.6;
+radii[3] = 0.4;
+
+#define SHAPE_COUNT 4
+
+bool found = false;
+for (int x = 0; x < SHAPE_COUNT; x++) {
+  if (rayIntersectsSphere(eye, dir, asdf[x], radii[x])) {
+    found = true;
+    break; // stop looking - our ray has hit a bounding sphere
+  }
+}
+
+if (!found) return;
+
+
   float surface_distance = 0.0;
 
   int steps = 0;

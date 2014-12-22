@@ -168,7 +168,7 @@ Scene.prototype.display = function sceneDisplay(shapes) {
       return '    ' + shapes.map(function(shape) {
 
         var x =
-          printf('    if (%s < h) { color = perform_selection(vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i)); }\n',
+          printf('     if (%s < h) { color = perform_selection(vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i)); }\n',
             shape.name,
             shape.r.position[0],
             shape.r.position[1],
@@ -181,6 +181,7 @@ Scene.prototype.display = function sceneDisplay(shapes) {
           )
 
       + printf('    h = min(h, %s);\n', shape.name);
+    //  + printf('    h = %s;\n', shape.name);
 
 
         return x;
