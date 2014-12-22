@@ -120,6 +120,7 @@ Scene.prototype.createShader = function(frag) {
         { name: 'clipToWorld', type: 'mat4' },
         { name: 'uvmatrix', type: 'mat4' },
         { name: 'ops', type: 'sampler2D' },
+        { name: 'fbo', type: 'sampler2D' },
         { name: 'resolution', type: 'vec2' },
         { name: 'time', type: 'float' },
       ],
@@ -162,39 +163,44 @@ Scene.prototype.display = function sceneDisplay(shapes) {
 
   this.displayedObjects = shapes;
 
-  var shaderSource = this.generateFragShader(shapes.concat({
-    get code() {
-      // merge the results into h as a pseudo-union
-      return '    ' + shapes.map(function(shape) {
-
-      return printf('h = min(h, %s);\n', shape.name);
-
-      // TODO: split the selection code out
-      //   var x =
-      //     printf('    if (%s < h) { color = perform_selection(vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i)); }\n',
-      //       shape.name,
-      //       shape.r.position[0],
-      //       shape.r.position[1],
-      //       shape.g.position[0],
-      //       shape.g.position[1],
-      //       shape.b.position[0],
-      //       shape.b.position[1],
-      //       shape.selected.position[0],
-      //       shape.selected.position[1]
-      //     )
-
-      // + printf('    h = min(h, %s);\n', shape.name);
-
-
-      //   return x;
-      }).join('\n    ')
-    }
-  }));
+  var shaderSource = this.generateFragShader(shapes);
 
   this.createShader(shaderSource);
 }
 
-Scene.prototype.generateFragShader = function(shapes) {
+Scene.prototype.generateFragShader = function(shapes, shaderSource) {
+  shapes = shapes || this.displayedObjects;
+
+  // shapes = shapes.concat({
+  //   get code() {
+  //     // merge the results into h as a pseudo-union
+  //     return '    ' + shapes.map(function(shape) {
+
+  //     // TODO: this could actually be merged into each shape
+  //     return printf('h = min(h, %s);\n', shape.name);
+
+  //     // TODO: split the selection code out
+  //     //   var x =
+  //     //     printf('    if (%s < h) { color = perform_selection(vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i)); }\n',
+  //     //       shape.name,
+  //     //       shape.r.position[0],
+  //     //       shape.r.position[1],
+  //     //       shape.g.position[0],
+  //     //       shape.g.position[1],
+  //     //       shape.b.position[0],
+  //     //       shape.b.position[1],
+  //     //       shape.selected.position[0],
+  //     //       shape.selected.position[1]
+  //     //     )
+
+  //     // + printf('    h = min(h, %s);\n', shape.name);
+
+
+  //     //   return x;
+  //     }).join('\n    ')
+  //   }
+  // });
+
   var l = shapes.length;
   var colorStr = '';
   var shapeStr = '';
@@ -227,7 +233,12 @@ Scene.prototype.generateFragShader = function(shapes) {
       if (!seenIds[shape.id]) {
         colorStr += shape.colorCode || '';
         prefetchStr += shape.prefetchCode || '';
-        shapeStr += shape.code || '';
+
+        var code = shape.code;
+        if (code) {
+          shapeStr += code;
+          shapeStr += printf('    h = min(h, %s);\n', shape.name)
+        }
 
         shape.bounds && aabb.merge([shape.bounds], this._bounds);
         seenIds[shape.id] = true;
@@ -235,7 +246,7 @@ Scene.prototype.generateFragShader = function(shapes) {
     }
   }
 
-  var frag = this.fragSource.replace('/* RAYMARCH_COLOR */', colorStr);
+  var frag = (shaderSource || this.fragSource).replace('/* RAYMARCH_COLOR */', colorStr);
   frag = frag.replace('/* RAYMARCH_SETUP */', prefetchStr);
   frag = frag.replace('/* RAYMARCH_OPS */', shapeStr);
   frag = frag.replace(/\/\* OPS_SIZE \*\//g, alloc.variableMapSize.toFixed(1));
