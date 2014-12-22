@@ -106,12 +106,9 @@ Scene.prototype.createShader = function(frag) {
   }
 
   this.dirty()
-  if (this.shader) {
-    this.shader.dispose();
-  }
 
   try {
-    this.shader = createShader(
+    return createShader(
       this.gl,
       this.vertSource,
       frag,
@@ -130,8 +127,6 @@ Scene.prototype.createShader = function(frag) {
     console.log(frag);
     console.error(e.message);
   }
-
-  return this.shader;
 }
 
 Scene.prototype.getAABB = function() {
@@ -165,7 +160,11 @@ Scene.prototype.display = function sceneDisplay(shapes) {
 
   var shaderSource = this.generateFragShader(shapes);
 
-  this.createShader(shaderSource);
+  if (this.shader) {
+    this.shader.dispose();
+  }
+
+  this.shader = this.createShader(shaderSource);
 }
 
 Scene.prototype.generateFragShader = function(shapes, shaderSource) {
