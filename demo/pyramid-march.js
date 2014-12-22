@@ -112,8 +112,11 @@ function createRenderer(gl) {
     var previousFBO = fboPair[location]
     var currentFBO = fboPair[location ^= 1]
 
-    location = (location+1)%2;
+    currentFBO.shape = resolution;
 
+    // TODO: compile the debug shader and display the results of
+    //       this operation
+    // currentFBO.bind();
     // scene.shader.uniforms.fbo = previousFBO.color[0].bind();
 
     vao.bind();

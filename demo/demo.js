@@ -39,7 +39,8 @@ var camera = require('orbit-camera')(
 );
 
 var vert = fs.readFileSync(__dirname + '/shader/vert.glsl', 'utf8');
-var frag = fs.readFileSync(__dirname + '/shader/depth.frag.glsl', 'utf8');
+var fragDepth = fs.readFileSync(__dirname + '/shader/depth.frag.glsl', 'utf8');
+var fragDebug = fs.readFileSync(__dirname + '/shader/debug.frag.glsl', 'utf8');
 
 var fc = require('fc');
 
@@ -49,7 +50,7 @@ if (!gl) {
   throw new Error('could not initialize webgl');
 }
 
-var scene = window.scene = new Scene(gl, vert, frag)
+var scene = window.scene = new Scene(gl, vert, fragDepth)
 
 var sphere = cmd.sphere(0.5, 0.1,0.1,1.0).translate(0.0,0.0,0.0);
 /*

@@ -3,6 +3,7 @@ precision highp float;
 #endif
 
 uniform sampler2D ops;
+uniform sampler2D fbo;
 uniform mat4 clipToWorld;
 uniform mat4 worldToClip;
 uniform vec2 resolution;
