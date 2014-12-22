@@ -124,6 +124,8 @@ vec3 perform_selection(in vec3 color, in float val) {
   return mix(color, selectionColor, val);
 }
 
+/* RAYMARCH_SETUP */
+
 float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, out vec3 position, out vec3 color) {
   float dist = 0.0;
   float h = 1.0;
@@ -134,10 +136,10 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
 
   for(int i=0; i<RAYMARCH_CYCLES; i++) {
 
-/* RAYMARCH_COLOR */
+/* RAYMARCH_DISABLED_COLOR */
 
 
-/* RAYMARCH_SETUP */
+
 
     steps = i;
     position = origin+direction*dist;

@@ -19,7 +19,7 @@ function Scene(gl, vert, frag) {
   this.gl = gl;
 
   this.raymarch = {}
-  this.raymarch.CYCLES = 128;
+  this.raymarch.CYCLES = 64;
   this.raymarch.EPS = (1 / this.raymarch.CYCLES)/100;
 
   this.scale = [1,1,1];
@@ -167,23 +167,26 @@ Scene.prototype.display = function sceneDisplay(shapes) {
       // merge the results into h as a pseudo-union
       return '    ' + shapes.map(function(shape) {
 
-        var x =
-          printf('    if (%s < h) { color = perform_selection(vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i)); }\n',
-            shape.name,
-            shape.r.position[0],
-            shape.r.position[1],
-            shape.g.position[0],
-            shape.g.position[1],
-            shape.b.position[0],
-            shape.b.position[1],
-            shape.selected.position[0],
-            shape.selected.position[1]
-          )
+      return printf('h = min(h, %s);\n', shape.name);
 
-      + printf('    h = min(h, %s);\n', shape.name);
+      // TODO: split the selection code out
+      //   var x =
+      //     printf('    if (%s < h) { color = perform_selection(vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i)), sample(%i, %i)); }\n',
+      //       shape.name,
+      //       shape.r.position[0],
+      //       shape.r.position[1],
+      //       shape.g.position[0],
+      //       shape.g.position[1],
+      //       shape.b.position[0],
+      //       shape.b.position[1],
+      //       shape.selected.position[0],
+      //       shape.selected.position[1]
+      //     )
+
+      // + printf('    h = min(h, %s);\n', shape.name);
 
 
-        return x;
+      //   return x;
       }).join('\n    ')
     }
   }));
