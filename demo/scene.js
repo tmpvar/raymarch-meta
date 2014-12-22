@@ -51,7 +51,7 @@ Scene.prototype.dirty = function() {
 
 Scene.prototype.initGL = function initializeGL(gl) {
   this.opsTexture = createTexture(gl, alloc.ops);
-  this.shader = this.createShader();
+  // this.shader = this.createShader();
 }
 
 var v3temp = [0, 0, 0];
@@ -113,7 +113,6 @@ Scene.prototype.createShader = function(frag) {
       this.vertSource,
       frag,
       [
-        { name: 'worldToClip', type: 'mat4' },
         { name: 'clipToWorld', type: 'mat4' },
         { name: 'uvmatrix', type: 'mat4' },
         { name: 'ops', type: 'sampler2D' },
@@ -158,13 +157,13 @@ Scene.prototype.display = function sceneDisplay(shapes) {
 
   this.displayedObjects = shapes;
 
-  var shaderSource = this.generateFragShader(shapes);
+  // var shaderSource = this.generateFragShader(shapes);
 
-  if (this.shader) {
-    this.shader.dispose();
-  }
+  // if (this.shader) {
+  //   this.shader.dispose();
+  // }
 
-  this.shader = this.createShader(shaderSource);
+  // this.shader = this.createShader(shaderSource);
 }
 
 Scene.prototype.generateFragShader = function(shapes, shaderSource) {

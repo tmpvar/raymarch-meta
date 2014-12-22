@@ -22,10 +22,10 @@ var clear = require('gl-clear')({
   color : [ 17/255, 17/255, 34/255]
 });
 
-var resolution = [1, 1];
+
 var v4scratch = [0, 0, 0, 0];
 var location = 0;
-
+var lastResolution = [0, 0];
 function createRenderer(gl) {
 
   var vao = createVAO(gl, [{
@@ -41,6 +41,9 @@ function createRenderer(gl) {
     size: 3
   }]);
 
+
+  var resolution = [1, 1];
+
   resolution[0] = gl.canvas.width;
   resolution[1] = gl.canvas.height;
 
@@ -49,16 +52,12 @@ function createRenderer(gl) {
     createFBO(gl, resolution)
   ];
 
-
-
-
-  return function render(viewport, scale, scene, camera, shader) {
-    clear(gl);
+  clear(gl);
+  function render(viewport, scale, scene, camera, shader, renderToScreen) {
 
     shader.bind();
-    console.log(viewport)
-    resolution[0] = (viewport[2] - viewport[0]) * scale;
-    resolution[1] = (viewport[3] - viewport[1]) * scale;
+    resolution[0] = Math.ceil((viewport[2] - viewport[0]) * scale);
+    resolution[1] = Math.ceil((viewport[3] - viewport[1]) * scale);
 
     gl.viewport(
       viewport[0] * scale,
@@ -80,48 +79,51 @@ function createRenderer(gl) {
     //Calculate camera matrices
     camera.view(view);
     mat4.multiply(worldToClip, view, model);
-
     mat4.copy(uvmatrix, worldToClip);
     mat4.multiply(worldToClip, projection, worldToClip);
-
     mat4.invert(clipToWorld, worldToClip);
-
     mat4.multiply(clipToWorld, clipToWorld, projection);
 
 
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    gl.depthMask(false);
-    gl.frontFace(gl.CW);
-    gl.enable(gl.CULL_FACE);
-    gl.enable(gl.DEPTH_TEST)
+    // gl.enable(gl.BLEND);
+    // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    // gl.depthMask(false);
+    // gl.frontFace(gl.CW);
+    // gl.enable(gl.CULL_FACE);
+    // gl.enable(gl.DEPTH_TEST)
 
     //Set up shader
-    scene.shader.uniforms.worldToClip = worldToClip;
-    scene.shader.uniforms.clipToWorld = clipToWorld;
-    scene.shader.uniforms.uvmatrix = uvmatrix;
+    shader.uniforms.clipToWorld = clipToWorld;
+    shader.uniforms.uvmatrix = uvmatrix;
 
-
-    scene.shader.uniforms.resolution = resolution;
-    scene.shader.uniforms.ops = scene.opsTexture.bind();
+    shader.uniforms.ops = scene.opsTexture.bind();
 
     scene.render();
 
-    // resize the target fbo
+    if (fboPair[location].populated) {
+      console.log(fboPair[location].color)
+      shader.uniforms.fbo = fboPair[location].color[0].bind();
+    }
 
-    var previousFBO = fboPair[location]
-    var currentFBO = fboPair[location ^= 1]
+    shader.uniforms.resolution = resolution;
 
-    currentFBO.shape = resolution;
+    if (renderToScreen) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      console.log('render to screen', resolution);
+    } else {
+      console.log('render to fbo', resolution);
+      var currentFBO = fboPair[location ^= 1]
+      currentFBO.shape = resolution;
+      currentFBO.bind();
+      currentFBO.populated = true;
+    }
 
-    // TODO: compile the debug shader and display the results of
-    //       this operation
-    // currentFBO.bind();
-    // scene.shader.uniforms.fbo = previousFBO.color[0].bind();
+
 
     vao.bind();
     vao.draw(gl.TRIANGLES, 6);
     vao.unbind();
-
   }
+
+  return render;
 }

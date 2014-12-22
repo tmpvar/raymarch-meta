@@ -1,5 +1,4 @@
 attribute vec3 position;
-uniform mat4 worldToClip;
 uniform mat4 uvmatrix;
 
 varying vec3 v_uv;

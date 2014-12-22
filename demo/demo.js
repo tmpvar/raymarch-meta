@@ -39,8 +39,10 @@ var camera = require('orbit-camera')(
 );
 
 var vert = fs.readFileSync(__dirname + '/shader/vert.glsl', 'utf8');
+var frag = fs.readFileSync(__dirname + '/shader/frag.glsl', 'utf8');
 var fragDepth = fs.readFileSync(__dirname + '/shader/depth.frag.glsl', 'utf8');
 var fragDebug = fs.readFileSync(__dirname + '/shader/debug.frag.glsl', 'utf8');
+var fragInit = fs.readFileSync(__dirname + '/shader/init.frag.glsl', 'utf8');
 
 var fc = require('fc');
 
@@ -50,7 +52,7 @@ if (!gl) {
   throw new Error('could not initialize webgl');
 }
 
-var scene = window.scene = new Scene(gl, vert, fragDepth)
+var scene = window.scene = new Scene(gl, vert);
 
 var sphere = cmd.sphere(0.5, 0.1,0.1,1.0).translate(0.0,0.0,0.0);
 /*
@@ -88,8 +90,23 @@ camera.center[2] = bounds[0][2] + (bounds[1][2] - bounds[0][2])/2;
 
 var rayMarch = createRayMarcher(gl);
 
+var debugShader = scene.createShader(scene.generateFragShader(null, fragDebug));
+var initShader = scene.createShader(scene.generateFragShader(null, fragInit));
+var depthShader = scene.createShader(scene.generateFragShader(null, fragDepth));
+var fragShader = scene.createShader(scene.generateFragShader(null, frag));
+
 gl.start();
 var start = Date.now();
+
+var stage = 0;
+var stages = [
+ // [viewport, 1/32, scene, camera, initShader],
+ //[viewport, 1/16, scene, camera, depthShader],
+ // [viewport, 1/8, scene, camera, depthShader],
+ [viewport, 1/64, scene, camera, depthShader],
+ [viewport, 1, scene, camera, debugShader, true],
+];
+
 function render() {
   viewport[2] = gl.canvas.width;
   viewport[3] = gl.canvas.height;
@@ -101,9 +118,13 @@ function render() {
   //   gl.stop();
   //   return;
   // }
-console.log('render');
-  rayMarch(viewport, 1/8, scene, camera, scene.shader);
 
+
+  rayMarch.apply(null, stages[stage]);
+  stage++
+  if (stage >= stages.length) {
+    stage = 0;
+  }
   gl.stop();
 }
 

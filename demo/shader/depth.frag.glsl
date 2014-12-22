@@ -5,7 +5,6 @@ precision highp float;
 uniform sampler2D ops;
 uniform sampler2D fbo;
 uniform mat4 clipToWorld;
-uniform mat4 worldToClip;
 uniform vec2 resolution;
 uniform float time;
 
@@ -22,55 +21,6 @@ varying vec3 v_dir;
 
 #define RAYMARCH_CYCLES /* RAYMARCH_CYCLES */
 #define RAYMARCH_EPS 0.0001
-
-// void circle(vec2 pos, float r, inout float dist) {
-//   vec2 p = v_uv + pos;
-//   dist = min(dist, length(p)-r);
-// }
-
-// TODO: use glslify and `glsl-read-float`
-#define FLOAT_MAX  1.70141184e38
-#define FLOAT_MIN  1.17549435e-38
-
-lowp vec4 encode_float(highp float v) {
-  highp float av = abs(v);
-
-  //Handle special cases
-  if(av < FLOAT_MIN) {
-    return vec4(0.0, 0.0, 0.0, 0.0);
-  } else if(v > FLOAT_MAX) {
-    return vec4(127.0, 128.0, 0.0, 0.0) / 255.0;
-  } else if(v < -FLOAT_MAX) {
-    return vec4(255.0, 128.0, 0.0, 0.0) / 255.0;
-  }
-
-  highp vec4 c = vec4(0,0,0,0);
-
-  //Compute exponent and mantissa
-  highp float e = floor(log2(av));
-  highp float m = av * pow(2.0, -e) - 1.0;
-
-  //Unpack mantissa
-  c[1] = floor(128.0 * m);
-  m -= c[1] / 128.0;
-  c[2] = floor(32768.0 * m);
-  m -= c[2] / 32768.0;
-  c[3] = floor(8388608.0 * m);
-
-  //Unpack exponent
-  highp float ebias = e + 127.0;
-  c[0] = floor(ebias / 2.0);
-  ebias -= c[0] * 2.0;
-  c[1] += floor(ebias) * 128.0;
-
-  //Unpack sign bit
-  c[0] += 128.0 * step(0.0, -v);
-
-  //Scale back to range
-  return c / 255.0;
-}
-
-
 
 float sample(int x, int y) {
   return texture2D(ops, vec2(x, y) * OPS_RATIO).x;
@@ -169,6 +119,9 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
 void main() {
   vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
   vec3 dir = normalize(v_dir);
+  // gl_FragColor = vec4(dir, 1.0);
+  // return;
+
   float surface_distance = 0.0;
 
   int steps = 0;
@@ -184,9 +137,10 @@ void main() {
   // gl_FragColor = normalize(vec4(surface_distance, 0.0, 0.0, 1.0));
 
   gl_FragColor = mix(
-    normalize(vec4(surface_distance,surface_distance, surface_distance, 1.0)),
-    // vec4(1.0),
-    vec4(0.0, 0.0, 0.0, 1.0),
+    //vec4(normalize(vec4(surface_distance,surface_distance, surface_distance, 1.0))),
+    vec4(dir, 1.0),
+    vec4(1.0),
+    // texture2D(fbo, v_uv.xy),
     sample
   );
 }
