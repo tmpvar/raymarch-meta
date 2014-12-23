@@ -19,8 +19,9 @@ stats.domElement.style.right = '0px';
 stats.domElement.style.bottom = '0px';
 document.body.appendChild( stats.domElement );
 
-var view = mat4.create();
+var model = mat4.create();
 var projection = mat4.create();
+
 
 var aabb = require('./util/aabb');
 var mouse = {
@@ -33,7 +34,7 @@ var mouse = {
 var eye = [0, 0, 0];
 
 var camera = require('orbit-camera')(
-  [0, 0, -2],
+  [0, 0, -6],
   [0, 0, 0],
   [0, 1, 0]
 );
@@ -46,7 +47,7 @@ var fragInit = fs.readFileSync(__dirname + '/shader/init.frag.glsl', 'utf8');
 
 var fc = require('fc');
 
-var gl = fc(render, true, 3);
+var gl = fc(render, false, 3);
 
 if (!gl) {
   throw new Error('could not initialize webgl');
@@ -95,42 +96,47 @@ var initShader = scene.createShader(scene.generateFragShader(null, fragInit));
 var depthShader = scene.createShader(scene.generateFragShader(null, fragDepth));
 var fragShader = scene.createShader(scene.generateFragShader(null, frag));
 
-gl.start();
+//gl.start();
 var start = Date.now();
 
 var stage = 0;
 var stages = [
- // [viewport, 1/32, scene, camera, initShader],
+ // comment this out and it works......
+ [viewport, 1/16, scene, camera, initShader],
  //[viewport, 1/16, scene, camera, depthShader],
- // [viewport, 1/8, scene, camera, depthShader],
- [viewport, 1/64, scene, camera, depthShader],
+ [viewport, 1/8, scene, camera, depthShader],
+ // [viewport, 1, scene, camera, depthShader, true],
  [viewport, 1, scene, camera, debugShader, true],
 ];
 
+
+  gl.canvas.width = window.innerWidth;
+  gl.canvas.height = window.innerHeight;
+
 function render() {
+
   viewport[2] = gl.canvas.width;
   viewport[3] = gl.canvas.height;
 
   stats.end();
   stats.begin();
-  // if (!scene.shader) {
-  //   console.error('not rendering - no shader');
-  //   gl.stop();
-  //   return;
-  // }
+  scene.render();
 
+  console.group('render passes')
+  stages.forEach(function(s) {
+    rayMarch.apply(null, s);
+    gl.finish();
+  });
+  console.groupEnd('render passes');
+  // gl.stop();
 
-  rayMarch.apply(null, stages[stage]);
-  stage++
-  if (stage >= stages.length) {
-    stage = 0;
-  }
-  gl.stop();
 }
+
 
 function handleMouse(e) {
 
-  gl.start();
+  // gl.start();
+  //scene.dirty();
 
   switch (e.type) {
     case 'mousedown':
@@ -152,20 +158,26 @@ function handleMouse(e) {
 
         var w = gl.canvas.width;
         var h = gl.canvas.height;
+
         var l = mouse.pos;
         // TODO: pre-allocate these vectors to avoid gc hickups
         camera.rotate(
           [x/w - .5, y/h - .5],
           [l[0]/w - .5, l[1]/h - .5]
         )
-      }
 
+        scene.dirty();
+      }
+      //scene.dirty();
+
+      mouse.pos[0] = x;
+      mouse.pos[1] = y;
+
+return;
       camera.view(view);
 
       eye = getEye(eye, view);
 
-      mouse.pos[0] = x;
-      mouse.pos[1] = y;
       mouse.pick = [x, gl.canvas.height - y];
 
       mat4.perspective(
@@ -203,6 +215,7 @@ function handleMouse(e) {
       var d = 1.0 / vec3.distance(worldBounds[0], worldBounds[1]);
       camera.zoom(e.wheelDeltaY * -.001 / d);
       e.preventDefault();
+      scene.dirty();
     break;
 
     // TODO: eliminate new array creation below

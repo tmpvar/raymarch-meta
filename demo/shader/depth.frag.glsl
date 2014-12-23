@@ -137,10 +137,10 @@ void main() {
   // gl_FragColor = normalize(vec4(surface_distance, 0.0, 0.0, 1.0));
 
   gl_FragColor = mix(
-    //vec4(normalize(vec4(surface_distance,surface_distance, surface_distance, 1.0))),
+    // vec4(normalize(vec4(surface_distance,surface_distance, surface_distance, 1.0))),
     vec4(dir, 1.0),
-    vec4(1.0),
-    // texture2D(fbo, v_uv.xy),
+    // vec4(0.0),
+    texture2D(fbo, v_uv.xy),
     sample
   );
 }

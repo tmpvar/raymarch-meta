@@ -37,7 +37,7 @@ function Scene(gl, vert, frag) {
 
   var scene = this;
   alloc.dirty(function(v, x, y) {
-    scene.dirty();
+    !scene._dirty && scene.dirty();
   });
 }
 
