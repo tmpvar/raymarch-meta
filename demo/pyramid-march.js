@@ -110,12 +110,12 @@ clear(gl);
     shader.bind();
     shader.uniforms.clipToWorld = clipToWorld;
     shader.uniforms.uvmatrix = uvmatrix;
-    shader.uniforms.ops = scene.opsTexture.bind();
+    shader.uniforms.ops = scene.opsTexture.bind(0);
 
 console.log('lastFBO valid?', !!(lastFBO && lastFBO.color[0]), lastFBO && lastFBO._id)
     var currentFBO = null;
     if (lastFBO && lastFBO.color[0]) {
-      shader.uniforms.fbo = lastFBO.color[0].bind();
+      shader.uniforms.fbo = lastFBO.color[0].bind(1);
       shader.uniforms.resolution = lastFBO.shape;
     } else {
       shader.uniforms.resolution = resolution;
