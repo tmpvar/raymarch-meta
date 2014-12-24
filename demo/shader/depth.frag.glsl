@@ -19,7 +19,7 @@ varying vec3 v_dir;
 #define OPS_SIZE /* OPS_SIZE */
 #define OPS_RATIO 1.0//* OPS_SIZE */
 
-#define RAYMARCH_CYCLES /* RAYMARCH_CYCLES */
+#define RAYMARCH_CYCLES 128 /* RAYMARCH_DISABLED_CYCLES */
 #define RAYMARCH_EPS 0.0001
 
 float sample(int x, int y) {
@@ -117,30 +117,44 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
 }
 
 void main() {
-  vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
-  vec3 dir = normalize(v_dir);
-  // gl_FragColor = vec4(dir, 1.0);
-  // return;
-
-  float surface_distance = 0.0;
-
-  int steps = 0;
-  float hit;
-  vec3 surface_position;
-  vec3 orange = vec3(1.0, 0.36, 0);
-
-  surface_distance = raymarch(eye, dir, steps, hit, surface_position, orange);
-
-
-  float sample = floor(hit + (1.0-RAYMARCH_EPS*500.0));
+  vec2 l = 1.0 / resolution;
 
   // gl_FragColor = normalize(vec4(surface_distance, 0.0, 0.0, 1.0));
+  if (texture2D(fbo, v_uv.xy).x > 0.0 && (
+      texture2D(fbo, v_uv.xy + l).x > 0.0 ||
+      texture2D(fbo, v_uv.xy - l).x > 0.0 ||
+      texture2D(fbo, vec2(v_uv.x + l.x, v_uv.y - l.y)).x > 0.0 ||
+      texture2D(fbo, vec2(v_uv.x - l.x, v_uv.y + l.y)).x > 0.0
+    )
+  )
+  {
+    vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
+    vec3 dir = normalize(v_dir);
+    // gl_FragColor = vec4(dir, 1.0);
+    // return;
 
-  gl_FragColor = mix(
-    // vec4(normalize(vec4(surface_distance,surface_distance, surface_distance, 1.0))),
-    vec4(dir, 1.0),
-    // vec4(0.0),
-    texture2D(fbo, v_uv.xy),
-    sample
-  );
+    float surface_distance = 0.0;
+
+    int steps = 0;
+    float hit;
+    vec3 surface_position;
+    vec3 orange = vec3(1.0, 0.36, 0);
+
+
+    surface_distance = raymarch(eye, dir, steps, hit, surface_position, orange);
+    float sample = floor(hit + (1.0-RAYMARCH_EPS*1000.0));
+
+
+    gl_FragColor=vec4(normalize(1.0-vec3(sample)), 1.0);
+  } else {
+    gl_FragColor=vec4(0.0, 0.0, 0.0, 1.0);
+  }
+
+  // gl_FragColor = mix(
+  //   // vec4(normalize(vec4(surface_distance,surface_distance, surface_distance, 1.0))),
+  //   vec4(dir, 1.0),
+  //   // vec4(0.0),
+  //   texture2D(fbo, v_uv.xy),
+  //   sample
+  // );
 }

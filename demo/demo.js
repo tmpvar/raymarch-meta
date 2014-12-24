@@ -96,17 +96,24 @@ var initShader = scene.createShader(scene.generateFragShader(null, fragInit));
 var depthShader = scene.createShader(scene.generateFragShader(null, fragDepth));
 var fragShader = scene.createShader(scene.generateFragShader(null, frag));
 
-//gl.start();
+gl.start();
 var start = Date.now();
 
 var stage = 0;
 var stages = [
  // comment this out and it works......
- [viewport, 1/16, scene, camera, initShader],
+ // [viewport, 1/2, scene, camera, initShader],
  //[viewport, 1/16, scene, camera, depthShader],
+ // [viewport, 1/100, scene, camera, depthShader],
+ // [viewport, 1/64, scene, camera, depthShader],
+ // [viewport, 1/32, scene, camera, depthShader],
+ // [viewport, 1/16, scene, camera, depthShader],
  [viewport, 1/8, scene, camera, depthShader],
+ // [viewport, 1/4, scene, camera, depthShader],
+ // [viewport, 1/2, scene, camera, depthShader],
  // [viewport, 1, scene, camera, depthShader, true],
- [viewport, 1, scene, camera, debugShader, true],
+ // [viewport, 1, scene, camera, debugShader, true],
+ [viewport, 1, scene, camera, fragShader, true],
 ];
 
 
@@ -122,12 +129,10 @@ function render() {
   stats.begin();
   scene.render();
 
-  console.group('render passes')
   stages.forEach(function(s) {
     rayMarch.apply(null, s);
     gl.finish();
   });
-  console.groupEnd('render passes');
   // gl.stop();
 
 }

@@ -163,40 +163,55 @@ vec3 computeLight(in vec3 light_pos, in vec3 light_dir, in vec3 surface_position
 }
 
 void main() {
-  vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
   vec3 dir = normalize(v_dir);
-  float surface_distance = 0.0;
 
-  int steps = 0;
-  float hit;
-  vec3 surface_position;
-  vec3 orange = vec3(1.0, 0.36, 0);
 
-  surface_distance = raymarch(eye, dir, steps, hit, surface_position, orange);
-  vec3 surface_normal = gradientNormal(surface_position);
+  if (texture2D(fbo, v_uv.xy).x > 0.0) {
+    vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
+    float surface_distance = 0.0;
 
-  vec3 diffuse = computeLight(
-    vec3(0.0, 2.0, 1.0),    // light position
-    vec3(0.0, -1.0, 0.0),   // light direction
-    surface_position,
-    surface_normal,
-    surface_distance
-  );
+    int steps = 0;
+    float hit;
+    vec3 surface_position;
+    vec3 orange = vec3(1.0, 0.36, 0);
 
-  vec3 diffuse2 = computeLight(
-    eye,    // light position
-    dir,   // light direction
-    surface_position,
-    surface_normal,
-    surface_distance
-  );
+    surface_distance = raymarch(eye, dir, steps, hit, surface_position, orange);
+    vec3 surface_normal = gradientNormal(surface_position);
 
-  gl_FragColor = mix(
-    vec4(abs(dir), 1.0),
-    vec4(
-      orange * max(diffuse2, diffuse * 0.5),
-      1.0
-    ),
-    1.0-floor(clamp(hit * 1000.0, 0.0, 1.0))
-  );
+    vec3 diffuse = computeLight(
+      vec3(0.0, 2.0, 1.0),    // light position
+      vec3(0.0, -1.0, 0.0),   // light direction
+      surface_position,
+      surface_normal,
+      surface_distance
+    );
+
+    vec3 diffuse2 = computeLight(
+      eye,    // light position
+      dir,   // light direction
+      surface_position,
+      surface_normal,
+      surface_distance
+    );
+
+    gl_FragColor = mix(
+      vec4(0.0),
+      vec4(
+        orange * max(diffuse2, diffuse * 0.5),
+        1.0
+      ),
+      1.0-floor(clamp(hit * 1000.0, 0.0, 1.0))
+    );
+
+    // gl_FragColor = mix(
+    //   vec4(abs(dir), 1.0),
+    //   vec4(
+    //     orange * max(diffuse2, diffuse * 0.5),
+    //     1.0
+    //   ),
+    //   1.0-floor(clamp(hit * 1000.0, 0.0, 1.0))
+    // );
+  } else {
+    gl_FragColor =  vec4(abs(dir), 1.0);
+  }
 }

@@ -2,7 +2,8 @@ module.exports = createRenderer;
 
 var _createFBO = require('gl-fbo');
 var createVAO = require('gl-vao');
-var createBuffer = require('gl-buffer')
+var createBuffer = require('gl-buffer');
+var createTexture = require('gl-texture2d');
 var mat4 = require('gl-mat4');
 var vec3 = require('gl-vec3');
 var getEye = require('./util/get-eye');
@@ -54,6 +55,14 @@ function createRenderer(gl) {
 
   var lastFBO = null;
   var oldFBOS = [];
+
+  var canvas = document.createElement('canvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = canvas.height = 16;
+  ctx.fillStyle="white";
+  ctx.fillRect(0,0,canvas.width, canvas.height);
+  var initialTexture = createTexture(gl, canvas);
+
 
 clear(gl);
   function render(viewport, scale, scene, camera, shader, renderToScreen) {
@@ -112,25 +121,27 @@ clear(gl);
     shader.uniforms.uvmatrix = uvmatrix;
     shader.uniforms.ops = scene.opsTexture.bind(0);
 
-console.log('lastFBO valid?', !!(lastFBO && lastFBO.color[0]), lastFBO && lastFBO._id)
+
     var currentFBO = null;
     if (lastFBO && lastFBO.color[0]) {
+
+      lastFBO.color[0].magfilter = gl.LINEAR;
+      lastFBO.color[0].minfilter = gl.LINEAR;
+
       shader.uniforms.fbo = lastFBO.color[0].bind(1);
       shader.uniforms.resolution = lastFBO.shape;
     } else {
       shader.uniforms.resolution = resolution;
+      shader.uniforms.fbo = initialTexture.bind(1);
     }
 
     if (renderToScreen) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      console.log('render to screen w/ fbo:' + lastFBO._id)
+      clear(gl);
 
     } else {
       currentFBO = createFBO(gl, resolution);
       currentFBO.bind();
-
-      console.log('render into fbo:%s w/ fbo:%s', currentFBO._id, lastFBO && lastFBO._id)
-
     }
 
 
