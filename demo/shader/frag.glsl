@@ -20,7 +20,7 @@ varying vec3 v_dir;
 #define OPS_RATIO 1.0//* OPS_SIZE */
 
 #define RAYMARCH_CYCLES /* RAYMARCH_CYCLES */
-#define RAYMARCH_EPS 0.0001
+#define RAYMARCH_EPS /* RAYMARCH_EPS */
 
 // void circle(vec2 pos, float r, inout float dist) {
 //   vec2 p = v_uv + pos;
@@ -158,10 +158,12 @@ vec3 computeLight(in vec3 light_pos, in vec3 light_dir, in vec3 surface_position
 
 void main() {
   vec3 dir = normalize(v_dir);
+  float last_distance = texture2D(fbo, v_uv.xy).x;
 
-
-  if (texture2D(fbo, v_uv.xy).x > 0.0) {
+  if (last_distance < 10.0) {
     vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
+    eye = eye + v_dir * last_distance;
+
     float surface_distance = 0.0;
 
     int steps = 0;
@@ -191,7 +193,7 @@ void main() {
  float sample = floor(hit + (1.0-RAYMARCH_EPS*1000.0));
 
     gl_FragColor = mix(
-      vec4(0.0),
+      vec4(abs(dir), 1.0),
       vec4(
         pixelColor * max(diffuse2, diffuse * 0.5),
         1.0

@@ -105,11 +105,12 @@ var stages = [
  // [viewport, 1/2, scene, camera, initShader],
  //[viewport, 1/16, scene, camera, depthShader],
  // [viewport, 1/100, scene, camera, depthShader],
+ // [viewport, 1/128, scene, camera, depthShader],
  // [viewport, 1/64, scene, camera, depthShader],
  // [viewport, 1/32, scene, camera, depthShader],
- // [viewport, 1/16, scene, camera, depthShader],
+ [viewport, 1/16, scene, camera, depthShader],
  [viewport, 1/8, scene, camera, depthShader],
- // [viewport, 1/4, scene, camera, depthShader],
+ [viewport, 1/4, scene, camera, depthShader],
  // [viewport, 1/2, scene, camera, depthShader],
  // [viewport, 1, scene, camera, depthShader, true],
  // [viewport, 1, scene, camera, debugShader, true],
@@ -119,6 +120,7 @@ var stages = [
 
   gl.canvas.width = window.innerWidth;
   gl.canvas.height = window.innerHeight;
+  gl.getExtension('OES_texture_float');
 
 function render() {
 
@@ -128,13 +130,12 @@ function render() {
   stats.end();
   stats.begin();
   scene.render();
-
+  var fbo = null;
   stages.forEach(function(s) {
-    rayMarch.apply(null, s);
-    gl.finish();
+    fbo = rayMarch.apply(null, s);
   });
-  // gl.stop();
 
+  // gl.stop();
 }
 
 

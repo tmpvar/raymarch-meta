@@ -125,22 +125,28 @@ clear(gl);
     var currentFBO = null;
     if (lastFBO && lastFBO.color[0]) {
 
-      lastFBO.color[0].magfilter = gl.LINEAR;
-      lastFBO.color[0].minfilter = gl.LINEAR;
+      // lastFBO.color[0].magFilter = gl.LINEAR;
+      // lastFBO.color[0].minFilter = gl.LINEAR;
 
       shader.uniforms.fbo = lastFBO.color[0].bind(1);
-      shader.uniforms.resolution = lastFBO.shape;
+      shader.uniforms.fbo_resolution = lastFBO.shape;
     } else {
-      shader.uniforms.resolution = resolution;
+
       shader.uniforms.fbo = initialTexture.bind(1);
     }
+
+    shader.uniforms.resolution = resolution;
 
     if (renderToScreen) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       clear(gl);
 
     } else {
-      currentFBO = createFBO(gl, resolution);
+      currentFBO = createFBO(gl, resolution, {
+        float: true,
+        depth: false,
+        preferFloat: true
+      });
       currentFBO.bind();
     }
 
@@ -153,6 +159,8 @@ clear(gl);
     }
 
     lastFBO = currentFBO;
+
+    return lastFBO;
   }
 
   return render;

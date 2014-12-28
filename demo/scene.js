@@ -19,8 +19,8 @@ function Scene(gl, vert, frag) {
   this.gl = gl;
 
   this.raymarch = {}
-  this.raymarch.CYCLES = 32;
-  this.raymarch.EPS = (1 / this.raymarch.CYCLES)/100;
+  this.raymarch.CYCLES = 96;
+  this.raymarch.EPS = (1 / this.raymarch.CYCLES)/10000;
 
   this.scale = [1,1,1];
 
