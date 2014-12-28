@@ -86,16 +86,11 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
   hit = 10.0;
   float minStep = 0.00001;
 
-
   vec4 pos4;
-
-
 
   for(int i=0; i<RAYMARCH_CYCLES; i++) {
 
 /* RAYMARCH_COLOR */
-
-
 /* RAYMARCH_SETUP */
 
     steps = i;
@@ -108,7 +103,7 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
     //h = solid_torus(position, normalize(vec2(1.5, 0.15)) );
     //h = signed_box_distance(position, vec3(.1, .3, .25));
 
-/* RAYMARCH_OPS */
+/* RAYMARCH_OPS_COLOR */
 
     dist += h;
     hit = min(hit, h);
@@ -116,7 +111,6 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
     if (h<RAYMARCH_EPS) {
       break;
     }
-
   }
 
   return dist;
@@ -173,9 +167,9 @@ void main() {
     int steps = 0;
     float hit;
     vec3 surface_position;
-    vec3 orange = vec3(1.0, 0.36, 0);
+    vec3 pixelColor = vec3(1.0, 0.36, 0);
 
-    surface_distance = raymarch(eye, dir, steps, hit, surface_position, orange);
+    surface_distance = raymarch(eye, dir, steps, hit, surface_position, pixelColor);
     vec3 surface_normal = gradientNormal(surface_position);
 
     vec3 diffuse = computeLight(
@@ -194,19 +188,21 @@ void main() {
       surface_distance
     );
 
+ float sample = floor(hit + (1.0-RAYMARCH_EPS*1000.0));
+
     gl_FragColor = mix(
       vec4(0.0),
       vec4(
-        orange * max(diffuse2, diffuse * 0.5),
+        pixelColor * max(diffuse2, diffuse * 0.5),
         1.0
       ),
-      1.0-floor(clamp(hit * 1000.0, 0.0, 1.0))
+      1.0-sample
     );
 
     // gl_FragColor = mix(
     //   vec4(abs(dir), 1.0),
     //   vec4(
-    //     orange * max(diffuse2, diffuse * 0.5),
+    //     pixelColor * max(diffuse2, diffuse * 0.5),
     //     1.0
     //   ),
     //   1.0-floor(clamp(hit * 1000.0, 0.0, 1.0))

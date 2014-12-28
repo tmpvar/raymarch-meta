@@ -202,7 +202,9 @@ Scene.prototype.generateFragShader = function(shapes, shaderSource) {
   var l = shapes.length;
   var colorStr = '';
   var shapeStr = '';
+  var colorStrEx = '';
   var prefetchStr = '';
+  var shapeColorStr = '';
   aabb.initialize(this._bounds);
 
   this.activeShapes = [];
@@ -229,13 +231,19 @@ Scene.prototype.generateFragShader = function(shapes, shaderSource) {
       // let's keep track of the active shapes
       this.activeShapes.push(shape);
       if (!seenIds[shape.id]) {
+        colorStrEx += '';
         colorStr += shape.colorCode || '';
         prefetchStr += shape.prefetchCode || '';
 
         var code = shape.code;
         if (code) {
           shapeStr += code;
-          shapeStr += printf('    h = min(h, %s);\n', shape.name)
+          shapeStr += printf('    h = min(h, %s);\n', shape.name);
+
+          shapeColorStr += code;
+          shapeColorStr += printf('    h = min(h, %s);\n', shape.name);
+          shapeColorStr += printf('    float q_%i = float(h == %s);\n', shape.id, shape.name);
+          shapeColorStr += printf('    color = mix(color, color_%i, q_%i);\n', shape.id, shape.id);
         }
 
         shape.bounds && aabb.merge([shape.bounds], this._bounds);
@@ -247,6 +255,10 @@ Scene.prototype.generateFragShader = function(shapes, shaderSource) {
   var frag = (shaderSource || this.fragSource).replace('/* RAYMARCH_COLOR */', colorStr);
   frag = frag.replace('/* RAYMARCH_SETUP */', prefetchStr);
   frag = frag.replace('/* RAYMARCH_OPS */', shapeStr);
+  frag = frag.replace('/* RAYMARCH_OPS_COLOR */', shapeColorStr);
+
+  frag = frag.replace('/* RAYMARCH_COLOR_EX */', colorStrEx);
+
   frag = frag.replace(/\/\* OPS_SIZE \*\//g, alloc.variableMapSize.toFixed(1));
 
   var raymarchDefines = this.raymarch;
