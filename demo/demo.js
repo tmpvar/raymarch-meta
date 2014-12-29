@@ -12,6 +12,8 @@ var cmd = require('./commands')
 var ndarray = require('ndarray');
 var stats = new (require('./util/stats.min'))();
 var createRayMarcher = require('./pyramid-march');
+var createFBO = require('gl-fbo');
+
 stats.setMode(1);
 stats.domElement.style.position = 'absolute';
 stats.domElement.style.zIndex = '100';
@@ -97,30 +99,43 @@ var depthShader = scene.createShader(scene.generateFragShader(null, fragDepth));
 var fragShader = scene.createShader(scene.generateFragShader(null, frag));
 
 gl.start();
+viewport[2] = gl.canvas.width = window.innerWidth;
+viewport[3] = gl.canvas.height = window.innerHeight;
+
+
 var start = Date.now();
+var v2scratch = [0, 0];
+function createStage(viewport, scale, scene, camera, shader, renderToScreen) {
+  return [
+    createFBO(gl, [
+      Math.ceil((viewport[2] - viewport[0]) * scale),
+      Math.ceil((viewport[3] - viewport[1]) * scale)
+    ], {
+      float: true,
+      depth: false,
+    }),
+    viewport, scale, scene, camera, shader, renderToScreen
+  ];
+}
 
 var stage = 0;
 var stages = [
  // comment this out and it works......
- // [viewport, 1/2, scene, camera, initShader],
- //[viewport, 1/16, scene, camera, depthShader],
- // [viewport, 1/100, scene, camera, depthShader],
- // [viewport, 1/128, scene, camera, depthShader],
- // [viewport, 1/64, scene, camera, depthShader],
- // [viewport, 1/32, scene, camera, depthShader],
- [viewport, 1/16, scene, camera, depthShader],
- [viewport, 1/8, scene, camera, depthShader],
- [viewport, 1/4, scene, camera, depthShader],
- // [viewport, 1/2, scene, camera, depthShader],
- // [viewport, 1, scene, camera, depthShader, true],
- // [viewport, 1, scene, camera, debugShader, true],
- [viewport, 1, scene, camera, fragShader, true],
+ // createStage(viewport, 1/2, scene, camera, initShader),
+ // createStage(viewport, 1/16, scene, camera, depthShader),
+ // createStage(viewport, 1/100, scene, camera, depthShader),
+ // createStage(viewport, 1/128, scene, camera, depthShader),
+ createStage(viewport, 1/64, scene, camera, depthShader),
+ createStage(viewport, 1/32, scene, camera, depthShader),
+ createStage(viewport, 1/16, scene, camera, depthShader),
+ createStage(viewport, 1/8, scene, camera, depthShader),
+ createStage(viewport, 1/4, scene, camera, depthShader),
+ createStage(viewport, 1/2, scene, camera, depthShader),
+ // createStage(viewport, 1, scene, camera, depthShader, true),
+
+ createStage(viewport, 1, scene, camera, fragShader),
+ createStage(viewport, 1, scene, camera, debugShader, true),
 ];
-
-
-  gl.canvas.width = window.innerWidth;
-  gl.canvas.height = window.innerHeight;
-  gl.getExtension('OES_texture_float');
 
 function render() {
 

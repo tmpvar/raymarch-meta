@@ -65,12 +65,7 @@ function createRenderer(gl) {
 
 
 clear(gl);
-  function render(viewport, scale, scene, camera, shader, renderToScreen) {
-
-    while(oldFBOS.length) {
-      oldFBOS.pop().dispose();
-    }
-
+  function render(fbo, viewport, scale, scene, camera, shader, renderToScreen) {
 
     // shader.bind();
     resolution[0] = Math.ceil((viewport[2] - viewport[0]) * scale);
@@ -122,12 +117,7 @@ clear(gl);
     shader.uniforms.ops = scene.opsTexture.bind(0);
 
 
-    var currentFBO = null;
     if (lastFBO && lastFBO.color[0]) {
-
-      // lastFBO.color[0].magFilter = gl.LINEAR;
-      // lastFBO.color[0].minFilter = gl.LINEAR;
-
       shader.uniforms.fbo = lastFBO.color[0].bind(1);
       shader.uniforms.fbo_resolution = lastFBO.shape;
     } else {
@@ -142,23 +132,15 @@ clear(gl);
       clear(gl);
 
     } else {
-      currentFBO = createFBO(gl, resolution, {
-        float: true,
-        depth: false,
-        preferFloat: true
-      });
-      currentFBO.bind();
+      fbo.bind();
     }
 
 
     vao.bind();
     vao.draw(gl.TRIANGLES, 6);
     vao.unbind();
-    if (lastFBO) {
-      oldFBOS.push(lastFBO);
-    }
 
-    lastFBO = currentFBO;
+    lastFBO = fbo;
 
     return lastFBO;
   }
