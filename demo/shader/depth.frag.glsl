@@ -34,11 +34,6 @@ float solid_cone(vec3 p, vec2 c) { // c must be normalized
   return dot(c, vec2(q, p.z));
 }
 
-float solid_torus(vec3 p, vec2 t) {
-  vec2 q = vec2(length(p.xz) - t.x, p.y);
-  return length(q) - t.y;
-}
-
 float solid_capped_cone(in vec3 p, in vec3 c) {
   vec2 q = vec2( length(p.xz), p.y );
   vec2 v = vec2( c.z*c.y/c.x, -c.z );
