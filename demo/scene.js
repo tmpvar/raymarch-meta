@@ -19,8 +19,8 @@ function Scene(gl, vert, frag) {
   this.gl = gl;
 
   this.raymarch = {}
-  this.raymarch.CYCLES = 96;
-  this.raymarch.EPS = (1 / this.raymarch.CYCLES)/10000;
+  this.raymarch.CYCLES = 128;
+  this.raymarch.EPS = (1 / this.raymarch.CYCLES)/1000;
 
   this.scale = [1,1,1];
 
@@ -235,14 +235,15 @@ Scene.prototype.generateFragShader = function(shapes, shaderSource) {
         continue;
       }
 
-      invertedModelArray.push(
-        printf('uniform mat4 %s_inv;', shape.name)
-      );
 
-
-      // let's keep track of the active shapes
-      this.activeShapes.push(shape);
       if (!seenIds[shape.id]) {
+        // let's keep track of the active shapes
+        this.activeShapes.push(shape);
+
+        invertedModelArray.push(
+          printf('uniform mat4 %s_inv;', shape.name)
+        );
+
         colorStrEx += '';
         colorStr += shape.colorCode || '';
         prefetchStr += shape.prefetchCode || '';
@@ -250,12 +251,6 @@ Scene.prototype.generateFragShader = function(shapes, shaderSource) {
         var code = shape.code;
         if (code) {
           shapeStr += code;
-          shapeStr += printf('    h = min(h, %s);\n', shape.name);
-
-          shapeColorStr += code;
-          shapeColorStr += printf('    h = min(h, %s);\n', shape.name);
-          shapeColorStr += printf('    float q_%i = float(h == %s);\n', shape.id, shape.name);
-          shapeColorStr += printf('    color = mix(color, color_%i, q_%i);\n', shape.id, shape.id);
         }
 
         shape.bounds && aabb.merge([shape.bounds], this._bounds);
@@ -264,13 +259,18 @@ Scene.prototype.generateFragShader = function(shapes, shaderSource) {
     }
   }
 
-  var frag = (shaderSource || this.fragSource).replace('/* RAYMARCH_COLOR */', colorStr);
-  frag = frag.replace('/* RAYMARCH_SETUP */', prefetchStr);
-  frag = frag.replace('/* RAYMARCH_OPS */', shapeStr);
-  frag = frag.replace('/* RAYMARCH_OPS_COLOR */', shapeColorStr);
-  frag = frag.replace('/* RAYMARCH_UNIFORM_INVERTED_SHAPE_MATRICES */', invertedModelArray.join('\n'));
+  this.displayedObjects.forEach(function(obj) {
+    shapeStr += printf('    h = min(h, %s);\n', obj.name);
+    shapeColorStr += obj.shapeColorCode;
+  });
 
-  frag = frag.replace('/* RAYMARCH_COLOR_EX */', colorStrEx);
+  var frag = (shaderSource || this.fragSource);
+  frag = frag.replace(/\/\* RAYMARCH_COLOR \*\//g, colorStr);
+  frag = frag.replace(/\/\* RAYMARCH_SETUP \*\//g, prefetchStr);
+  frag = frag.replace(/\/\* RAYMARCH_OPS \*\//g, shapeStr);
+  frag = frag.replace(/\/\* RAYMARCH_OPS_COLOR \*\//g, shapeColorStr);
+  frag = frag.replace(/\/\* RAYMARCH_UNIFORM_INVERTED_SHAPE_MATRICES \*\//g, invertedModelArray.join('\n'));
+  frag = frag.replace(/\/\* RAYMARCH_COLOR_EX \*\//g, colorStrEx);
 
   frag = frag.replace(/\/\* OPS_SIZE \*\//g, alloc.variableMapSize.toFixed(1));
 
@@ -302,7 +302,6 @@ Scene.prototype.render = function renderScene(shader) {
   }
 
   if (this._dirty) {
-    console.log(shader.uniforms)
     // TODO: only upload changes
     this.opsTexture.setPixels(alloc.ops);
     this._dirty = false;

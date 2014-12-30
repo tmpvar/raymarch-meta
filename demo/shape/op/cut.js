@@ -54,13 +54,21 @@ Cut.prototype.evaluateVec3 = function unionEvaluateVec3(vec) {
   return r;
 };
 
+
+Object.defineProperty(Cut.prototype, 'shapeColorCode', {
+  get: function getShapeColor() {
+    return this.target.shapeColorCode;
+  }
+});
+
+
 Object.defineProperty(Cut.prototype, 'code', {
   get : function getCutShaderCoder() {
     var cut = this;
     var shapes = this.cutters;
 
     return [
-      printf('float %s = %s;', cut.name, cut.target.name)
+      printf('    float %s = %s;', cut.name, cut.target.name)
     ].concat(
 
       shapes.map(function(shape) {

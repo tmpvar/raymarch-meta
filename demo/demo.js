@@ -22,6 +22,7 @@ stats.domElement.style.bottom = '0px';
 document.body.appendChild( stats.domElement );
 
 var model = mat4.create();
+var view = mat4.create();
 var projection = mat4.create();
 
 
@@ -66,7 +67,7 @@ var sphere4 = cmd.sphere(0.3, 0.9,0.6,0.3).translate(-0.40,3.0,0.0);
 var cyl = cmd.cylinder(1.0,0.5,0.5, 0.3,0.4,0.5).translate(0.0,5.5,0.0);
 var box = cmd.cube(0.3, 0.5,0.6,0.7).translate(0.0,0.4,0.0);
 var box2 = cmd.box(2.0,2.0,0.75, 1.0,0.1,0.1).translate(0.0,2.5,-0.25);
-var tor = cmd.torus(0.3,0.1, 0.7,0.2,0.5).translate(0.9,0.5,0.4);
+var tor = cmd.torus(1.0,0.25, 0.7,0.2,0.5).translate(0.0,5.5,0.0);
 
 // var cut1 = cmd.cut(cyl, box);
 // var cut2 = cmd.cut(sphere, box);
@@ -78,8 +79,12 @@ var tor = cmd.torus(0.3,0.1, 0.7,0.2,0.5).translate(0.9,0.5,0.4);
 
 // scene.display([mouseCut, tor, cyl, box, isect]);
 
-scene.display([sphere, /*sphere2, sphere3, sphere4,*/ tor, cyl, box, box2]);
+var torCut = cyl.cut([tor]);
+
+scene.display([sphere, /*sphere2, sphere3, sphere4,*/ torCut, box, box2]);
 //scene.display([sphere, tor]);
+
+var start = Date.now();
 
 window.camera = camera;
 
@@ -103,7 +108,7 @@ viewport[2] = gl.canvas.width = window.innerWidth;
 viewport[3] = gl.canvas.height = window.innerHeight;
 
 
-var start = Date.now();
+
 var v2scratch = [0, 0];
 function createStage(viewport, scale, scene, camera, shader, renderToScreen) {
   return [
@@ -125,8 +130,8 @@ var stages = [
  // createStage(viewport, 1/16, scene, camera, depthShader),
  // createStage(viewport, 1/100, scene, camera, depthShader),
  // createStage(viewport, 1/128, scene, camera, depthShader),
- createStage(viewport, 1/64, scene, camera, depthShader),
- createStage(viewport, 1/32, scene, camera, depthShader),
+ // createStage(viewport, 1/64, scene, camera, depthShader),
+ // createStage(viewport, 1/32, scene, camera, depthShader),
  createStage(viewport, 1/16, scene, camera, depthShader),
  createStage(viewport, 1/8, scene, camera, depthShader),
  createStage(viewport, 1/4, scene, camera, depthShader),
@@ -138,6 +143,9 @@ var stages = [
 ];
 
 function render() {
+
+  tor.translate(0, Math.sin(Date.now() / 500) * .0025, 0);
+
 
   viewport[2] = gl.canvas.width;
   viewport[3] = gl.canvas.height;
@@ -197,7 +205,6 @@ function handleMouse(e) {
       mouse.pos[0] = x;
       mouse.pos[1] = y;
 
-return;
       camera.view(view);
 
       eye = getEye(eye, view);
@@ -221,14 +228,14 @@ return;
         viewport
       );
 
-      for (var i = 0; i < scene.displayedObjects.length; i++) {
-        scene.displayedObjects[i].selected = false;
+      for (var i = 0; i < scene.activeShapes.length; i++) {
+        scene.activeShapes[i].selected = false;
       }
 
       vec3.normalize(rayDirection, rayDirection)
       var shapeIndex = scene.march(eye, rayDirection, 64);
       if (-1 !== shapeIndex) {
-        scene.displayedObjects[shapeIndex].selected = true;
+        scene.activeShapes[shapeIndex].selected = true;
       }
 
       scene.dirty();

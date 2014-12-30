@@ -22,6 +22,7 @@ varying vec3 v_dir;
 #define OPS_RATIO 1.0//* OPS_SIZE */
 
 #define RAYMARCH_CYCLES /* RAYMARCH_CYCLES */
+#define RAYMARCH_QUICK_CYCLES 16
 #define RAYMARCH_EPS /* RAYMARCH_EPS */
 
 float sample(int x, int y) {
@@ -57,8 +58,6 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
   float dist = 0.0;
   float h = 1.0;
   hit = 10.0;
-  float minStep = 0.00001;
-
   vec4 pos4;
 
 /* RAYMARCH_COLOR */
@@ -66,16 +65,39 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
 
   for(int i=0; i<RAYMARCH_CYCLES; i++) {
 
-
-
     steps = i;
     position = origin+direction*dist;
     pos4 = vec4(position, 1.0);
 
+/* RAYMARCH_OPS */
 /* RAYMARCH_OPS_COLOR */
 
     dist += h;
     hit = min(hit, h);
+
+    if (h<RAYMARCH_EPS) {
+      break;
+    }
+  }
+
+  return dist;
+}
+
+float raymarch_quick(in vec3 origin, in vec3 direction) {
+  float dist = 0.0;
+  float h = 1.0;
+  vec3 position;
+  vec4 pos4;
+
+/* RAYMARCH_SETUP */
+
+  for(int i=0; i<RAYMARCH_QUICK_CYCLES; i++) {
+    position = origin+direction*dist;
+    pos4 = vec4(position, 1.0);
+
+/* RAYMARCH_OPS */
+
+    dist += h;
 
     if (h<RAYMARCH_EPS) {
       break;
@@ -93,14 +115,14 @@ vec3 gradientNormal(vec3 p) {
   vec3 scratchColor = vec3(0.0, 0.0, 0.0);
   return normalize(
     vec3(
-      raymarch(p + vec3(EPS, 0, 0), dir, steps, hit, pos, scratchColor) -
-      raymarch(p - vec3(EPS, 0, 0), dir, steps, hit, pos, scratchColor),
+      raymarch_quick(p + vec3(EPS, 0, 0), dir) -
+      raymarch_quick(p - vec3(EPS, 0, 0), dir),
 
-      raymarch(p + vec3(0, EPS, 0), dir, steps, hit, pos, scratchColor) -
-      raymarch(p - vec3(0, EPS, 0), dir, steps, hit, pos, scratchColor),
+      raymarch_quick(p + vec3(0, EPS, 0), dir) -
+      raymarch_quick(p - vec3(0, EPS, 0), dir),
 
-      raymarch(p + vec3(0, 0, EPS), dir, steps, hit, pos, scratchColor) -
-      raymarch(p - vec3(0, 0, EPS), dir, steps, hit, pos, scratchColor)
+      raymarch_quick(p + vec3(0, 0, EPS), dir) -
+      raymarch_quick(p - vec3(0, 0, EPS), dir)
     )
   );
 }
@@ -141,30 +163,30 @@ void main() {
     vec3 pixelColor = vec3(1.0, 0.36, 0);
 
     surface_distance = raymarch(eye, dir, steps, hit, surface_position, pixelColor);
-    // vec3 surface_normal = gradientNormal(surface_position);
+    vec3 surface_normal = gradientNormal(surface_position);
 
-    // vec3 diffuse = computeLight(
-    //   vec3(0.0, 2.0, 1.0),    // light position
-    //   vec3(0.0, -1.0, 0.0),   // light direction
-    //   surface_position,
-    //   surface_normal,
-    //   surface_distance
-    // );
+    vec3 diffuse = computeLight(
+      vec3(0.0, 2.0, 1.0),    // light position
+      vec3(0.0, -1.0, 0.0),   // light direction
+      surface_position,
+      surface_normal,
+      surface_distance
+    );
 
-    // vec3 diffuse2 = computeLight(
-    //   eye,    // light position
-    //   dir,   // light direction
-    //   surface_position,
-    //   surface_normal,
-    //   surface_distance
-    // );
+    vec3 diffuse2 = computeLight(
+      eye,    // light position
+      dir,   // light direction
+      surface_position,
+      surface_normal,
+      surface_distance
+    );
 
  float sample = floor(hit + (1.0-RAYMARCH_EPS*1000.0));
 
     gl_FragColor = mix(
       vec4(abs(dir), 1.0),
       vec4(
-        pixelColor,// * max(diffuse2, diffuse * 0.5),
+        pixelColor * max(diffuse2, diffuse * 0.5),
         1.0
       ),
       1.0-sample

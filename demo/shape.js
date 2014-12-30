@@ -133,3 +133,17 @@ Shape.prototype.computeTransformedAABB = function shapeComputeTransformedAABB(a,
 function notImplemented() {
   throw new Error('not implemented');
 }
+
+
+Object.defineProperty(Shape.prototype, 'shapeColorCode', {
+  get: function getShapeColor() {
+    return printf(
+    '    float q_%i = float(h == %s);\n',
+      this.id,
+      this.name
+    ) + printf('    color = mix(color, color_%i, q_%i);\n',
+      this.id,
+      this.id
+    );
+  }
+});
