@@ -144,9 +144,12 @@ function render() {
 
   stats.end();
   stats.begin();
-  scene.render();
+
   var fbo = null;
   stages.forEach(function(s) {
+    s[5].bind();
+    scene.render(s[5]);
+
     fbo = rayMarch.apply(null, s);
   });
 

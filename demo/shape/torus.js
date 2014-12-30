@@ -68,17 +68,14 @@ Object.defineProperty(Torus.prototype, 'colorCode', {
 
 Object.defineProperty(Torus.prototype, 'prefetchCode', {
   get: function getTorusPrefetchCode() {
-    return [
-      this.invertedMatrixString(),
-      printf(
-        '  vec2 %s_dimensions = vec2(sample(%i, %i), sample(%i, %i));\n',
-        this.name,
-        this.radiusMajor.position[0],
-        this.radiusMajor.position[1],
-        this.radiusMinor.position[0],
-        this.radiusMinor.position[1]
-      )
-    ].join('\n');
+    return printf(
+      '  vec2 %s_dimensions = vec2(sample(%i, %i), sample(%i, %i));\n',
+      this.name,
+      this.radiusMajor.position[0],
+      this.radiusMajor.position[1],
+      this.radiusMinor.position[0],
+      this.radiusMinor.position[1]
+    )
   }
 });
 

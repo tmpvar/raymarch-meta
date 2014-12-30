@@ -86,19 +86,16 @@ Object.defineProperty(Cuboid.prototype, 'colorCode', {
 
 Object.defineProperty(Cuboid.prototype, 'prefetchCode', {
   get: function getCuboidPrefetchCode() {
-    return [
-      this.invertedMatrixString(),
-      printf(
-        '  vec3 %s_dimensions = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
-        this.name,
-        this.width.position[0],
-        this.width.position[1],
-        this.height.position[0],
-        this.height.position[1],
-        this.depth.position[0],
-        this.depth.position[1]
-      )
-    ].join('\n');
+    return printf(
+      '  vec3 %s_dimensions = vec3(sample(%i, %i), sample(%i, %i), sample(%i, %i));\n',
+      this.name,
+      this.width.position[0],
+      this.width.position[1],
+      this.height.position[0],
+      this.height.position[1],
+      this.depth.position[0],
+      this.depth.position[1]
+    )
   }
 });
 

@@ -55,15 +55,12 @@ Object.defineProperty(Sphere.prototype, 'colorCode', {
 
 Object.defineProperty(Sphere.prototype, 'prefetchCode', {
   get: function getSpherePrefetchCode() {
-    return [
-      this.invertedMatrixString(),
-      printf(
-        '  float %s_radius = sample(%i, %i);\n',
-        this.name,
-        this.radius.position[0],
-        this.radius.position[1]
-      )
-    ].join('\n');
+    return printf(
+      '  float %s_radius = sample(%i, %i);\n',
+      this.name,
+      this.radius.position[0],
+      this.radius.position[1]
+    )
   }
 });
 

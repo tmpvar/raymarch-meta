@@ -39,7 +39,6 @@ commands.sphere = function createSphere(radius, r, g, b, selected) {
     alloc(selected)
   );
 
-  s.invertedModel = allocArray(16);
   return s;
 };
 
@@ -53,8 +52,6 @@ commands.box = function createCuboid(width, height, depth, r, g, b, selected) {
     alloc(b),
     alloc(selected)
   );
-
-  s.invertedModel = allocArray(16);
 
   return s;
 };
@@ -70,8 +67,6 @@ commands.cube = function createCuboid(radius, r, g, b, selected) {
     alloc(selected)
   );
 
-  s.invertedModel = allocArray(16);
-
   return s;
 };
 
@@ -85,8 +80,6 @@ commands.cylinder = function(radius, height, r, g, b, selected) {
     alloc(selected)
   );
 
-  s.invertedModel = allocArray(16);
-
   return s;
 };
 
@@ -99,8 +92,6 @@ commands.torus = function(radiusMajor, radiusMinor, r, g, b, selected) {
     alloc(b),
     alloc(selected)
   );
-
-  s.invertedModel = allocArray(16);
 
   return s;
 };

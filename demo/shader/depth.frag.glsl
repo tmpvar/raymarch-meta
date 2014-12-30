@@ -12,6 +12,8 @@ uniform float time;
 uniform vec3 camera_eye;
 uniform float camera_distance;
 
+/* RAYMARCH_UNIFORM_INVERTED_SHAPE_MATRICES */
+
 varying vec3 v_uv;
 varying vec3 v_dir;
 varying float v_aspect;
@@ -53,8 +55,6 @@ vec3 selectionColor = vec3(1.0, 0.3, 0.0);
 vec3 perform_selection(in vec3 color, in float val) {
   return mix(color, selectionColor, val);
 }
-
-
 
 float raymarch(in vec3 origin, in vec3 direction, in float initial_dist) {
   float dist = 0.0;

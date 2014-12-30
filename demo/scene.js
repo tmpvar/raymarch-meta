@@ -107,19 +107,24 @@ Scene.prototype.createShader = function(frag) {
 
   this.dirty()
 
+  var fragMap = [
+    { name: 'clipToWorld', type: 'mat4' },
+    { name: 'uvmatrix', type: 'mat4' },
+    { name: 'ops', type: 'sampler2D' },
+    { name: 'fbo', type: 'sampler2D' },
+    { name: 'resolution', type: 'vec2' },
+    { name: 'time', type: 'float' },
+  ].concat(this.activeShapes.map(function(s) {
+    return { name: s.name + '_inv', type: 'mat4'}
+  }));
+
+
   try {
     return createShader(
       this.gl,
       this.vertSource,
       frag,
-      [
-        { name: 'clipToWorld', type: 'mat4' },
-        { name: 'uvmatrix', type: 'mat4' },
-        { name: 'ops', type: 'sampler2D' },
-        { name: 'fbo', type: 'sampler2D' },
-        { name: 'resolution', type: 'vec2' },
-        { name: 'time', type: 'float' },
-      ],
+      fragMap,
       [{ name: 'position', type: 'vec3' }]
     );
   } catch (e) {
@@ -205,6 +210,7 @@ Scene.prototype.generateFragShader = function(shapes, shaderSource) {
   var colorStrEx = '';
   var prefetchStr = '';
   var shapeColorStr = '';
+  var invertedModelArray = [];
   aabb.initialize(this._bounds);
 
   this.activeShapes = [];
@@ -228,6 +234,12 @@ Scene.prototype.generateFragShader = function(shapes, shaderSource) {
       if (!shape) {
         continue;
       }
+
+      invertedModelArray.push(
+        printf('uniform mat4 %s_inv;', shape.name)
+      );
+
+
       // let's keep track of the active shapes
       this.activeShapes.push(shape);
       if (!seenIds[shape.id]) {
@@ -256,6 +268,7 @@ Scene.prototype.generateFragShader = function(shapes, shaderSource) {
   frag = frag.replace('/* RAYMARCH_SETUP */', prefetchStr);
   frag = frag.replace('/* RAYMARCH_OPS */', shapeStr);
   frag = frag.replace('/* RAYMARCH_OPS_COLOR */', shapeColorStr);
+  frag = frag.replace('/* RAYMARCH_UNIFORM_INVERTED_SHAPE_MATRICES */', invertedModelArray.join('\n'));
 
   frag = frag.replace('/* RAYMARCH_COLOR_EX */', colorStrEx);
 
@@ -274,21 +287,22 @@ Scene.prototype.generateFragShader = function(shapes, shaderSource) {
   return frag;
 }
 
-Scene.prototype.render = function renderScene() {
+Scene.prototype.render = function renderScene(shader) {
+
+  // run through the active shapes and give them
+  // some time to do last chance processing
+  var shapes = this.activeShapes;
+  var l = shapes.length;
+
+  for (var i = 0; i<l; i++) {
+    if (shapes[i].tick) {
+      shapes[i].tick();
+      shader.uniforms[shapes[i].name + '_inv'] = shapes[i].invertedModel;
+    }
+  }
 
   if (this._dirty) {
-
-    // run through the active shapes and give them
-    // some time to do last chance processing
-    var shapes = this.activeShapes;
-    var l = shapes.length;
-
-    for (var i = 0; i<l; i++) {
-      if (shapes[i].tick) {
-        shapes[i].tick();
-      }
-    }
-
+    console.log(shader.uniforms)
     // TODO: only upload changes
     this.opsTexture.setPixels(alloc.ops);
     this._dirty = false;

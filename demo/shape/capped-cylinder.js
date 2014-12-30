@@ -96,17 +96,14 @@ Object.defineProperty(CappedCylinder.prototype, 'colorCode', {
 
 Object.defineProperty(CappedCylinder.prototype, 'prefetchCode', {
   get : function getCappedCylinderPrefetchCode() {
-    return [
-      this.invertedMatrixString(),
-      printf(
-        '  vec2 %s_dimensions = vec2(sample(%i, %i), sample(%i, %i));\n',
-        this.name,
-        this.radius.position[0],
-        this.radius.position[1],
-        this.height.position[0],
-        this.height.position[1]
-      )
-    ].join('\n')
+    return printf(
+      '  vec2 %s_dimensions = vec2(sample(%i, %i), sample(%i, %i));\n',
+      this.name,
+      this.radius.position[0],
+      this.radius.position[1],
+      this.height.position[0],
+      this.height.position[1]
+    )
   }
 });
 

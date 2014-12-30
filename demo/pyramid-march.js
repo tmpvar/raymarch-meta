@@ -111,7 +111,6 @@ clear(gl);
 
     //Set up shader
 
-    shader.bind();
     shader.uniforms.clipToWorld = clipToWorld;
     shader.uniforms.uvmatrix = uvmatrix;
     shader.uniforms.ops = scene.opsTexture.bind(0);

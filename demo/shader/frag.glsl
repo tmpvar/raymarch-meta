@@ -8,6 +8,8 @@ uniform mat4 clipToWorld;
 uniform vec2 resolution;
 uniform float time;
 
+/* RAYMARCH_UNIFORM_INVERTED_SHAPE_MATRICES */
+
 uniform vec3 camera_eye;
 uniform float camera_distance;
 
@@ -21,11 +23,6 @@ varying vec3 v_dir;
 
 #define RAYMARCH_CYCLES /* RAYMARCH_CYCLES */
 #define RAYMARCH_EPS /* RAYMARCH_EPS */
-
-// void circle(vec2 pos, float r, inout float dist) {
-//   vec2 p = v_uv + pos;
-//   dist = min(dist, length(p)-r);
-// }
 
 float sample(int x, int y) {
   return texture2D(ops, vec2(x, y) * OPS_RATIO).x;
