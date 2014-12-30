@@ -112,8 +112,20 @@ Object.defineProperty(CappedCylinder.prototype, 'prefetchCode', {
 
 Object.defineProperty(CappedCylinder.prototype, 'code', {
   get : function getCappedCylinderCode() {
-    return printf(
-      '    float %s = solid_capped_cylinder(vec4(%s_inv * pos4).xyz, %s_dimensions);\n',
+    return printf('\n    ' + [
+        '// %s distance function',
+        'vec3 %s_position = (%s_inv * pos4).xyz;',
+        'vec2 %s_difference = abs(vec2(length(%s_position.xz),%s_position.y)) - %s_dimensions;',
+        'float %s = min(max(%s_difference.x, %s_difference.y), 0.0) + length(max(%s_difference, 0.0));'
+      ].join('\n    ') + '\n\n',
+      this.name,
+      this.name,
+      this.name,
+      this.name,
+      this.name,
+      this.name,
+      this.name,
+      this.name,
       this.name,
       this.name,
       this.name

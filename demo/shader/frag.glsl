@@ -55,11 +55,6 @@ float solid_capped_cone(in vec3 p, in vec3 c) {
   return sqrt( dot(w,w) - max(d.x,d.y) )* sign(max(q.y*v.x-q.x*v.y,w.y));
 }
 
-float solid_capped_cylinder(vec3 p, vec2 h) {
-  vec2 d = abs(vec2(length(p.xz),p.y)) - h;
-  return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
-}
-
 vec3 selectionColor = vec3(1.0, 0.3, 0.0);
 
 vec3 perform_selection(in vec3 color, in float val) {

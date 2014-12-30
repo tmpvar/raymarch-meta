@@ -53,27 +53,22 @@ float solid_capped_cone(in vec3 p, in vec3 c) {
   return sqrt( dot(w,w) - max(d.x,d.y) )* sign(max(q.y*v.x-q.x*v.y,w.y));
 }
 
-float solid_capped_cylinder(vec3 p, vec2 h) {
-  vec2 d = abs(vec2(length(p.xz),p.y)) - h;
-  return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
-}
-
 vec3 selectionColor = vec3(1.0, 0.3, 0.0);
 
 vec3 perform_selection(in vec3 color, in float val) {
   return mix(color, selectionColor, val);
 }
 
-/* RAYMARCH_SETUP */
+
 
 float raymarch(in vec3 origin, in vec3 direction, in float initial_dist) {
   float dist = 0.0;
   float h = 1.0;
   vec4 pos4;
 
-  for(int i=0; i<RAYMARCH_CYCLES; i++) {
+/* RAYMARCH_SETUP */
 
-/* RAYMARCH_DISABLED_COLOR */
+  for(int i=0; i<RAYMARCH_CYCLES; i++) {
 
     vec3 position = origin+direction*dist;
     pos4 = vec4(position, 1.0);
