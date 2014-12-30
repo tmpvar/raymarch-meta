@@ -29,10 +29,6 @@ float sample(int x, int y) {
   return texture2D(ops, vec2(x, y) * OPS_RATIO).x;
 }
 
-float solid_sphere(vec3 p, float r) {
-  return length(p) - r;
-}
-
 float solid_cone(vec3 p, vec2 c) { // c must be normalized
   float q = length(p.xy);
   return dot(c, vec2(q, p.z));

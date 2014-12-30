@@ -31,10 +31,6 @@ float sample(int x, int y) {
   return texture2D(ops, vec2(x, y) * OPS_RATIO).x;
 }
 
-float solid_sphere(vec3 p, float r) {
-  return length(p) - r;
-}
-
 float solid_cone(vec3 p, vec2 c) { // c must be normalized
   float q = length(p.xy);
   return dot(c, vec2(q, p.z));
@@ -78,10 +74,12 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
 
   vec4 pos4;
 
-  for(int i=0; i<RAYMARCH_CYCLES; i++) {
-
 /* RAYMARCH_COLOR */
 /* RAYMARCH_SETUP */
+
+  for(int i=0; i<RAYMARCH_CYCLES; i++) {
+
+
 
     steps = i;
     position = origin+direction*dist;
@@ -156,30 +154,30 @@ void main() {
     vec3 pixelColor = vec3(1.0, 0.36, 0);
 
     surface_distance = raymarch(eye, dir, steps, hit, surface_position, pixelColor);
-    vec3 surface_normal = gradientNormal(surface_position);
+    // vec3 surface_normal = gradientNormal(surface_position);
 
-    vec3 diffuse = computeLight(
-      vec3(0.0, 2.0, 1.0),    // light position
-      vec3(0.0, -1.0, 0.0),   // light direction
-      surface_position,
-      surface_normal,
-      surface_distance
-    );
+    // vec3 diffuse = computeLight(
+    //   vec3(0.0, 2.0, 1.0),    // light position
+    //   vec3(0.0, -1.0, 0.0),   // light direction
+    //   surface_position,
+    //   surface_normal,
+    //   surface_distance
+    // );
 
-    vec3 diffuse2 = computeLight(
-      eye,    // light position
-      dir,   // light direction
-      surface_position,
-      surface_normal,
-      surface_distance
-    );
+    // vec3 diffuse2 = computeLight(
+    //   eye,    // light position
+    //   dir,   // light direction
+    //   surface_position,
+    //   surface_normal,
+    //   surface_distance
+    // );
 
  float sample = floor(hit + (1.0-RAYMARCH_EPS*1000.0));
 
     gl_FragColor = mix(
       vec4(abs(dir), 1.0),
       vec4(
-        pixelColor * max(diffuse2, diffuse * 0.5),
+        pixelColor,// * max(diffuse2, diffuse * 0.5),
         1.0
       ),
       1.0-sample

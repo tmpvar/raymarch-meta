@@ -69,8 +69,11 @@ Object.defineProperty(Sphere.prototype, 'prefetchCode', {
 
 Object.defineProperty(Sphere.prototype, 'code', {
   get: function getSphereCode() {
-    return printf(
-      '    float %s = solid_sphere(vec4(%s_inv * pos4).xyz, %s_radius);\n',
+    return printf('\n    ' + [
+        '// %s distance function',
+        'float %s = length((%s_inv * pos4).xyz) - %s_radius;',
+      ].join('\n    ') + '\n\n',
+      this.name,
       this.name,
       this.name,
       this.name
