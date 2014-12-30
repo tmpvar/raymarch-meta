@@ -29,12 +29,6 @@ float sample(int x, int y) {
   return texture2D(ops, vec2(x, y) * OPS_RATIO).x;
 }
 
-float signed_box_distance(vec3 p, vec3 b) {
-  vec3 d = abs(p) - b;
-  return min(max(d.x,max(d.y,d.z)),0.0) +
-         length(max(d,0.0));
-}
-
 float solid_sphere(vec3 p, float r) {
   return length(p) - r;
 }
@@ -67,10 +61,6 @@ float solid_capped_cylinder(vec3 p, vec2 h) {
   vec2 d = abs(vec2(length(p.xz),p.y)) - h;
   return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
 }
-
-// float unsigned_box_distance( vec3 p, vec3 b, float r ) {
-//   return length(max(abs(p)-b,0.0))-r;
-// }
 
 vec3 selectionColor = vec3(1.0, 0.3, 0.0);
 

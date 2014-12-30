@@ -31,12 +31,6 @@ float sample(int x, int y) {
   return texture2D(ops, vec2(x, y) * OPS_RATIO).x;
 }
 
-float signed_box_distance(vec3 p, vec3 b) {
-  vec3 d = abs(p) - b;
-  return min(max(d.x,max(d.y,d.z)),0.0) +
-         length(max(d,0.0));
-}
-
 float solid_sphere(vec3 p, float r) {
   return length(p) - r;
 }
@@ -70,10 +64,6 @@ float solid_capped_cylinder(vec3 p, vec2 h) {
   return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
 }
 
-// float unsigned_box_distance( vec3 p, vec3 b, float r ) {
-//   return length(max(abs(p)-b,0.0))-r;
-// }
-
 vec3 selectionColor = vec3(1.0, 0.3, 0.0);
 
 vec3 perform_selection(in vec3 color, in float val) {
@@ -96,12 +86,6 @@ float raymarch(in vec3 origin, in vec3 direction, out int steps, out float hit, 
     steps = i;
     position = origin+direction*dist;
     pos4 = vec4(position, 1.0);
-
-    //h = min(solid_capped_cylinder(position, vec2(0.23, 0.65)), solid_sphere(position, 0.25) );
-    //h = solid_cone(position, normalize(vec2(0.25, 0.25)) );
-    //h = solid_capped_cone(position, vec3(0.25, 0.25, 0.1) );
-    //h = solid_torus(position, normalize(vec2(1.5, 0.15)) );
-    //h = signed_box_distance(position, vec3(.1, .3, .25));
 
 /* RAYMARCH_OPS_COLOR */
 
