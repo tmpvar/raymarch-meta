@@ -84,8 +84,19 @@ Object.defineProperty(Torus.prototype, 'prefetchCode', {
 
 Object.defineProperty(Torus.prototype, 'code', {
   get: function getTorusCode() {
-    return printf(
-      '    float %s = solid_torus(vec4(%s_inv * pos4).xyz, %s_dimensions );\n',
+    return printf('\n    ' + [
+        '// %s distance function',
+        'vec3 %s_position = (%s_inv * pos4).xyz;',
+        'vec2 %s_difference = vec2(length(%s_position.xz) - %s_dimensions.x, %s_position.y);',
+        'float %s = length(%s_difference) - %s_dimensions.y;',
+      ].join('\n    ') + '\n\n',
+      this.name,
+      this.name,
+      this.name,
+      this.name,
+      this.name,
+      this.name,
+      this.name,
       this.name,
       this.name,
       this.name

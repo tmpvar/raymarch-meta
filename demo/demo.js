@@ -66,19 +66,19 @@ var sphere4 = cmd.sphere(0.3, 0.9,0.6,0.3).translate(-0.40,3.0,0.0);
 var cyl = cmd.cylinder(1.0,0.5,0.5, 0.3,0.4,0.5).translate(0.0,5.5,0.0);
 var box = cmd.cube(0.3, 0.5,0.6,0.7).translate(0.0,0.4,0.0);
 var box2 = cmd.box(2.0,2.0,0.75, 1.0,0.1,0.1).translate(0.0,2.5,-0.25);
-/*var tor = cmd.torus(0.3,0.1, 0.7,0.2,0.5).translate(0.9,0.5,0.4);
+var tor = cmd.torus(0.3,0.1, 0.7,0.2,0.5).translate(0.9,0.5,0.4);
 
-var cut1 = cmd.cut(cyl, box);
-var cut2 = cmd.cut(sphere, box);
+// var cut1 = cmd.cut(cyl, box);
+// var cut2 = cmd.cut(sphere, box);
 
-var mouseCut = sphere2.union([sphere3, sphere4]).cut(box2);
-var isect = cmd.box(1, .25, 1).translate(0, 1, 0).intersect(
-  cmd.sphere(0, .75, 0, .5)
-);
-*/
+// var mouseCut = sphere2.union([sphere3, sphere4]).cut(box2);
+// var isect = cmd.box(1, .25, 1).translate(0, 1, 0).intersect(
+//   cmd.sphere(0, .75, 0, .5)
+// );
+
 // scene.display([mouseCut, tor, cyl, box, isect]);
 
-scene.display([sphere, /*sphere2, sphere3, sphere4, tor,*/cyl, box, box2]);
+scene.display([sphere, /*sphere2, sphere3, sphere4,*/ tor, cyl, box, box2]);
 //scene.display([sphere, tor]);
 
 window.camera = camera;
