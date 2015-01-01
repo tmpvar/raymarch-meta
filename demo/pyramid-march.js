@@ -75,6 +75,8 @@ clear(gl);
     var shader = args[5];
     var renderToScreen = args[6];
 
+    scene.render(shader);
+
     // shader.bind();
     resolution[0] = Math.ceil((viewport[2] - viewport[0]) * scale);
     resolution[1] = Math.ceil((viewport[3] - viewport[1]) * scale);

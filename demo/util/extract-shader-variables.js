@@ -1,5 +1,7 @@
 module.exports = extractShaderVariables;
 
+// TODO: handle `uniform mat4 a,b,c;`
+
 var uniformExp = /(uniform|attribute)\W+[^\W]+\W+[^\W;]+/g;
 var whitespaceExp = /\W+/;
 function extractShaderVariables(vert, frag) {

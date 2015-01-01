@@ -50,7 +50,7 @@ var fragInit = fs.readFileSync(__dirname + '/shader/init.frag.glsl', 'utf8');
 
 var fc = require('fc');
 
-var gl = fc(render, false, 3);
+var gl = fc(frame, false, 3);
 
 if (!gl) {
   throw new Error('could not initialize webgl');
@@ -96,7 +96,7 @@ camera.center[0] = bounds[0][0] + (bounds[1][0] - bounds[0][0])/2;
 camera.center[1] = bounds[0][1] + (bounds[1][1] - bounds[0][1])/2;
 camera.center[2] = bounds[0][2] + (bounds[1][2] - bounds[0][2])/2;
 
-var rayMarch = createRayMarcher(gl);
+var render = createRayMarcher(gl);
 
 var debugShader = scene.createShader(scene.generateFragShader(null, fragDebug));
 var initShader = scene.createShader(scene.generateFragShader(null, fragInit));
@@ -140,12 +140,12 @@ var stages = [
 
   // createStage(viewport, 1, scene, camera, debugShader, true),
 
-
- createStage(viewport, 1, scene, camera, fragShader, true),
- // createStage(viewport, 1, scene, camera, debugShader, true),
+  // createStage(viewport, 1, scene, camera, debugShader, true),
 ];
 
-function render() {
+var colorStage = createStage(viewport, 1, scene, camera, fragShader, true);
+
+function frame() {
 
   tor.translate(0, Math.sin(Date.now() / 500) * .0025, 0);
 
@@ -159,10 +159,11 @@ function render() {
   var fbo = null;
   stages.forEach(function(s) {
     s[5].bind();
-    scene.render(s[5]);
-
-    fbo = rayMarch(s);
+    fbo = render(s);
   });
+
+  colorStage[5].bind();
+  render(colorStage);
 
   // gl.stop();
 }
