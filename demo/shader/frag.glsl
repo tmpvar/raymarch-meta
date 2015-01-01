@@ -149,11 +149,12 @@ vec3 computeLight(in vec3 light_pos, in vec3 light_dir, in vec3 surface_position
 
 void main() {
   vec3 dir = normalize(v_dir);
-  float last_distance = texture2D(fbo, v_uv.xy).x;
+  vec4 last_sample = texture2D(fbo, v_uv.xy);
 
-  if (last_distance < 10.0) {
+
+  if (last_sample.y == 1.0) {
     vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
-    eye = eye + v_dir * last_distance;
+    eye = eye + v_dir * last_sample.x;
 
     float surface_distance = 0.0;
 
