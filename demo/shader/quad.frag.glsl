@@ -1,7 +1,15 @@
 // quad.frag.glsl
 
+#ifdef GL_ES
+precision highp float;
+#endif
 
-/* FBO_STAGES */
+varying vec3 v_uv;
+varying vec3 v_dir;
+varying float v_aspect;
+varying float v_fov;
+
+/* FBO_STAGE_UNIFORMS */
 
 void main() {
 
@@ -13,5 +21,9 @@ void main() {
 
   // TODO: change the color based on occupied status
 
-  gl_FragColor
+  float edge = 0.0;
+
+  /* FBO_STAGE_COMPUTE */
+
+  gl_FragColor = vec4(1.0);
 }

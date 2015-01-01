@@ -65,7 +65,7 @@ function createRenderer(gl) {
 
 
 clear(gl);
-  function render(args) {
+  function render(args, uniforms) {
 
     var fbo = args[0];
     var viewport = args[1]
@@ -75,9 +75,17 @@ clear(gl);
     var shader = args[5];
     var renderToScreen = args[6];
 
-    scene.render(shader);
+    shader.bind();
+    scene.setupFrame(shader);
 
-    // shader.bind();
+    uniforms && uniforms.forEach(function(uniform) {
+      if (uniform[1].bind) {
+        shader[uniform[0]] = uniform[1].bind();
+      } else {
+        shader[uniform[0]] = uniform[1];
+      }
+    });
+
     resolution[0] = Math.ceil((viewport[2] - viewport[0]) * scale);
     resolution[1] = Math.ceil((viewport[3] - viewport[1]) * scale);
 

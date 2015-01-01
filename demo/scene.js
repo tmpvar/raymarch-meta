@@ -278,7 +278,7 @@ Scene.prototype.generateFragShader = function(shapes, shaderSource) {
   return frag;
 }
 
-Scene.prototype.render = function renderScene(shader) {
+Scene.prototype.setupFrame = function renderScene(shader) {
 
   // run through the active shapes and give them
   // some time to do last chance processing

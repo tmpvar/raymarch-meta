@@ -1,5 +1,6 @@
 var mat4 = require('gl-mat4');
 var vec3 = require('gl-vec3');
+var printf = require('printf');
 var getEye = require('./util/get-eye');
 
 // expando the vec3 object with an unproject method
@@ -47,6 +48,7 @@ var frag = fs.readFileSync(__dirname + '/shader/frag.glsl', 'utf8');
 var fragDepth = fs.readFileSync(__dirname + '/shader/depth.frag.glsl', 'utf8');
 var fragDebug = fs.readFileSync(__dirname + '/shader/debug.frag.glsl', 'utf8');
 var fragInit = fs.readFileSync(__dirname + '/shader/init.frag.glsl', 'utf8');
+var quadSource = fs.readFileSync(__dirname + '/shader/quad.frag.glsl', 'utf8');
 
 var fc = require('fc');
 
@@ -125,30 +127,49 @@ function createStage(viewport, scale, scene, camera, shader, renderToScreen) {
 
 var stage = 0;
 var stages = [
- // comment this out and it works......
- createStage(viewport, 1, scene, camera, initShader),
- // createStage(viewport, 1/16, scene, camera, depthShader),
- // createStage(viewport, 1/100, scene, camera, depthShader),
- // createStage(viewport, 1/128, scene, camera, depthShader),
- // createStage(viewport, 1/64, scene, camera, depthShader),
- // createStage(viewport, 1/32, scene, camera, depthShader),
- createStage(viewport, 1/16, scene, camera, depthShader),
- createStage(viewport, 1/8, scene, camera, depthShader),
- createStage(viewport, 1/4, scene, camera, depthShader),
- // createStage(viewport, 1/2, scene, camera, depthShader),
- // createStage(viewport, 1, scene, camera, depthShader),
-
-  // createStage(viewport, 1, scene, camera, debugShader, true),
-
-  // createStage(viewport, 1, scene, camera, debugShader, true),
+  createStage(viewport, 1, scene, camera, initShader),
+//  createStage(viewport, 1/16, scene, camera, depthShader),
+//  createStage(viewport, 1/100, scene, camera, depthShader),
+//  createStage(viewport, 1/128, scene, camera, depthShader),
+//  createStage(viewport, 1/64, scene, camera, depthShader),
+//  createStage(viewport, 1/32, scene, camera, depthShader),
+  createStage(viewport, 1/16, scene, camera, depthShader),
+  createStage(viewport, 1/8, scene, camera, depthShader),
+  createStage(viewport, 1/4, scene, camera, depthShader),
+//  createStage(viewport, 1/2, scene, camera, depthShader),
+//  createStage(viewport, 1, scene, camera, depthShader),
+//  createStage(viewport, 1, scene, camera, debugShader, true),
+//  createStage(viewport, 1, scene, camera, debugShader, true),
 ];
 
-var colorStage = createStage(viewport, 1, scene, camera, fragShader, true);
+// Setup the quadtree debug shader
+quadSource = quadSource.replace('/* FBO_STAGE_UNIFORMS */', stages.map(function(stage, i) {
+  return 'uniform sampler2D stage_' + i + ';';
+}).join('\n'));
+
+quadSource = quadSource.replace('/* FBO_STAGE_COMPUTE */', stages.map(function(stage, i) {
+  return '\n    ' + [
+    '// stage ' + i,
+    printf('edge = max(edge, texture2D(stage_%s, v_uv.xy).y);', i)
+  ].join('\n    ')
+}).join('\n'));
+
+var quadShader = scene.createShader(scene.generateFragShader(null, quadSource));
+
+var renderQuadTree = true;
+
+var colorStage = createStage(viewport, 1, scene, camera, fragShader, !renderQuadTree);
+var quadTreeDebugStage = createStage(viewport, 1, scene, camera, quadShader, renderQuadTree);
+
+var quadUniformMap = stages.map(function(stage, i) {
+  return ['stage_' + i, stage[0]];
+});
+
+quadUniformMap.push(['color', colorStage[0]])
 
 function frame() {
 
   tor.translate(0, Math.sin(Date.now() / 500) * .0025, 0);
-
 
   viewport[2] = gl.canvas.width;
   viewport[3] = gl.canvas.height;
@@ -158,12 +179,14 @@ function frame() {
 
   var fbo = null;
   stages.forEach(function(s) {
-    s[5].bind();
     fbo = render(s);
   });
 
-  colorStage[5].bind();
   render(colorStage);
+
+  if (renderQuadTree) {
+    render(quadTreeDebugStage, quadUniformMap);
+  }
 
   // gl.stop();
 }
