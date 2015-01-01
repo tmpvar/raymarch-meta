@@ -1,3 +1,5 @@
+// vert.glsl
+
 attribute vec3 position;
 uniform mat4 uvmatrix;
 
@@ -8,10 +10,7 @@ varying float v_fov;
 
 #define PI 3.14159
 
-
-
 uniform vec2 resolution;
-
 
 void main() {
   v_uv = 0.5 * (position+1.0);
