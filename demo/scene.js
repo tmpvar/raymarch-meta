@@ -7,6 +7,8 @@ var aabb = require('./util/aabb');
 var alloc = require('./util/allocator');
 var show = require('ndarray-show');
 
+var extractShaderVariables = require('./util/extract-shader-variables');
+
 var min = Math.min;
 var max = Math.max;
 
@@ -106,26 +108,15 @@ Scene.prototype.createShader = function(frag) {
   }
 
   this.dirty()
-
-  var fragMap = [
-    { name: 'clipToWorld', type: 'mat4' },
-    { name: 'uvmatrix', type: 'mat4' },
-    { name: 'ops', type: 'sampler2D' },
-    { name: 'fbo', type: 'sampler2D' },
-    { name: 'resolution', type: 'vec2' },
-    { name: 'time', type: 'float' },
-  ].concat(this.activeShapes.map(function(s) {
-    return { name: s.name + '_inv', type: 'mat4'}
-  }));
-
+  var shaderVars = extractShaderVariables(this.vertSource, frag);
 
   try {
     return createShader(
       this.gl,
       this.vertSource,
       frag,
-      fragMap,
-      [{ name: 'position', type: 'vec3' }]
+      shaderVars[0],
+      shaderVars[1]
     );
   } catch (e) {
     console.log(frag);
