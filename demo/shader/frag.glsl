@@ -155,7 +155,7 @@ void main() {
   vec4 last_sample = texture2D(fbo, v_uv.xy);
 
 
-  if (last_sample.y == 1.0) {
+  if (last_sample.y >= 0.5) {
     vec3 eye = clipToWorld[3].xyz / clipToWorld[3].w;
     eye = eye + v_dir * last_sample.x;
 

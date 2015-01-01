@@ -78,17 +78,9 @@ clear(gl);
     shader.bind();
     scene.setupFrame(shader);
 
-    uniforms && uniforms.forEach(function(uniform) {
-      if (uniform[1].bind) {
-        shader[uniform[0]] = uniform[1].bind();
-      } else {
-        shader[uniform[0]] = uniform[1];
-      }
-    });
-
     resolution[0] = Math.ceil((viewport[2] - viewport[0]) * scale);
     resolution[1] = Math.ceil((viewport[3] - viewport[1]) * scale);
-
+console.log(resolution[0], resolution[1])
     gl.viewport(
       viewport[0] * scale,
       viewport[1] * scale,
@@ -138,9 +130,17 @@ clear(gl);
       shader.uniforms.fbo = lastFBO.color[0].bind(1);
       shader.uniforms.fbo_resolution = lastFBO.shape;
     } else {
-
       shader.uniforms.fbo = initialTexture.bind(1);
     }
+
+    Array.isArray(uniforms) && uniforms.forEach(function(uniform, i) {
+      if (uniform[1].bind) {
+        shader.uniforms[uniform[0]] = uniform[1].color[0].bind(i + 2);
+      } else {
+        shader.uniforms[uniform[0]] = uniform[1];
+      }
+    });
+
 
     shader.uniforms.resolution = resolution;
 

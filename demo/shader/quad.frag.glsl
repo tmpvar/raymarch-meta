@@ -9,10 +9,14 @@ varying vec3 v_dir;
 varying float v_aspect;
 varying float v_fov;
 
+uniform sampler2D ops;
+uniform sampler2D fbo;
+
 /* FBO_STAGE_UNIFORMS */
 
-void main() {
+uniform vec2 resolution;
 
+void main() {
   // this shader has 2 purposes
   // * show the quad tree that is implicitly computed by
   //   the depthShader passes
@@ -21,9 +25,13 @@ void main() {
 
   // TODO: change the color based on occupied status
 
-  float edge = 0.0;
+  float edge;
 
   /* FBO_STAGE_COMPUTE */
 
-  gl_FragColor = vec4(1.0);
+  if (edge < 1.0) {
+    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+  } else {
+    gl_FragColor = texture2D(fbo, v_uv.xy);
+  }
 }

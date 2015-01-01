@@ -76,7 +76,7 @@ vec4 raymarch(in vec3 origin, in vec3 direction, in float dist) {
     // break if the size of the sphere is smaller than the radius of the cone
     float latest_distance = h;// + dist;
     float cone_radius = v_fov * latest_distance;
-    if (h/2.0 < cone_radius || h < RAYMARCH_EPS) {
+    if (h < cone_radius || h/5000.0 < RAYMARCH_EPS) {
       hit = 1.0;
       dist -= h;
       break;

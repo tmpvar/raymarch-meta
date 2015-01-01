@@ -115,8 +115,8 @@ var v2scratch = [0, 0];
 function createStage(viewport, scale, scene, camera, shader, renderToScreen) {
   return [
     createFBO(gl, [
-      Math.ceil((viewport[2] - viewport[0]) * scale),
-      Math.ceil((viewport[3] - viewport[1]) * scale)
+      (viewport[2] - viewport[0]) * scale,
+      (viewport[3] - viewport[1]) * scale
     ], {
       float: true,
       depth: false,
@@ -126,47 +126,69 @@ function createStage(viewport, scale, scene, camera, shader, renderToScreen) {
 }
 
 var stage = 0;
+var debugStage = createStage(viewport, 1, scene, camera, debugShader, true);
 var stages = [
   createStage(viewport, 1, scene, camera, initShader),
 //  createStage(viewport, 1/16, scene, camera, depthShader),
 //  createStage(viewport, 1/100, scene, camera, depthShader),
-//  createStage(viewport, 1/128, scene, camera, depthShader),
-//  createStage(viewport, 1/64, scene, camera, depthShader),
-//  createStage(viewport, 1/32, scene, camera, depthShader),
+  createStage(viewport, 1/256, scene, camera, depthShader),
+  createStage(viewport, 1/128, scene, camera, depthShader),
+  createStage(viewport, 1/64, scene, camera, depthShader),
+  createStage(viewport, 1/32, scene, camera, depthShader),
   createStage(viewport, 1/16, scene, camera, depthShader),
   createStage(viewport, 1/8, scene, camera, depthShader),
-  createStage(viewport, 1/4, scene, camera, depthShader),
-//  createStage(viewport, 1/2, scene, camera, depthShader),
-//  createStage(viewport, 1, scene, camera, depthShader),
-//  createStage(viewport, 1, scene, camera, debugShader, true),
-//  createStage(viewport, 1, scene, camera, debugShader, true),
+  // createStage(viewport, 1/4, scene, camera, depthShader),
+  // createStage(viewport, 1/2, scene, camera, depthShader),
+  // createStage(viewport, 1, scene, camera, depthShader),
+
+  //  createStage(viewport, 1, scene, camera, debugShader, true),
 ];
 
 // Setup the quadtree debug shader
-quadSource = quadSource.replace('/* FBO_STAGE_UNIFORMS */', stages.map(function(stage, i) {
-  return 'uniform sampler2D stage_' + i + ';';
+quadSource = quadSource.replace('/* FBO_STAGE_UNIFORMS */', stages.slice(1).map(function(stage, i) {
+  return [
+    '',
+    'uniform sampler2D stage_' + i + ';',
+    'uniform float stage_' + i + '_ratio;'
+  ].join('\n');
 }).join('\n'));
 
-quadSource = quadSource.replace('/* FBO_STAGE_COMPUTE */', stages.map(function(stage, i) {
-  return '\n    ' + [
-    '// stage ' + i,
-    printf('edge = max(edge, texture2D(stage_%s, v_uv.xy).y);', i)
-  ].join('\n    ')
-}).join('\n'));
+quadSource = quadSource.replace('/* FBO_STAGE_COMPUTE */', stages.slice(1).map(function(stage, i) {
+  if (i === 0) {
+    return [
+      'edge = min(',
+      printf('  mod(gl_FragCoord.y, stage_%s_ratio),', i),
+      printf('  mod(gl_FragCoord.x, stage_%s_ratio)', i),
+      ');'
+    ].join('\n    ');
+  } else {
+    return [
+      printf('if (texture2D(stage_%s, v_uv.xy).y > 0.5) {', i-1),
+      'edge = min(edge, min(',
+      printf('  mod(gl_FragCoord.y, stage_%s_ratio),', i),
+      printf('  mod(gl_FragCoord.x, stage_%s_ratio)', i),
+      '));',
+    ].join('\n    ') + '\n  }\n';
+
+  }
+}).join('\n  '));
 
 var quadShader = scene.createShader(scene.generateFragShader(null, quadSource));
 
 var renderQuadTree = true;
 
-var colorStage = createStage(viewport, 1, scene, camera, fragShader, !renderQuadTree);
-var quadTreeDebugStage = createStage(viewport, 1, scene, camera, quadShader, renderQuadTree);
+var colorStage = createStage(viewport, 1, scene, camera, fragShader);
+var quadTreeDebugStage = createStage(viewport, 1, scene, camera, quadShader, true);
 
-var quadUniformMap = stages.map(function(stage, i) {
-  return ['stage_' + i, stage[0]];
+
+
+var quadUniformMap = []
+stages.slice(1).forEach(function(stage, i) {
+  quadUniformMap.push(['stage_' + i, stage[0]]);
+  quadUniformMap.push(['stage_' + i + '_ratio', 1/stage[2]]);
 });
 
-quadUniformMap.push(['color', colorStage[0]])
-
+console.log(quadUniformMap);
 function frame() {
 
   tor.translate(0, Math.sin(Date.now() / 500) * .0025, 0);
@@ -177,18 +199,16 @@ function frame() {
   stats.end();
   stats.begin();
 
-  var fbo = null;
-  stages.forEach(function(s) {
-    fbo = render(s);
-  });
+  stages.forEach(render);
 
   render(colorStage);
 
   if (renderQuadTree) {
+    // render(debugStage);
     render(quadTreeDebugStage, quadUniformMap);
   }
 
-  // gl.stop();
+  gl.stop();
 }
 
 
