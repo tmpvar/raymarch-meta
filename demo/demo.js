@@ -135,11 +135,14 @@ var stages = [
  createStage(viewport, 1/16, scene, camera, depthShader),
  createStage(viewport, 1/8, scene, camera, depthShader),
  createStage(viewport, 1/4, scene, camera, depthShader),
- createStage(viewport, 1/2, scene, camera, depthShader),
- // createStage(viewport, 1, scene, camera, depthShader, true),
+ // createStage(viewport, 1/2, scene, camera, depthShader),
+ // createStage(viewport, 1, scene, camera, depthShader),
 
- createStage(viewport, 1, scene, camera, fragShader),
- createStage(viewport, 1, scene, camera, debugShader, true),
+  // createStage(viewport, 1, scene, camera, debugShader, true),
+
+
+ createStage(viewport, 1, scene, camera, fragShader, true),
+ // createStage(viewport, 1, scene, camera, debugShader, true),
 ];
 
 function render() {
@@ -158,7 +161,7 @@ function render() {
     s[5].bind();
     scene.render(s[5]);
 
-    fbo = rayMarch.apply(null, s);
+    fbo = rayMarch(s);
   });
 
   // gl.stop();

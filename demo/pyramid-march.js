@@ -65,7 +65,15 @@ function createRenderer(gl) {
 
 
 clear(gl);
-  function render(fbo, viewport, scale, scene, camera, shader, renderToScreen) {
+  function render(args) {
+
+    var fbo = args[0];
+    var viewport = args[1]
+    var scale = args[2];
+    var scene = args[3];
+    var camera = args[4];
+    var shader = args[5];
+    var renderToScreen = args[6];
 
     // shader.bind();
     resolution[0] = Math.ceil((viewport[2] - viewport[0]) * scale);
