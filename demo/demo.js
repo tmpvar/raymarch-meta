@@ -126,7 +126,7 @@ function createStage(viewport, scale, scene, camera, shader, renderToScreen) {
 var stage = 0;
 var stages = [
  // comment this out and it works......
- // createStage(viewport, 1/2, scene, camera, initShader),
+ createStage(viewport, 1, scene, camera, initShader),
  // createStage(viewport, 1/16, scene, camera, depthShader),
  // createStage(viewport, 1/100, scene, camera, depthShader),
  // createStage(viewport, 1/128, scene, camera, depthShader),
