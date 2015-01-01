@@ -168,6 +168,8 @@ function render() {
 }
 
 
+var v2scratch2 = [0,0]
+
 function handleMouse(e) {
 
   // gl.start();
@@ -195,11 +197,13 @@ function handleMouse(e) {
         var h = gl.canvas.height;
 
         var l = mouse.pos;
-        // TODO: pre-allocate these vectors to avoid gc hickups
-        camera.rotate(
-          [x/w - .5, y/h - .5],
-          [l[0]/w - .5, l[1]/h - .5]
-        )
+
+        v2scratch[0] = x/w - .5;
+        v2scratch[1] = y/h - .5;
+        v2scratch2[0] = l[0]/w - .5;
+        v2scratch2[1] = l[1]/h - .5;
+
+        camera.rotate(v2scratch, v2scratch2);
 
         scene.dirty();
       }
@@ -212,7 +216,8 @@ function handleMouse(e) {
 
       eye = getEye(eye, view);
 
-      mouse.pick = [x, gl.canvas.height - y];
+      mouse.pick[0] = x;
+      mouse.pick[1] = gl.canvas.height - y;
 
       mat4.perspective(
         projection,
