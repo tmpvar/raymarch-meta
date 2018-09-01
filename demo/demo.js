@@ -229,6 +229,8 @@ function render() {
 
   vao.bind();
 
+  box.rotate(0.1, 0.0, 0.0);
+
   gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0)
   vao.unbind();
   gl.stop();
